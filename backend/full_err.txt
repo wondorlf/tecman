@@ -1,0 +1,97 @@
+﻿[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPrismaModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChecklistsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 2104  - [39m07/02/2026, 10:41:51 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+node : [31m[Nest] 
+2104  - 
+[39m07/02/2026, 
+10:41:51 p.m. [31m  
+ERROR[39m [38;5;3m[E
+xceptionHandler] 
+[39m[31mJwtStrategy 
+requires a secret or 
+key[39m
+En línea: 1 Carácter: 
+1
++ node 
+dist/src/main.js 2>&1 
+| Out-File -FilePath 
+full_err.txt -Encodin 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ([31m[Nest   
+ ] 210...ret or ke    
+y[39m:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+TypeError: 
+JwtStrategy requires 
+a secret or key
+    at new 
+JwtStrategy (C:\egan_p
+rojects\egan-tecman\ba
+ckend\node_modules\pas
+sport-jwt\lib\strategy
+.js:45:15)
+    at new 
+MixinStrategy (C:\egan
+_projects\egan-tecman\
+backend\node_modules\@
+nestjs\passport\dist\p
+assport\passport.strat
+egy.js:32:13)
+    at new 
+JwtStrategy (file:///C
+:/egan_projects/egan-t
+ecman/backend/dist/src
+/modules/auth/strategi
+es/jwt.strategy.js:16:
+9)
+    at Injector.instan
+tiateClass (C:\egan_pr
+ojects\egan-tecman\bac
+kend\node_modules\@nes
+tjs\core\injector\inje
+ctor.js:373:19)
+    at callback (C:\eg
+an_projects\egan-tecma
+n\backend\node_modules
+\@nestjs\core\injector
+\injector.js:65:45)
+    at async Injector.
+resolveConstructorPara
+ms (C:\egan_projects\e
+gan-tecman\backend\nod
+e_modules\@nestjs\core
+\injector\injector.js:
+145:24)
+    at async 
+Injector.loadInstance 
+(C:\egan_projects\egan
+-tecman\backend\node_m
+odules\@nestjs\core\in
+jector\injector.js:70:
+13)
+    at async 
+Injector.loadProvider 
+(C:\egan_projects\egan
+-tecman\backend\node_m
+odules\@nestjs\core\in
+jector\injector.js:98:
+9)
+    at async C:\egan_p
+rojects\egan-tecman\ba
+ckend\node_modules\@ne
+stjs\core\injector\ins
+tance-loader.js:56:13
+    at async 
+Promise.all (index 5)

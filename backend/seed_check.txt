@@ -1,0 +1,10 @@
+﻿Environment variables loaded from .env
+Running seed command `ts-node prisma/seed.ts` ...
+🌱 Seeding database...
+✅ Roles created
+✅ Admin and Egan users created
+✅ Categories created
+✅ Sample checklist created
+🚀 Database seeded successfully!
+
+The seed command has been executed.

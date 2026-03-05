@@ -1,0 +1,94 @@
+﻿[32m[Nest] 2232  - [39m09/02/2026, 3:40:33 p. m. [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 2232  - [39m09/02/2026, 3:40:33 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPrismaModule dependencies initialized[39m[38;5;3m +16ms[39m
+[32m[Nest] 2232  - [39m09/02/2026, 3:40:33 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 2232  - [39m09/02/2026, 3:40:33 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminPanelModule dependencies initialized[39m[38;5;3m +0ms[39m
+node : [31m[Nest] 
+2232  - 
+[39m09/02/2026, 
+3:40:33 p.m. [31m  
+ERROR[39m [38;5;3m[E
+xceptionHandler] 
+[39m[31mCannot read 
+properties of 
+undefined (reading 
+'modelMap')[39m
+En línea: 1 Carácter: 
+16
++ npm run build; node 
+dist/src/main.js 2>&1 
+| Out-File -FilePath 
+run_er ...
++                ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ([31m[Nest   
+ ] 223...modelMap'    
+)[39m:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+TypeError: Cannot 
+read properties of 
+undefined (reading 
+'modelMap')
+    at InstanceWrapper
+.useFactory [as 
+metatype] (file:///C:/
+egan_projects/egan-tec
+man/backend/dist/src/m
+odules/admin/admin-pan
+el.module.js:30:61)
+    at Injector.instan
+tiateClass (C:\egan_pr
+ojects\egan-tecman\bac
+kend\node_modules\@nes
+tjs\core\injector\inje
+ctor.js:376:55)
+    at callback (C:\eg
+an_projects\egan-tecma
+n\backend\node_modules
+\@nestjs\core\injector
+\injector.js:65:45)
+    at async Injector.
+resolveConstructorPara
+ms (C:\egan_projects\e
+gan-tecman\backend\nod
+e_modules\@nestjs\core
+\injector\injector.js:
+145:24)
+    at async 
+Injector.loadInstance 
+(C:\egan_projects\egan
+-tecman\backend\node_m
+odules\@nestjs\core\in
+jector\injector.js:70:
+13)
+    at async 
+Injector.loadProvider 
+(C:\egan_projects\egan
+-tecman\backend\node_m
+odules\@nestjs\core\in
+jector\injector.js:98:
+9)
+    at async C:\egan_p
+rojects\egan-tecman\ba
+ckend\node_modules\@ne
+stjs\core\injector\ins
+tance-loader.js:56:13
+    at async 
+Promise.all (index 3)
+    at async InstanceL
+oader.createInstancesO
+fProviders (C:\egan_pr
+ojects\egan-tecman\bac
+kend\node_modules\@nes
+tjs\core\injector\inst
+ance-loader.js:55:9)
+    at async C:\egan_p
+rojects\egan-tecman\ba
+ckend\node_modules\@ne
+stjs\core\injector\ins
+tance-loader.js:40:13

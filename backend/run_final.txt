@@ -1,0 +1,61 @@
+﻿[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPrismaModule dependencies initialized[39m[38;5;3m +23ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminPanelModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChecklistsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mServeStaticModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mStorageModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUsersModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAssetsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mMaintenanceModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDocumentsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAlertsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDashboardModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mCategoriesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLocationsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mSuppliersModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10096  - [39m09/02/2026, 3:46:09 p. m. [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+node : file:///C:/egan
+_projects/egan-tecman/
+backend/dist/src/main.
+js:22
+En línea: 1 Carácter: 
+16
++ npm run build; node 
+dist/src/main.js 2>&1 
+| Out-File -FilePath 
+run_fi ...
++                ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (file:///C:   
+ /egan.../src/main    
+.js:22:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+    Object.definePrope
+rty(expressApp, 
+'router', {
+           ^
+
+TypeError: Cannot 
+redefine property: 
+router
+    at 
+Object.defineProperty 
+(<anonymous>)
+    at bootstrap (file
+:///C:/egan_projects/e
+gan-tecman/backend/dis
+t/src/main.js:22:12)
+
+Node.js v24.13.0

@@ -1,0 +1,493 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String        @id @default(cuid())
+  email               String        @unique
+  password            String
+  name                String
+  phone               String?
+  avatar              String?
+  active              Boolean       @default(true)
+  roleId              String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  assignedAlerts      Alert[]       @relation("AlertAssignee")
+  audits              Audit[]
+  createdMaintenances Maintenance[] @relation("MaintenanceCreator")
+  maintenances        Maintenance[]
+  role                Role          @relation(fields: [roleId], references: [id])
+
+  @@index([roleId], map: "users_roleId_fkey")
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions String   @db.LongText
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("roles")
+}
+
+model Asset {
+  id                String                @id @default(cuid())
+  code              String                @unique
+  name              String
+  description       String?               @db.Text
+  categoryId        String
+  subcategoryId     String?
+  brand             String?
+  model             String?
+  serialNumber      String?
+  locationId        String
+  status            AssetStatus           @default(ACTIVE)
+  acquisitionDate   DateTime?
+  acquisitionCost   Decimal?              @db.Decimal(12, 2)
+  warrantyExpiry    DateTime?
+  expectedLifeCycle Int?
+  usageHours        Int                   @default(0)
+  usageCycles       Int                   @default(0)
+  supplierId        String?
+  qrCode            String                @unique
+  notes             String?               @db.Text
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  alerts            Alert[]
+  attributeValues   AssetAttributeValue[]
+  customFields      AssetCustomField[]
+  category          Category              @relation(fields: [categoryId], references: [id])
+  location          Location              @relation(fields: [locationId], references: [id])
+  subcategory       Subcategory?          @relation(fields: [subcategoryId], references: [id])
+  supplier          Supplier?             @relation(fields: [supplierId], references: [id])
+  documents         Document[]
+  hojaVida          HojaVida?
+  maintenances      Maintenance[]
+
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([status])
+  @@index([code])
+  @@index([subcategoryId], map: "assets_subcategoryId_fkey")
+  @@index([supplierId], map: "assets_supplierId_fkey")
+  @@map("assets")
+}
+
+model Category {
+  id            String              @id @default(cuid())
+  name          String              @unique
+  description   String?
+  icon          String?
+  color         String?
+  parentId      String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  assets        Asset[]
+  parent        Category?           @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[]          @relation("CategoryHierarchy")
+  attributes    CategoryAttribute[]
+  formTemplates FormTemplate[]
+  subcategories Subcategory[]
+  checklists    Checklist[]         @relation("categorychecklists")
+
+  @@index([parentId], map: "categories_parentId_fkey")
+  @@map("categories")
+}
+
+model Subcategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assets      Asset[]
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([name, categoryId])
+  @@index([categoryId], map: "subcategories_categoryId_fkey")
+  @@map("subcategories")
+}
+
+model Location {
+  id        String     @id @default(cuid())
+  name      String
+  code      String?
+  address   String?
+  floor     String?
+  room      String?
+  parentId  String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  assets    Asset[]
+  parent    Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children  Location[] @relation("LocationHierarchy")
+
+  @@index([parentId], map: "locations_parentId_fkey")
+  @@map("locations")
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  taxId     String?
+  contact   String?
+  email     String?
+  phone     String?
+  address   String?
+  website   String?
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  assets    Asset[]
+
+  @@map("suppliers")
+}
+
+model HojaVida {
+  id        String          @id @default(cuid())
+  assetId   String          @unique
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  events    HojaVidaEvent[]
+  asset     Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("hojas_vida")
+}
+
+model HojaVidaEvent {
+  id          String    @id @default(cuid())
+  hojaVidaId  String
+  type        EventType
+  description String    @db.Text
+  data        String?   @db.LongText
+  createdAt   DateTime  @default(now())
+  hojaVida    HojaVida  @relation(fields: [hojaVidaId], references: [id], onDelete: Cascade)
+
+  @@index([hojaVidaId])
+  @@index([type])
+  @@map("hoja_vida_events")
+}
+
+model Maintenance {
+  id                 String            @id @default(cuid())
+  code               String            @unique
+  assetId            String
+  type               MaintenanceType
+  priority           Priority          @default(MEDIUM)
+  status             MaintenanceStatus @default(PENDING)
+  scheduledDate      DateTime?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  technicianId       String?
+  createdById        String?
+  description        String?           @db.Text
+  diagnosis          String?           @db.Text
+  solution           String?           @db.Text
+  checklistId        String?
+  checklistData      String?           @db.LongText
+  usageHoursAtMaint  Int?
+  usageCyclesAtMaint Int?
+  cost               Decimal?          @db.Decimal(12, 2)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  evidence           Evidence[]
+  asset              Asset             @relation(fields: [assetId], references: [id])
+  checklist          Checklist?        @relation(fields: [checklistId], references: [id])
+  createdBy          User?             @relation("MaintenanceCreator", fields: [createdById], references: [id])
+  technician         User?             @relation(fields: [technicianId], references: [id])
+
+  @@index([assetId])
+  @@index([status])
+  @@index([type])
+  @@index([scheduledDate])
+  @@index([checklistId], map: "maintenances_checklistId_fkey")
+  @@index([createdById], map: "maintenances_createdById_fkey")
+  @@index([technicianId], map: "maintenances_technicianId_fkey")
+  @@map("maintenances")
+}
+
+model Evidence {
+  id            String       @id @default(cuid())
+  maintenanceId String
+  type          EvidenceType
+  path          String
+  filename      String
+  mimeType      String
+  size          Int
+  description   String?
+  createdAt     DateTime     @default(now())
+  maintenance   Maintenance  @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+
+  @@index([maintenanceId], map: "evidence_maintenanceId_fkey")
+  @@map("evidence")
+}
+
+model Checklist {
+  id              String           @id @default(cuid())
+  name            String
+  description     String?
+  maintenanceType MaintenanceType?
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  items           ChecklistItem[]
+  maintenances    Maintenance[]
+  categories      Category[]       @relation("categorychecklists")
+
+  @@map("checklists")
+}
+
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  checklistId String
+  order       Int
+  label       String
+  description String?
+  type        FieldType
+  required    Boolean   @default(false)
+  options     String?   @db.LongText
+  validation  String?   @db.LongText
+  conditional String?   @db.LongText
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+  @@map("checklist_items")
+}
+
+model FormTemplate {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  categoryId  String?
+  active      Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  fields      FormTemplateField[]
+  category    Category?           @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId], map: "form_templates_categoryId_fkey")
+  @@map("form_templates")
+}
+
+model FormTemplateField {
+  id             String       @id @default(cuid())
+  formTemplateId String
+  order          Int
+  label          String
+  name           String
+  type           FieldType
+  required       Boolean      @default(false)
+  placeholder    String?
+  defaultValue   String?
+  options        String?      @db.LongText
+  validation     String?      @db.LongText
+  conditional    String?      @db.LongText
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  formTemplate   FormTemplate @relation(fields: [formTemplateId], references: [id], onDelete: Cascade)
+
+  @@index([formTemplateId])
+  @@map("form_template_fields")
+}
+
+model AssetCustomField {
+  id      String @id @default(cuid())
+  assetId String
+  name    String
+  value   String @db.Text
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, name])
+  @@map("asset_custom_fields")
+}
+
+model Document {
+  id                String       @id @default(cuid())
+  name              String
+  description       String?
+  type              DocumentType
+  path              String
+  filename          String
+  mimeType          String
+  size              Int
+  version           Int          @default(1)
+  assetId           String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  previousVersionId String?
+  asset             Asset?       @relation(fields: [assetId], references: [id])
+  previousVersion   Document?    @relation("DocumentVersions", fields: [previousVersionId], references: [id])
+  nextVersions      Document[]   @relation("DocumentVersions")
+
+  @@index([assetId])
+  @@index([type])
+  @@index([previousVersionId], map: "documents_previousVersionId_fkey")
+  @@map("documents")
+}
+
+model Alert {
+  id         String    @id @default(cuid())
+  assetId    String
+  type       AlertType
+  priority   Priority  @default(MEDIUM)
+  title      String
+  message    String    @db.Text
+  dueDate    DateTime?
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+  resolvedBy String?
+  assigneeId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assignee   User?     @relation("AlertAssignee", fields: [assigneeId], references: [id])
+
+  @@index([assetId])
+  @@index([type])
+  @@index([resolved])
+  @@index([assigneeId], map: "alerts_assigneeId_fkey")
+  @@map("alerts")
+}
+
+model Audit {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String?
+  changes   String?  @db.LongText
+  metadata  String?  @db.LongText
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+  @@map("audits")
+}
+
+model CategoryAttribute {
+  id         String                @id @default(cuid())
+  categoryId String
+  name       String
+  type       FieldType
+  options    String?               @db.LongText
+  required   Boolean               @default(false)
+  unit       String?
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  values     AssetAttributeValue[]
+  category   Category              @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId], map: "category_attributes_categoryId_fkey")
+  @@map("category_attributes")
+}
+
+model AssetAttributeValue {
+  id          String            @id @default(cuid())
+  assetId     String
+  attributeId String
+  value       String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  asset       Asset             @relation(fields: [assetId], references: [id])
+  attribute   CategoryAttribute @relation(fields: [attributeId], references: [id])
+
+  @@unique([assetId, attributeId])
+  @@index([attributeId], map: "asset_attribute_values_attributeId_fkey")
+  @@map("asset_attribute_values")
+}
+
+enum AssetStatus {
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
+  DISPOSED
+  RESERVED
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+  PREDICTIVE
+}
+
+enum MaintenanceStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FieldType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  CHECKBOX
+  SELECT
+  RADIO
+  DATE
+  DATETIME
+  PHOTO
+  SIGNATURE
+  FILE
+  GPS
+}
+
+enum DocumentType {
+  MANUAL
+  CERTIFICATE
+  WARRANTY
+  INVOICE
+  TECHNICAL_SHEET
+  OTHER
+}
+
+enum EvidenceType {
+  PHOTO
+  VIDEO
+  DOCUMENT
+  SIGNATURE
+}
+
+enum AlertType {
+  MAINTENANCE_DUE
+  WARRANTY_EXPIRY
+  LIFECYCLE_END
+  CUSTOM
+}
+
+enum EventType {
+  CREATED
+  STATUS_CHANGE
+  MAINTENANCE
+  FAILURE
+  AUDIT
+  LOCATION_CHANGE
+  DOCUMENT_ADDED
+  CUSTOM
+}
