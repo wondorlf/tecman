@@ -36,4 +36,9 @@ export class AssetsController {
     getDepreciation(@Param('id') id: string) {
         return this.assetsService.calculateDepreciation(id);
     }
+
+    @Get(':id/history')
+    getDeviceHistory(@Param('id') id: string) {
+        return this.assetsService.getDeviceHistory(id);
+    }
 }

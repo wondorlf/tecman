@@ -89,4 +89,41 @@ export class AssetsService {
             isFullyDepreciated: currentValue <= 0
         };
     }
+
+    // Phase 2: Comprehensive Device History (Hoja de Vida)
+    async getDeviceHistory(id: string) {
+        const asset = await this.prisma.asset.findUnique({
+            where: { id },
+            include: {
+                category: true,
+                subcategory: true,
+                location: true,
+                supplier: true,
+                hojaVida: {
+                    include: {
+                        events: { orderBy: { createdAt: 'desc' } }
+                    }
+                },
+                maintenances: {
+                    orderBy: { scheduledDate: 'desc' },
+                    include: {
+                        technician: { select: { name: true } },
+                        createdBy: { select: { name: true } }
+                    }
+                },
+                tickets: {
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        creator: { select: { name: true } },
+                        assignee: { select: { name: true } },
+                        messages: { orderBy: { createdAt: 'asc' } }
+                    }
+                }
+            },
+        });
+
+        if (!asset) throw new NotFoundException(`Asset with ID ${id} not found`);
+
+        return asset;
+    }
 }

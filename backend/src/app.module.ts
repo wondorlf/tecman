@@ -29,6 +29,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor.js';
 import { AdminPanelModule } from './modules/admin/admin-panel.module.js';
 
 import { StorageModule } from './modules/storage/storage.module.js';
+import { TicketsModule } from './modules/tickets/tickets.module.js';
 
 @Module({
     imports: [
@@ -62,6 +63,7 @@ import { StorageModule } from './modules/storage/storage.module.js';
         AdminPanelModule,
         StorageModule,
         NotificationsModule,
+        TicketsModule,
     ],
     providers: [
         // Global JWT guard

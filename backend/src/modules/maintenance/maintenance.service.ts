@@ -50,4 +50,15 @@ export class MaintenanceService {
             },
         });
     }
+
+    async uploadEvidence(id: string, fileData: { path: string, filename: string, mimeType: string, size: number, type: 'PHOTO' | 'VIDEO' | 'DOCUMENT' | 'SIGNATURE' }) {
+        await this.findOne(id);
+
+        return this.prisma.evidence.create({
+            data: {
+                maintenanceId: id,
+                ...fileData
+            }
+        });
+    }
 }

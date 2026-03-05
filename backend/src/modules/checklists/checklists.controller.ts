@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ChecklistsService } from './checklists.service.js';
 import { MaintenanceType } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
+@UseGuards(JwtAuthGuard)
 @Controller('checklists')
 export class ChecklistsController {
     constructor(private readonly checklistsService: ChecklistsService) { }

@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Res, UseGuards, NotFoundException, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Post, Param, Res, UseGuards, NotFoundException, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { StorageService } from './storage.service.js';
@@ -8,6 +9,22 @@ import * as path from 'path';
 @Controller('storage')
 export class StorageController {
     constructor(private readonly storageService: StorageService) { }
+
+    @Post('upload')
+    @UseGuards(JwtAuthGuard)
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadFile(@UploadedFile() file: Express.Multer.File) {
+        if (!file) throw new NotFoundException('No file uploaded');
+        const filename = await this.storageService.saveFile(file);
+
+        return {
+            filename,
+            originalName: file.originalname,
+            url: `/api/storage/${filename}`, // Authenticated URL reference
+            size: file.size,
+            mimetype: file.mimetype
+        };
+    }
 
     @Get(':filename')
     @UseGuards(JwtAuthGuard)

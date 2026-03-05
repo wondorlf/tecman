@@ -31,4 +31,14 @@ export class MaintenanceController {
     complete(@Param('id') id: string, @Body() completeData: any) {
         return this.maintenanceService.complete(id, completeData);
     }
+
+    @Post(':id/evidence')
+    uploadEvidence(
+        @Param('id') id: string,
+        @Body() body: { path: string, filename: string, mimeType: string, size: number, type: 'PHOTO' | 'VIDEO' | 'DOCUMENT' | 'SIGNATURE' }
+    ) {
+        // Usually the file is uploaded first to /api/storage/upload, which returns metadata.
+        // That metadata is then sent here to associate it with the specific maintenance record.
+        return this.maintenanceService.uploadEvidence(id, body);
+    }
 }
