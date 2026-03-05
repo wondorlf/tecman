@@ -31,4 +31,9 @@ export class AssetsController {
     remove(@Param('id') id: string) {
         return this.assetsService.remove(id);
     }
+
+    @Get(':id/depreciation')
+    getDepreciation(@Param('id') id: string) {
+        return this.assetsService.calculateDepreciation(id);
+    }
 }

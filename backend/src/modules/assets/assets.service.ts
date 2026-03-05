@@ -52,4 +52,41 @@ export class AssetsService {
             where: { id },
         });
     }
+
+    // Snipe-IT / GLPI Feature: Linear Depreciation Calculation
+    async calculateDepreciation(id: string) {
+        const asset = await this.findOne(id);
+
+        if (!asset.acquisitionCost || !asset.acquisitionDate || !asset.expectedLifeCycle) {
+            return {
+                message: 'Asset lacks necessary financial data for depreciation (cost, date, or lifecycle in months).',
+                currentValue: asset.acquisitionCost || 0,
+            };
+        }
+
+        const cost = parseFloat(asset.acquisitionCost.toString());
+        const monthsLife = asset.expectedLifeCycle;
+        const monthlyDepreciation = cost / monthsLife;
+
+        const acquisitionDate = new Date(asset.acquisitionDate);
+        const today = new Date();
+
+        let monthsElapsed = (today.getFullYear() - acquisitionDate.getFullYear()) * 12;
+        monthsElapsed -= acquisitionDate.getMonth();
+        monthsElapsed += today.getMonth();
+
+        monthsElapsed = Math.max(0, monthsElapsed);
+
+        const totalDepreciated = Math.min(cost, monthlyDepreciation * monthsElapsed);
+        const currentValue = Math.max(0, cost - totalDepreciated);
+
+        return {
+            originalCost: cost,
+            monthlyDepreciation,
+            monthsElapsed,
+            totalDepreciated,
+            currentValue,
+            isFullyDepreciated: currentValue <= 0
+        };
+    }
 }

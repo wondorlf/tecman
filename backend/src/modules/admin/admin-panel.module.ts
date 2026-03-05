@@ -77,29 +77,110 @@ class FixedAdminLoader extends AbstractLoader {
                     adminJsOptions: {
                         rootPath: '/admin',
                         resources: [
+                            // Security & Access
                             {
                                 resource: { model: getModelByName('User', PrismaModule), client: prisma },
-                                options: { navigation: { name: 'Admin', icon: 'User' } },
+                                options: { navigation: { name: 'Security', icon: 'User' } },
                             },
+                            {
+                                resource: { model: getModelByName('Role', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Security', icon: 'Shield' } },
+                            },
+                            {
+                                resource: { model: getModelByName('Audit', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Security', icon: 'Activity' } },
+                            },
+
+                            // Core Inventory
                             {
                                 resource: { model: getModelByName('Asset', PrismaModule), client: prisma },
                                 options: { navigation: { name: 'Inventory', icon: 'Package' } },
-                            },
-                            {
-                                resource: { model: getModelByName('Maintenance', PrismaModule), client: prisma },
-                                options: { navigation: { name: 'Operations', icon: 'Tool' } },
                             },
                             {
                                 resource: { model: getModelByName('Category', PrismaModule), client: prisma },
                                 options: { navigation: { name: 'Inventory', icon: 'Tag' } },
                             },
                             {
+                                resource: { model: getModelByName('Subcategory', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Inventory', icon: 'Tags' } },
+                            },
+                            {
                                 resource: { model: getModelByName('Location', PrismaModule), client: prisma },
                                 options: { navigation: { name: 'Inventory', icon: 'MapPin' } },
                             },
+                            {
+                                resource: { model: getModelByName('Supplier', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Inventory', icon: 'Truck' } },
+                            },
+                            {
+                                resource: { model: getModelByName('AssetCustomField', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Inventory', icon: 'Box' } },
+                            },
+
+                            // Operations & Maintenance
+                            {
+                                resource: { model: getModelByName('Maintenance', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Operations', icon: 'Tool' } },
+                            },
+                            {
+                                resource: { model: getModelByName('Ticket', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Helpdesk', icon: 'LifeBuoy' } },
+                            },
+                            {
+                                resource: { model: getModelByName('TicketMessage', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Helpdesk', icon: 'MessageSquare' } },
+                            },
+                            {
+                                resource: { model: getModelByName('Alert', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Operations', icon: 'Bell' } },
+                            },
+                            {
+                                resource: { model: getModelByName('Checklist', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Operations', icon: 'CheckSquare' } },
+                            },
+                            {
+                                resource: { model: getModelByName('ChecklistItem', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Operations', icon: 'List' } },
+                            },
+                            {
+                                resource: { model: getModelByName('Evidence', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Operations', icon: 'Image' } },
+                            },
+
+                            // Documents & Hojas de Vida
+                            {
+                                resource: { model: getModelByName('Document', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Documents', icon: 'FileText' } },
+                            },
+                            {
+                                resource: { model: getModelByName('HojaVida', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Documents', icon: 'Book' } },
+                            },
+                            {
+                                resource: { model: getModelByName('HojaVidaEvent', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Documents', icon: 'BookOpen' } },
+                            },
+
+                            // Templates & Attributes
+                            {
+                                resource: { model: getModelByName('FormTemplate', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Settings', icon: 'Layout' } },
+                            },
+                            {
+                                resource: { model: getModelByName('FormTemplateField', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Settings', icon: 'Type' } },
+                            },
+                            {
+                                resource: { model: getModelByName('CategoryAttribute', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Settings', icon: 'Sliders' } },
+                            },
+                            {
+                                resource: { model: getModelByName('AssetAttributeValue', PrismaModule), client: prisma },
+                                options: { navigation: { name: 'Settings', icon: 'Database' } },
+                            },
                         ],
                         branding: {
-                            companyName: 'TecMan Admin',
+                            companyName: 'Egan - GAMA Admin',
                             logo: '/logo.png',
                             softwareBrothers: false,
                         },

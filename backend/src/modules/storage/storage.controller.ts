@@ -23,4 +23,29 @@ export class StorageController {
 
         return res.sendFile(filePath);
     }
+
+    @Get('view/:token')
+    viewFile(@Param('token') token: string, @Res() res: Response) {
+        try {
+            const filename = this.storageService.verifyPresignedUrl(token);
+            const filePath = this.storageService.getFilePath(filename);
+
+            if (!fs.existsSync(filePath)) {
+                throw new NotFoundException('File not found');
+            }
+
+            return res.sendFile(filePath);
+        } catch (e) {
+            throw new NotFoundException('Invalid or expired link');
+        }
+    }
+
+    @Get('presign/:filename')
+    @UseGuards(JwtAuthGuard)
+    getPresignedUrl(@Param('filename') filename: string) {
+        const urlToken = this.storageService.generatePresignedUrl(filename);
+        return {
+            url: `/api/storage/view/${urlToken}`
+        };
+    }
 }

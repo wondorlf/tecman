@@ -13,7 +13,7 @@ async function main() {
         create: {
             name: 'Administrador',
             description: 'Acceso completo al sistema',
-            permissions: {
+            permissions: JSON.stringify({
                 assets: { create: true, read: true, update: true, delete: true },
                 maintenance: { create: true, read: true, update: true, delete: true },
                 users: { create: true, read: true, update: true, delete: true },
@@ -22,7 +22,7 @@ async function main() {
                 alerts: { create: true, read: true, update: true, delete: true },
                 reports: { read: true, export: true },
                 admin: true,
-            },
+            }),
         },
     });
 
@@ -32,7 +32,7 @@ async function main() {
         create: {
             name: 'Gestor',
             description: 'Gestión de inventario y mantenimiento',
-            permissions: {
+            permissions: JSON.stringify({
                 assets: { create: true, read: true, update: true, delete: false },
                 maintenance: { create: true, read: true, update: true, delete: false },
                 users: { read: true },
@@ -40,7 +40,7 @@ async function main() {
                 documents: { create: true, read: true, update: true, delete: false },
                 alerts: { create: true, read: true, update: true },
                 reports: { read: true, export: true },
-            },
+            }),
         },
     });
 

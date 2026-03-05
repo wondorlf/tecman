@@ -2,13 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class StorageService {
     private readonly logger = new Logger(StorageService.name);
     private readonly uploadDir = path.join(process.cwd(), 'uploads');
 
-    constructor() {
+    constructor(private jwtService: JwtService) {
         this.ensureUploadDirExists();
     }
 
@@ -34,6 +35,19 @@ export class StorageService {
         const filePath = this.getFilePath(filename);
         if (fs.existsSync(filePath)) {
             await fs.promises.unlink(filePath);
+        }
+    }
+
+    generatePresignedUrl(filename: string, expiresIn = '1h'): string {
+        return this.jwtService.sign({ filename }, { expiresIn });
+    }
+
+    verifyPresignedUrl(token: string): string {
+        try {
+            const payload = this.jwtService.verify(token);
+            return payload.filename;
+        } catch (e) {
+            throw new Error('Invalid or expired token');
         }
     }
 }

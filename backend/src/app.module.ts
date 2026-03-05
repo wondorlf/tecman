@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+
+// Common
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
 
 // Core modules
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -57,6 +61,7 @@ import { StorageModule } from './modules/storage/storage.module.js';
         SuppliersModule,
         AdminPanelModule,
         StorageModule,
+        NotificationsModule,
     ],
     providers: [
         // Global JWT guard
@@ -68,6 +73,11 @@ import { StorageModule } from './modules/storage/storage.module.js';
         {
             provide: APP_INTERCEPTOR,
             useClass: AuditInterceptor,
+        },
+        // Global exception filter
+        {
+            provide: APP_FILTER,
+            useClass: GlobalExceptionFilter,
         },
     ],
 })
