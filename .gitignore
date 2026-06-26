@@ -17,6 +17,7 @@ build/
 .env.local
 .env.*.local
 .env.production
+.env.old
 
 # ── IDE / Editor ────────────────────────────────────────────────────────────
 .idea/

@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import { AppModule } from './app.module.js';
 
 // @ts-expect-error - Allow BigInt serialization in JSON (Prisma returns BigInt for BigInt fields)
@@ -18,6 +19,20 @@ async function bootstrap() {
 
   // Cookie parser (needed for httpOnly cookies)
   app.use(cookieParser());
+
+  // Session middleware (required by AdminJS for authentication)
+  app.use(
+    session({
+      secret: process.env.JWT_SECRET || 'adminjs-session-secret',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      },
+    }),
+  );
 
   // Global prefix
   app.setGlobalPrefix('api');

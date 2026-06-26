@@ -341,7 +341,7 @@ echo -e "\n${CYAN}══════════ RESUMEN ═══════�
 echo -e "  ${GREEN}Aprobados: $PASSED${NC}"
 echo -e "  ${RED}Fallidos: $FAIL${NC}"
 echo ""
-echo "  Recursos creados:"echo "
+echo "  Recursos creados:"
   Discovery:  $HOST (ID: $DISCOVERY_ID)"
 echo "    Activo:     $ASSET_CODE (ID: $ASSET_ID)"
 echo "    QR:         $ASSET_QR"

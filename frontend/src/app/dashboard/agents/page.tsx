@@ -20,6 +20,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { getAccessToken } from '@/lib/api';
 
 type AgentInfo = {
   hasApiKeyConfigured: boolean;
@@ -58,7 +59,7 @@ export default function DownloadAgentsPage() {
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = getAccessToken();
         if (!token) return;
         const r = await fetch('/api/tenants/discovery-key', {
           headers: { Authorization: `Bearer ${token}` },
@@ -318,14 +319,15 @@ export default function DownloadAgentsPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase">Opciones</p>
               <Button
                 size="sm"
                 className="h-9 rounded-xl bg-blue-600 text-white text-xs"
                 onClick={() => window.open('/api/agents/go', '_blank')}
               >
                 <Download size={13} className="mr-1.5" />
-                Descargar ejecutable
+                Descargar ejecutable (.exe)
               </Button>
               <Button
                 variant="outline"
@@ -338,7 +340,7 @@ export default function DownloadAgentsPage() {
                 ) : (
                   <FileCode size={13} className="mr-1.5" />
                 )}
-                {showCode ? 'Ocultar código' : 'Ver código fuente'}
+                {showCode ? 'Ocultar codigo' : 'Ver codigo fuente'}
               </Button>
             </div>
           </CardContent>
@@ -382,14 +384,26 @@ export default function DownloadAgentsPage() {
             </div>
 
             <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase">Opciones de instalacion</p>
+              
               <Button
                 size="sm"
                 className="h-9 rounded-xl bg-emerald-600 text-white text-xs w-full"
-                onClick={() => window.open(`/api/agents/powershell/install.bat?apiKey=${encodeURIComponent(apiKey)}`, '_blank')}
+                onClick={() => window.open(`/api/agents/powershell/unattended.bat?apiKey=${encodeURIComponent(apiKey)}`, '_blank')}
               >
                 <Download size={13} className="mr-1.5" />
-                Descargar instalador .bat (doble clic)
+                Ejecucion automatica (sin preguntas)
               </Button>
+              
+              <Button
+                size="sm"
+                className="h-9 rounded-xl bg-blue-600 text-white text-xs w-full"
+                onClick={() => window.open(`/api/agents/powershell/manual.bat?apiKey=${encodeURIComponent(apiKey)}`, '_blank')}
+              >
+                <Download size={13} className="mr-1.5" />
+                Instalacion manual (con ubicacion)
+              </Button>
+              
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -534,12 +548,20 @@ export default function DownloadAgentsPage() {
       )}
 
       <Card className="border-amber-100 bg-amber-50/50 rounded-2xl">
-        <CardContent className="p-4">
+        <CardContent className="p-4 space-y-3">
           <p className="text-sm text-amber-800">
             <strong>Nota:</strong> El agente PowerShell es recomendado para Windows porque captura
             el número de serie del BIOS. El agente Go es multiplataforma y funciona en Windows,
             Linux y macOS.
           </p>
+          <div className="text-xs text-amber-700 space-y-1">
+            <p><strong>Opciones de instalacion:</strong></p>
+            <ul className="list-disc list-inside space-y-0.5">
+              <li><strong>Ejecucion automatica:</strong> Descarga y ejecuta sin interaccion del usuario</li>
+              <li><strong>Instalacion manual:</strong> Pregunta por la ubicacion del equipo (etiqueta)</li>
+              <li><strong>Solo script .ps1:</strong> Para instalacion personalizada con parametros</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
     </div>

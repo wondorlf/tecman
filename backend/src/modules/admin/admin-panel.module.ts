@@ -5,12 +5,25 @@ import { Database, Resource, getModelByName } from '@adminjs/prisma';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as PrismaModule from '@prisma/client';
 import * as path from 'path';
+import { existsSync, readFileSync } from 'fs';
 
 @Injectable()
 class FixedAdminLoader extends AbstractLoader {
   public async register(admin: any, httpAdapter: any, options: any) {
     const app = httpAdapter.getInstance();
     const { default: adminJsExpressjs } = await import('@adminjs/express');
+
+    // Serve logo from frontend/public/images for AdminJS branding
+    const logoPath = path.join(process.cwd(), '..', 'frontend', 'public', 'images', 'egan-logo.png');
+    app.get('/images/egan-logo.png', (req: any, res: any) => {
+      if (existsSync(logoPath)) {
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(readFileSync(logoPath));
+      } else {
+        res.status(404).send('Logo not found');
+      }
+    });
 
     let router;
     if (options.auth) {
@@ -236,7 +249,7 @@ class FixedAdminLoader extends AbstractLoader {
             ],
             branding: {
               companyName: 'Egan - GAMA Admin',
-              logo: '/logo.png',
+              logo: '/images/egan-logo.png',
               softwareBrothers: false,
             },
           },

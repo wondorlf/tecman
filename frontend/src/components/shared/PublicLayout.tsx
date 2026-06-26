@@ -124,56 +124,16 @@ export function PublicLayout({
   );
 }
 
-/* ── Inline E-GAN logo mark (SVG) — Vectorizado ─────────────────────────────── */
+/* ── E-GAN logo mark (PNG from /public/images) ─────────────────────────────── */
 export function EganLogoMark({ size = 36 }: { size?: number }) {
   return (
-    <svg
+    <img
+      src="/images/egan-logo.png"
+      alt="E-GAN Logo"
       width={size}
       height={size}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="E-GAN logo"
-    >
-      {/* Hexagonal background shield */}
-      <polygon points="50,5 92,27 92,73 50,95 8,73 8,27" fill="#1e3a8a" opacity="0.08" />
-      
-      {/* Left code bracket */}
-      <path
-        d="M32 32 L24 40 L24 50 L32 58"
-        stroke="#1e3a8a"
-        strokeWidth="4.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      {/* Right code bracket (partial) */}
-      <path
-        d="M52 28 L62 38 L62 52 L52 62"
-        stroke="#1e3a8a"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      {/* Diamond/chevron center */}
-      <polygon points="42,45 52,35 62,45 52,55" fill="#2563eb" />
-      
-      {/* Green network dots */}
-      <circle cx="28" cy="66" r="4" fill="#16a34a" />
-      <circle cx="50" cy="20" r="3.5" fill="#16a34a" />
-      <circle cx="70" cy="52" r="3" fill="#16a34a" />
-      <circle cx="48" cy="76" r="3" fill="#16a34a" />
-      
-      {/* Connecting lines (network theme) */}
-      <line x1="28" y1="66" x2="50" y2="20" stroke="#16a34a" strokeWidth="2" opacity="0.7" />
-      <line x1="50" y1="20" x2="70" y2="52" stroke="#16a34a" strokeWidth="2" opacity="0.7" />
-      <line x1="50" y1="20" x2="48" y2="76" stroke="#16a34a" strokeWidth="2" opacity="0.5" />
-      <line x1="70" y1="52" x2="48" y2="76" stroke="#16a34a" strokeWidth="2" opacity="0.6" />
-      
-      {/* Growth arrow */}
-      <line x1="70" y1="20" x2="88" y2="8" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" />
-      <polygon points="88,8 79,13 84,18" fill="#16a34a" />
-    </svg>
+      className="object-contain"
+      style={{ width: size, height: size }}
+    />
   );
 }

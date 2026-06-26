@@ -92,6 +92,68 @@ export class AgentsController {
     return res.send(content);
   }
 
+  @Get('powershell/unattended.bat')
+  async getUnattendedBatch(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
+    const batchPath = join(this.agentsDir, 'tecman-discovery-unattended.bat');
+    if (!existsSync(batchPath)) {
+      throw new NotFoundException('Instalador unattended no disponible');
+    }
+
+    const protocol =
+      typeof req.headers['x-forwarded-proto'] === 'string'
+        ? sanitizeHost(req.headers['x-forwarded-proto'])
+        : 'http';
+    const rawHost =
+      typeof req.headers['x-forwarded-host'] === 'string'
+        ? req.headers['x-forwarded-host']
+        : typeof req.headers.host === 'string'
+          ? req.headers.host
+          : `localhost:${process.env.PORT || '2023'}`;
+    const host = sanitizeHost(rawHost);
+    const baseUrl = `${protocol}://${host}`;
+
+    const key = apiKey || (await this.discoveryService.getApiKey()) || '';
+
+    let content = readFileSync(batchPath, 'utf-8');
+    content = content.replace('SERVER_PLACEHOLDER', baseUrl);
+    content = content.replace('API_KEY_PLACEHOLDER', key);
+
+    res.setHeader('Content-Type', 'application/x-msdos-program');
+    res.setHeader('Content-Disposition', 'attachment; filename="tecman-discovery-unattended.bat"');
+    return res.send(content);
+  }
+
+  @Get('powershell/manual.bat')
+  async getManualBatch(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
+    const batchPath = join(this.agentsDir, 'tecman-discovery-manual.bat');
+    if (!existsSync(batchPath)) {
+      throw new NotFoundException('Instalador manual no disponible');
+    }
+
+    const protocol =
+      typeof req.headers['x-forwarded-proto'] === 'string'
+        ? sanitizeHost(req.headers['x-forwarded-proto'])
+        : 'http';
+    const rawHost =
+      typeof req.headers['x-forwarded-host'] === 'string'
+        ? req.headers['x-forwarded-host']
+        : typeof req.headers.host === 'string'
+          ? req.headers.host
+          : `localhost:${process.env.PORT || '2023'}`;
+    const host = sanitizeHost(rawHost);
+    const baseUrl = `${protocol}://${host}`;
+
+    const key = apiKey || (await this.discoveryService.getApiKey()) || '';
+
+    let content = readFileSync(batchPath, 'utf-8');
+    content = content.replace('SERVER_PLACEHOLDER', baseUrl);
+    content = content.replace('API_KEY_PLACEHOLDER', key);
+
+    res.setHeader('Content-Type', 'application/x-msdos-program');
+    res.setHeader('Content-Disposition', 'attachment; filename="tecman-discovery-manual.bat"');
+    return res.send(content);
+  }
+
   @Get('go')
   async getGo(@Res() res: Response) {
     const exePath = join(this.agentsDir, 'tecman-discovery.exe');

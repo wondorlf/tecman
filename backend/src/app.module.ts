@@ -57,10 +57,10 @@ const frontendOutPath = isRootCwd
 
 @Module({
   imports: [
-    // Configuration
+    // Configuration - Only use root .env file
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [rootEnvPath, '.env'],
+      envFilePath: [rootEnvPath],
     }),
 
     // Rate limiting — defaults: 60 requests per 60 seconds per IP
