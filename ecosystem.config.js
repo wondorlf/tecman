@@ -60,11 +60,11 @@ module.exports = {
       watch: false,
       env: {
         NODE_ENV: 'production',
-        PORT: env.PORT || '3001',          // Desde .env raíz, fallback 3001
+        PORT: env.PORT || '2023',          // Desde .env raíz, fallback 2023
       },
       env_development: {
         NODE_ENV: 'development',
-        PORT: env.PORT || '3001',
+        PORT: env.PORT || '2023',
       },
       error_file: '../logs/tecman-api-error.log',
       out_file: '../logs/tecman-api-out.log',
@@ -88,8 +88,8 @@ module.exports = {
       watch: false,
       env: {
         NODE_ENV: 'production',
-        PORT: env.FRONTEND_PORT || '3000', // Desde .env raíz, fallback 3000
-        API_PORT: env.PORT || '3001',       // Para rewrites en next.config.mjs
+        PORT: env.FRONTEND_PORT || '2024', // Desde .env raíz, fallback 2024
+        API_PORT: env.PORT || '2023',       // Para rewrites en next.config.mjs
       },
       error_file: '../logs/tecman-frontend-error.log',
       out_file: '../logs/tecman-frontend-out.log',

@@ -46,8 +46,8 @@ async function bootstrap() {
   // Si usas Next.js como proxy (single-port), el frontend y backend comparten
   // el mismo origen para el navegador, pero el backend necesita aceptar el
   // origen real (IP/dominio) para las respuestas CORS preflight (OPTIONS).
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const frontendPort = process.env.FRONTEND_PORT || '3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:2024';
+  const frontendPort = process.env.FRONTEND_PORT || '2024';
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -59,7 +59,7 @@ async function bootstrap() {
         frontendUrl,
         `http://localhost:${frontendPort}`,
         `http://127.0.0.1:${frontendPort}`,
-        `http://localhost:${process.env.PORT || '3001'}`,
+        `http://localhost:${process.env.PORT || '2023'}`,
       ];
 
       if (allowed.includes(origin)) {
@@ -97,7 +97,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 2023;
   await app.listen(port);
   console.log(`🚀 Backend TecMan en: http://localhost:${port}/api`);
   console.log(`📚 Documentación Swagger: http://localhost:${port}/api/docs`);

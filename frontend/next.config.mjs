@@ -22,7 +22,7 @@ const _backendPort = (() => {
   }
 
   // 3. Fallback
-  return '3001';
+  return '2023';
 })();
 
 /** @type {import("next").NextConfig} */
@@ -33,7 +33,7 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: false },
 
   // ── Single-port architecture ────────────────────────────────────────────
-  // El frontend (:3000) es el único puerto público.
+  // El frontend es el único puerto público.
   // Proxy de todas las rutas del backend hacia el puerto definido en API_PORT
   // o desde el .env raíz.
   async rewrites() {

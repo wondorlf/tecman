@@ -17,10 +17,10 @@ interface AuthenticatedSocket extends Socket {
   cors: {
     origin:
       process.env.NODE_ENV === 'production'
-        ? [process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || '3000'}`]
+        ? [process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || '2024'}`]
         : [
-            process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || '3000'}`,
-            `http://localhost:${process.env.PORT || '3001'}`,
+            process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || '2024'}`,
+            `http://localhost:${process.env.PORT || '2023'}`,
           ],
     credentials: true,
   },

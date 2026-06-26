@@ -39,44 +39,89 @@ echo ========================================
 echo.
 
 REM -- 1. Mostrar estado actual
-echo [1/5] Estado actual del repositorio:
+echo [1/6] Estado actual del repositorio:
 git status
 echo.
 
 REM -- 2. Agregar todos los cambios
-echo [2/5] Agregando cambios...
+echo [2/6] Agregando cambios...
 git add -A
+if %ERRORLEVEL% neq 0 (
+    echo ========================================
+    echo  [ERROR] Fallo al agregar archivos.
+    echo ========================================
+    pause
+    exit /b 1
+)
 echo.
 
-REM -- 3. Commit
+REM -- 3. Commit con mensaje
 set "commit_msg=%~1"
 if "%commit_msg%"=="" (
-    for /f %%a in ('powershell -NoProfile -Command "Get-Date -Format 'yyyyMMddHHmmss'"') do set "dt=%%a"
-    set "commit_msg=Actualizacion %dt:~0,4%-%dt:~4,2%-%dt:~6,2% %dt:~8,2%:%dt:~10,2%:%dt:~12,2%"
+    REM -- Obtener fecha/hora con PowerShell (fallback a variables del sistema si falla)
+    set "dt_fecha=%DATE%"
+    set "dt_hora=%TIME%"
+    for /f %%a in ('powershell -NoProfile -Command "Get-Date -Format 'yyyyMMdd-HHmmss'" 2^>nul') do set "dt_ps=%%a"
+    if defined dt_ps (
+        set "commit_msg=Actualizacion %dt_ps%"
+    ) else (
+        REM -- Fallback: usar variables %DATE% y %TIME% del sistema
+        set "commit_msg=Actualizacion %dt_fecha% %dt_hora%"
+    )
 )
-echo [3/5] Haciendo commit...
+echo [3/6] Haciendo commit...
 git commit -m "%commit_msg%"
+
+REM -- El commit puede fallar si no hay cambios (exit code 1), lo cual es normal
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo  [AVISO] No hay cambios nuevos para commitear o el commit fallo.
+    echo  Se continua con pull/push de todas formas.
+) else (
+    echo  Commit exitoso: %commit_msg%
+)
 echo.
 
-REM -- 4. Traer cambios remotos (pull)
-echo [4/5] Trayendo cambios del remoto (pull)...
-git pull origin master
+REM -- 4. Traer cambios remotos (pull con autostash para evitar conflictos)
+echo [4/6] Trayendo cambios del remoto (pull)...
+git pull --autostash origin master
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ========================================
+    echo  [ERROR] Fallo al hacer pull. Posibles causas:
+    echo  - Conflictos de merge sin resolver
+    echo  - Sin conexion a internet
+    echo  - El remoto 'origin' no esta configurado
+    echo ========================================
+    pause
+    exit /b 1
+)
 echo.
 
 REM -- 5. Subir cambios (push)
-echo [5/5] Subiendo cambios a GitHub (push)...
+echo [5/6] Subiendo cambios a GitHub (push)...
 git push origin master
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ========================================
+    echo  [ERROR] Fallo al hacer push.
+    echo  Posibles causas:
+    echo  - Credenciales de GitHub no configuradas
+    echo  - Sin permisos de escritura en el repositorio
+    echo  - Sin conexion a internet
+    echo ========================================
+    pause
+    exit /b 1
+)
 echo.
 
-REM -- Resultado final
-if %ERRORLEVEL% equ 0 (
-    echo ========================================
-    echo  ^!Sincronizacion completada con exito!
-    echo ========================================
-) else (
-    echo ========================================
-    echo  Hubo errores. Revise la salida arriba.
-    echo ========================================
-)
+REM -- 6. Verificacion final
+echo [6/6] Verificando estado final...
+git log --oneline -3
+
+echo.
+echo ========================================
+echo  ^!Sincronizacion completada con exito!
+echo ========================================
 
 pause

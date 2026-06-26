@@ -75,7 +75,7 @@ export class AgentsController {
         ? req.headers['x-forwarded-host']
         : typeof req.headers.host === 'string'
           ? req.headers.host
-          : `localhost:${process.env.PORT || '3001'}`;
+          : `localhost:${process.env.PORT || '2023'}`;
     const host = sanitizeHost(rawHost);
     const baseUrl = `${protocol}://${host}`;
 

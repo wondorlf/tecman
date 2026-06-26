@@ -100,7 +100,7 @@ export class NotificationsService {
         `<b>Título:</b> ${ticketDetails?.title || 'Sin título'}\n` +
         `<b>Categoría:</b> ${ticketDetails?.category || 'General'}\n` +
         `<b>Creado por:</b> ${ticketDetails?.creatorName || 'Usuario'}\n\n` +
-        `<a href="${process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || '3000'}`}/dashboard/tickets">Ver en el sistema</a>`;
+        `<a href="${process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || '2024'}`}/dashboard/tickets">Ver en el sistema</a>`;
       await this.sendTelegramMessage(settings.telegramChatId, adminMessage);
     }
 
