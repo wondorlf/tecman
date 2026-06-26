@@ -42,27 +42,55 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // CORS — solo el frontend (puerto público :3000) necesita acceso
-  // En producción, todo el tráfico pasa por el frontend proxy
+  // CORS — Configuración para entornos mixtos (local, red local, dominio)
+  // Si usas Next.js como proxy (single-port), el frontend y backend comparten
+  // el mismo origen para el navegador, pero el backend necesita aceptar el
+  // origen real (IP/dominio) para las respuestas CORS preflight (OPTIONS).
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendPort = process.env.FRONTEND_PORT || '3000';
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Permitir requests sin origen (curl, server-to-server, etc.)
+      // Permitir requests sin origen (curl, server-to-server, misma IP)
       if (!origin) return callback(null, true);
-      // Solo permitir el frontend y localhost en desarrollo
+
+      // Lista explícita de orígenes permitidos
       const allowed = [
         frontendUrl,
-        `http://localhost:${process.env.FRONTEND_PORT || '3000'}`,
+        `http://localhost:${frontendPort}`,
+        `http://127.0.0.1:${frontendPort}`,
+        `http://localhost:${process.env.PORT || '3001'}`,
       ];
-      if (process.env.NODE_ENV !== 'production') {
-        allowed.push(`http://localhost:${process.env.PORT || '3001'}`);
-      }
+
       if (allowed.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origen no permitido por CORS: ${origin}`), false);
+        return callback(null, true);
       }
+
+      // Permitir cualquier IP de red privada (común en entornos corporativos)
+      // Rangos: 10.x.x.x, 172.16-31.x.x, 192.168.x.x, ::1 (IPv6 localhost)
+      try {
+        const url = new URL(origin);
+        const host = url.hostname;
+
+        const isPrivate =
+          host === 'localhost' ||
+          host === '127.0.0.1' ||
+          host === '::1' ||
+          host.startsWith('10.') ||
+          host.startsWith('192.168.') ||
+          /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+
+        // Solo validamos el puerto si la URL incluye uno explícito
+        const portMatches = !url.port || url.port === frontendPort;
+
+        if (isPrivate && portMatches) {
+          return callback(null, true);
+        }
+      } catch {
+        // Si no se puede parsear la URL, dejar que falle con el error estándar
+      }
+
+      callback(new Error(`Origen no permitido por CORS: ${origin}`), false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
