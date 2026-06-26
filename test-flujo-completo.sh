@@ -27,7 +27,7 @@ BASE="${TECMAN_URL:-http://localhost:3001}"
 EMAIL="${TECMAN_EMAIL:-admin@tecman.local}"
 PASS="${TECMAN_PASSWORD:-admin123}"
 COOKIE_FILE="/tmp/tecman_test_cookies.txt"
-PASS=0
+PASSED=0
 FAIL=0
 
 # ── Colores ───────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-pass() { PASS=$((PASS+1)); echo -e "  ${GREEN}✓${NC} $1"; }
+pass() { PASSED=$((PASSED+1)); echo -e "  ${GREEN}✓${NC} $1"; }
 fail() { FAIL=$((FAIL+1)); echo -e "  ${RED}✗${NC} $1"; }
 
 # ── Login ─────────────────────────────────────────────────────────────────────
@@ -101,6 +101,7 @@ PAYLOAD='{
 
 AGENT_RESP=$(curl -s -X POST "$BASE/api/discovery/agent" \
   -H "Content-Type: application/json" \
+  -H "x-api-key: discovery-default-key-change-me" \
   -d "$PAYLOAD")
 
 DISCOVERY_ID=$(echo "$AGENT_RESP" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -180,8 +181,7 @@ TICKET1_RESP=$(curl -s -X POST "$BASE/api/tickets" \
     "description": "La pantalla de la laptop Dell Latitude 5540 parpadea cuando se mueve la tapa. Posible fallo en el flex de la pantalla.",
     "priority": "HIGH",
     "category": "HARDWARE",
-    "assetId": "'$ASSET_ID'",
-    "creatorId": "'$USER_ID'"
+    "assetId": "'$ASSET_ID'"
   }')
 
 TICKET1_ID=$(echo "$TICKET1_RESP" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -236,8 +236,7 @@ TICKET2_RESP=$(curl -s -X POST "$BASE/api/tickets" \
     "title": "No puedo acceder al sistema contable",
     "description": "Desde esta mañana el sistema SAP no abre. Muestra error de conexión a la base de datos.",
     "priority": "CRITICAL",
-    "category": "SOFTWARE",
-    "creatorId": "'$USER_ID'"
+    "category": "SOFTWARE"
   }')
 
 TICKET2_ID=$(echo "$TICKET2_RESP" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -339,7 +338,7 @@ fi
 
 # ── RESUMEN ───────────────────────────────────────────────────────────────────
 echo -e "\n${CYAN}══════════ RESUMEN ══════════${NC}"
-echo -e "  ${GREEN}Aprobados: $PASS${NC}"
+echo -e "  ${GREEN}Aprobados: $PASSED${NC}"
 echo -e "  ${RED}Fallidos: $FAIL${NC}"
 echo ""
 echo "  Recursos creados:"echo "
@@ -353,9 +352,9 @@ echo "    PDF:        /tmp/hoja-vida-test.pdf"
 echo "    Custodia:   ID: $CUST_ID"
 
 if [ "$FAIL" = "0" ]; then
-  echo -e "\n  ${GREEN}✅ TODAS LAS PRUEBAS PASARON EXITOSAMENTE${NC}"
+  echo -e "\n  ${GREEN}✅ $PASSED DE $PASSED PRUEBAS PASARON EXITOSAMENTE${NC}"
 else
-  echo -e "\n  ${RED}⚠️  $FAIL prueba(s) fallaron. Revisa los errores arriba.${NC}"
+  echo -e "\n  ${RED}⚠️  $FAIL prueba(s) fallaron de $((PASSED+FAIL)). Revisa los errores arriba.${NC}"
   exit 1
 fi
 

@@ -87,12 +87,20 @@ export class TicketsService {
   }
 
   async create(data: any, creatorId: string) {
-    // Generación atómica del código: usa MAX del código existente
-    const last = await this.prisma.ticket.findFirst({
-      orderBy: { code: 'desc' },
+    // Generación atómica del código: busca el máximo número numérico entre los códigos TKT-
+    // Primero intenta con orden descendente (más rápido si los códigos son limpios)
+    const allCodes = await this.prisma.ticket.findMany({
       select: { code: true },
     });
-    const nextNum = last ? parseInt(last.code.replace('TKT-', ''), 10) + 1 : 1;
+    let maxNum = 0;
+    for (const t of allCodes) {
+      const match = t.code.match(/^TKT-(\d+)$/);
+      if (match) {
+        const n = parseInt(match[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    }
+    const nextNum = maxNum + 1;
     const code = `TKT-${String(nextNum).padStart(4, '0')}`;
 
     const { macAddress, ...ticketData } = data;
