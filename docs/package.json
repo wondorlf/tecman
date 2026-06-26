@@ -1,0 +1,20 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generate-screenshots.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "marked": "^18.0.5",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^25.1.0",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.35.2"
+  }
+}

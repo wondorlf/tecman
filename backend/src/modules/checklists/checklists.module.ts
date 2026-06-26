@@ -3,8 +3,8 @@ import { ChecklistsService } from './checklists.service.js';
 import { ChecklistsController } from './checklists.controller.js';
 
 @Module({
-    providers: [ChecklistsService],
-    controllers: [ChecklistsController],
-    exports: [ChecklistsService],
+  providers: [ChecklistsService],
+  controllers: [ChecklistsController],
+  exports: [ChecklistsService],
 })
-export class ChecklistsModule { }
+export class ChecklistsModule {}

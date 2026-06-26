@@ -8,24 +8,31 @@ datasource db {
 }
 
 model User {
-  id                  String        @id @default(cuid())
-  email               String        @unique
+  id                  String          @id @default(cuid())
+  email               String          @unique
   password            String
   name                String
   phone               String?
   avatar              String?
-  active              Boolean       @default(true)
+  active              Boolean         @default(true)
   roleId              String
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  assignedAlerts      Alert[]       @relation("AlertAssignee")
+  username            String?         @unique // Domain username
+  telegramChatId      String?         // Added for telegram notifications
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  assignedAlerts      Alert[]         @relation("AlertAssignee")
+  resolvedAlerts      Alert[]         @relation("AlertResolver")
   audits              Audit[]
-  createdMaintenances Maintenance[] @relation("MaintenanceCreator")
+  createdMaintenances Maintenance[]   @relation("MaintenanceCreator")
   maintenances        Maintenance[]
-  createdTickets      Ticket[]      @relation("TicketCreator")
-  assignedTickets     Ticket[]      @relation("TicketAssignee")
+  createdTickets      Ticket[]        @relation("TicketCreator")
+  assignedTickets     Ticket[]        @relation("TicketAssignee")
   ticketMessages      TicketMessage[]
-  role                Role          @relation(fields: [roleId], references: [id])
+  refreshTokens       RefreshToken[]
+  custodies           Custody[]
+  bookings            Booking[]
+  rfcRequests         ChangeRequest[] @relation("RfcRequester")
+  role                Role            @relation(fields: [roleId], references: [id])
 
   @@index([roleId], map: "users_roleId_fkey")
   @@map("users")
@@ -77,6 +84,15 @@ model Asset {
   hojaVida          HojaVida?
   maintenances      Maintenance[]
   tickets           Ticket[]
+  custodies         Custody[]
+  bookings          Booking[]
+  tags              AssetTag[]
+  kitId             String?               @unique
+  kit               Kit?                  @relation("KitParent", fields: [kitId], references: [id])
+  kitItems          KitItem[]
+  discoveredDevice  DiscoveredDevice?
+  dependenciesFrom  AssetDependency[]  @relation("AssetDependsOn")
+  dependenciesTo    AssetDependency[]  @relation("AssetDependedBy")
 
   @@index([categoryId])
   @@index([locationId])
@@ -102,7 +118,7 @@ model Category {
   attributes    CategoryAttribute[]
   formTemplates FormTemplate[]
   subcategories Subcategory[]
-  checklists    Checklist[]         @relation("categorychecklists")
+  checklists    Checklist[]         @relation("Category_Checklist_Rel")
 
   @@index([parentId], map: "categories_parentId_fkey")
   @@map("categories")
@@ -208,8 +224,8 @@ model Maintenance {
   evidence           Evidence[]
   asset              Asset             @relation(fields: [assetId], references: [id])
   checklist          Checklist?        @relation(fields: [checklistId], references: [id])
-  createdBy          User?             @relation("MaintenanceCreator", fields: [createdById], references: [id])
-  technician         User?             @relation(fields: [technicianId], references: [id])
+  createdBy          User?             @relation("MaintenanceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  technician         User?             @relation(fields: [technicianId], references: [id], onDelete: SetNull)
 
   @@index([assetId])
   @@index([status])
@@ -247,7 +263,7 @@ model Checklist {
   updatedAt       DateTime         @updatedAt
   items           ChecklistItem[]
   maintenances    Maintenance[]
-  categories      Category[]       @relation("categorychecklists")
+  categories      Category[]       @relation("Category_Checklist_Rel")
 
   @@map("checklists")
 }
@@ -358,11 +374,13 @@ model Alert {
   updatedAt  DateTime  @updatedAt
   asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
   assignee   User?     @relation("AlertAssignee", fields: [assigneeId], references: [id])
+  resolver   User?     @relation("AlertResolver", fields: [resolvedBy], references: [id])
 
   @@index([assetId])
   @@index([type])
   @@index([resolved])
   @@index([assigneeId], map: "alerts_assigneeId_fkey")
+  @@index([resolvedBy], map: "alerts_resolvedBy_fkey")
   @@map("alerts")
 }
 
@@ -497,44 +515,97 @@ enum EventType {
 }
 
 model Ticket {
-  id          String        @id @default(cuid())
-  code        String        @unique
+  id          String          @id @default(cuid())
+  code        String          @unique
   title       String
-  description String        @db.Text
-  status      TicketStatus  @default(OPEN)
-  priority    Priority      @default(MEDIUM)
+  description String          @db.Text
+  status      TicketStatus    @default(OPEN)
+  priority    Priority        @default(MEDIUM)
   category    TicketCategory
   creatorId   String
   assigneeId  String?
-  assetId     String?       // Opcional, si el ticket es sobre un activo específico
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  assetId     String? // Opcional, si el ticket es sobre un activo específico
+  serviceId   String? // Fase 3: Servicio del catálogo asociado
+  slaId       String? // Fase 3: SLA aplicado al ticket
+  reportedUser String? // Usuario de dominio reportado por el Agente
+  
+  // CSAT (Customer Satisfaction) post-resolución
+  csatScore    Int?     // 1-5
+  csatComment  String?  @db.Text
+  csatAnsweredAt DateTime?
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  dueDate     DateTime?       // Fecha límite según el SLA
   resolvedAt  DateTime?
+  
   messages    TicketMessage[]
-  creator     User          @relation("TicketCreator", fields: [creatorId], references: [id])
-  assignee    User?         @relation("TicketAssignee", fields: [assigneeId], references: [id])
-  asset       Asset?        @relation(fields: [assetId], references: [id])
+  creator     User            @relation("TicketCreator", fields: [creatorId], references: [id])
+  assignee    User?           @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  asset       Asset?          @relation(fields: [assetId], references: [id])
+  service     ServiceCatalog? @relation(fields: [serviceId], references: [id])
+  sla         Sla?            @relation(fields: [slaId], references: [id])
+  rfc         ChangeRequest?  @relation("TicketToRfc") // Si el ticket escaló a un cambio
 
   @@index([creatorId])
   @@index([assigneeId])
   @@index([assetId])
+  @@index([serviceId])
+  @@index([slaId])
   @@index([status])
   @@map("tickets")
 }
 
 model TicketMessage {
-  id        String   @id @default(cuid())
-  ticketId  String
-  userId    String
-  message   String   @db.Text
-  isInternal Boolean @default(false)
-  createdAt DateTime @default(now())
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(cuid())
+  ticketId   String
+  userId     String
+  message    String   @db.Text
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([ticketId])
   @@index([userId])
   @@map("ticket_messages")
+}
+
+// Knowledge Base
+model KnowledgeCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  articles  KnowledgeArticle[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("knowledge_categories")
+}
+
+model KnowledgeArticle {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?  @db.Text
+  content     String   @db.Text
+  coverUrl    String?
+  difficulty  String?  @default("BASICO")
+  estimatedMinutes Int?
+  categoryId  String
+  views       Int      @default(0)
+  helpful     Int      @default(0)
+  notHelpful  Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  category    KnowledgeCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@map("knowledge_articles")
 }
 
 enum TicketStatus {
@@ -551,4 +622,296 @@ enum TicketCategory {
   NETWORK
   ACCESS
   OTHER
+  REQUEST    // Fase 3: Petición de servicio
+  INCIDENT   // Fase 3: Incidente
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ==========================================
+// FASE 2: CUSTODIA Y RESERVAS
+// ==========================================
+
+model Custody {
+  id         String    @id @default(cuid())
+  assetId    String
+  userId     String
+  assignedAt DateTime  @default(now())
+  returnedAt DateTime?
+  notes      String?   @db.Text
+  asset      Asset     @relation(fields: [assetId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([assetId])
+  @@index([userId])
+  @@map("custodies")
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  assetId   String
+  userId    String
+  startDate DateTime
+  endDate   DateTime
+  status    BookingStatus @default(PENDING)
+  notes     String?       @db.Text
+  createdAt DateTime      @default(now())
+  asset     Asset         @relation(fields: [assetId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  @@index([assetId, startDate, endDate])
+  @@index([userId])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_OUT
+  RETURNED
+  CANCELLED
+}
+
+// ==========================================
+// FASE 2: KITS Y TAGS
+// ==========================================
+
+model Kit {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?  @db.Text
+  parentAsset Asset?   @relation("KitParent")
+  items       KitItem[]
+  createdAt   DateTime @default(now())
+
+  @@map("kits")
+}
+
+model KitItem {
+  id        String   @id @default(cuid())
+  kitId     String
+  assetId   String   @unique
+  addedAt   DateTime @default(now())
+  kit       Kit      @relation(fields: [kitId], references: [id], onDelete: Cascade)
+  asset     Asset    @relation(fields: [assetId], references: [id])
+
+  @@index([kitId])
+  @@map("kit_items")
+}
+
+model Tag {
+  id     String     @id @default(cuid())
+  name   String     @unique
+  color  String?
+  assets AssetTag[]
+
+  @@map("tags")
+}
+
+model AssetTag {
+  assetId String
+  tagId   String
+  asset   Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tag     Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([assetId, tagId])
+  @@index([tagId])
+  @@map("asset_tags")
+}
+
+// ==========================================
+// FASE 3: DISCOVERY AGENT Y SNMP
+// ==========================================
+
+model DiscoveredDevice {
+  id              String            @id @default(cuid())
+  macAddress      String            @unique
+  hostname        String
+  ipAddress       String?
+  os              String?
+  
+  // Fabricante y modelo del equipo
+  manufacturer    String? // Dell, HP, Lenovo, etc.
+  model           String? // Latitude 5420, ThinkPad X1, etc.
+  serialNumber    String? // Número de serie del equipo
+  biosVersion     String? // Versión de BIOS/UEFI
+  
+  // CPU
+  cpuModel        String?
+  cpuCores        Int?
+  
+  // RAM
+  ramTotalBytes   BigInt?
+  ramType         String? // DDR3, DDR4, DDR5, LPDDR5, etc.
+  ramSlots        Int?    // Total de slots de RAM
+  ramSlotsUsed    Int?    // Slots ocupados
+  ramSpeed        String? // Velocidad: 3200MHz, 4800MHz, etc.
+  
+  // Disco
+  diskTotalBytes  BigInt?
+  diskUsedBytes   BigInt?
+  diskFreeBytes   BigInt?
+  diskType        String? // SSD, HDD, NVMe
+  volumes         String?  @db.LongText // JSON con info de volúmenes/particiones
+  
+  // Red y dominio
+  domain          String? // Dominio AD (ej: EMPRESA.LOCAL)
+  loggedUser      String? // Usuario actualmente logueado
+  
+  // Versión del agente
+  agentVersion    String? // Versión del agente que reportó (ej: "1.0.0", "go-1.0.0", "ps-1.0.0")
+  
+  // Tiempos
+  lastBoot        DateTime? // Último inicio del sistema
+  lastSeenAt      DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+  
+  // Relación opcional con un activo formal en TecMan
+  assetId         String?           @unique
+  asset           Asset?            @relation(fields: [assetId], references: [id])
+  
+  changes         HardwareChange[]
+
+  @@map("discovered_devices")
+}
+
+model HardwareChange {
+  id                 String           @id @default(cuid())
+  discoveredDeviceId String
+  component          String           // "RAM", "DISK", "OS", "CPU"
+  oldValue           String           @db.Text
+  newValue           String           @db.Text
+  detectedAt         DateTime         @default(now())
+  
+  device             DiscoveredDevice @relation(fields: [discoveredDeviceId], references: [id], onDelete: Cascade)
+
+  @@index([discoveredDeviceId])
+  @@map("hardware_changes")
+}
+
+// ==========================================
+// FASE 3: ITSM (ITIL) CAPABILITIES
+// ==========================================
+
+model Sla {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  description     String?  @db.Text
+  resolutionHours Int      // Horas límite para resolver
+  responseHours   Int      // Horas límite para responder inicialmente
+  active          Boolean  @default(true)
+  tickets         Ticket[]
+  
+  @@map("slas")
+}
+
+model ServiceCatalog {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @db.Text
+  category    String   // ej. "Accesos", "Hardware", "Nube"
+  type        String   // "REQUEST" o "INCIDENT"
+  active      Boolean  @default(true)
+  tickets     Ticket[]
+
+  @@map("service_catalog")
+}
+
+model ChangeRequest {
+  id              String     @id @default(cuid())
+  code            String     @unique // RFC-001
+  title           String
+  description     String     @db.Text
+  justification   String     @db.Text
+  riskLevel       String     // LOW, MEDIUM, HIGH, CRITICAL
+  status          String     // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, IMPLEMENTED
+  
+  scheduledStart  DateTime?
+  scheduledEnd    DateTime?
+  
+  requesterId     String
+  ticketId        String?    @unique // Relación 1:1, un ticket puede generar un RFC
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  requester       User       @relation("RfcRequester", fields: [requesterId], references: [id])
+  ticket          Ticket?    @relation("TicketToRfc", fields: [ticketId], references: [id])
+
+  @@index([requesterId])
+  @@map("change_requests")
+}
+
+// ==========================================
+// FASE 4: DEPENDENCIAS ENTRE ACTIVOS
+// ==========================================
+
+model AssetDependency {
+  id          String   @id @default(cuid())
+  assetId     String   // Activo que depende
+  dependsOnId String   // Activo del que depende
+  type        String   // "POWER", "NETWORK", "LOGICAL", "PHYSICAL", "OTHER"
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  asset     Asset @relation("AssetDependsOn", fields: [assetId], references: [id], onDelete: Cascade)
+  dependsOn Asset @relation("AssetDependedBy", fields: [dependsOnId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, dependsOnId])
+  @@index([assetId])
+  @@index([dependsOnId])
+  @@map("asset_dependencies")
+}
+
+// ==========================================
+// FASE 5: CONFIGURACIÓN GLOBAL / TENANT
+// ==========================================
+
+model Tenant {
+  id                           String   @id @default(cuid())
+  name                         String   @default("TecMan")
+  logoUrl                      String?
+  
+  // Datos de la empresa para PDFs e informes
+  companyName                  String?  @default("")
+  companyLogoUrl               String?
+  companyDocument              String?  @default("") // NIT / RUT
+  companyAddress               String?  @default("")
+  companyPhone                 String?  @default("")
+  companyEmail                 String?  @default("")
+  
+  primaryColor                 String?  @default("#16a34a")
+  secondaryColor               String?  @default("#0f172a")
+  supportPortalTitle           String?  @default("Mesa de Ayuda TI")
+  supportPortalSubtitle        String?  @default("Sistema inteligente de reporte y seguimiento de incidencias técnicas.")
+  supportPortalBackgroundUrl   String?
+  telegramBotToken             String?
+  telegramChatId               String?
+  telegramNotificationsEnabled Boolean  @default(false)
+  ldapEnabled                  Boolean  @default(false)
+  ldapUrl                      String?
+  ldapBindDn                   String?
+  ldapBindPassword             String?
+  ldapBaseDn                   String?
+  ldapUserFilter               String?  @default("(&(objectClass=user)(objectCategory=person))")
+  ldapGroupFilter              String?  @default("(objectClass=group)")
+  maxUploadSize                Int      @default(10485760)
+
+  // Discovery Agent API Key
+  discoveryApiKey              String?
+
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  @@map("tenants")
 }

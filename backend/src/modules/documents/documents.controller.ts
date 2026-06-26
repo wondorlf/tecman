@@ -1,24 +1,30 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { DocumentsService } from './documents.service.js';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 
-@UseGuards(JwtAuthGuard)
+@ApiTags('documents')
+@ApiBearerAuth()
 @Controller('documents')
 export class DocumentsController {
-    constructor(private readonly documentsService: DocumentsService) { }
+  constructor(private readonly documentsService: DocumentsService) {}
 
-    @Post()
-    create(@Body() createDocumentDto: any) {
-        return this.documentsService.create(createDocumentDto);
-    }
+  @Post()
+  @ApiOperation({ summary: 'Create or upload new document metadata' })
+  create(@Body() createDocumentDto: any) {
+    return this.documentsService.create(createDocumentDto);
+  }
 
-    @Get()
-    findAll(@Query() query: any) {
-        return this.documentsService.findAll(query);
-    }
+  @Get()
+  @ApiOperation({ summary: 'List documents with optional filters' })
+  findAll(@Query() query: Record<string, string>) {
+    return this.documentsService.findAll(query);
+  }
 
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.documentsService.remove(id);
-    }
+  @Roles('Administrador', 'Superadministrador Egan')
+  @Delete(':id')
+  @ApiOperation({ summary: 'Remove document (admin only)' })
+  remove(@Param('id') id: string) {
+    return this.documentsService.remove(id);
+  }
 }

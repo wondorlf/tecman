@@ -3,8 +3,8 @@ import { CategoriesService } from './categories.service.js';
 import { CategoriesController } from './categories.controller.js';
 
 @Module({
-    providers: [CategoriesService],
-    controllers: [CategoriesController],
-    exports: [CategoriesService],
+  providers: [CategoriesService],
+  controllers: [CategoriesController],
+  exports: [CategoriesService],
 })
-export class CategoriesModule { }
+export class CategoriesModule {}

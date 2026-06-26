@@ -4,9 +4,9 @@ import { StorageController } from './storage.controller.js';
 import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-    imports: [AuthModule],
-    providers: [StorageService],
-    controllers: [StorageController],
-    exports: [StorageService],
+  imports: [AuthModule],
+  providers: [StorageService],
+  controllers: [StorageController],
+  exports: [StorageService],
 })
-export class StorageModule { }
+export class StorageModule {}

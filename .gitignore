@@ -20,17 +20,7 @@ out/
 # OS
 .DS_Store
 Thumbs.db
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# Testing
-coverage/
-
-# Turbo
-.turbo/
+nul
 
 # Uploads
 uploads/
@@ -38,3 +28,23 @@ uploads/
 # Prisma
 prisma/*.db
 prisma/*.db-journal
+
+# Backend debug/seed/temp artifacts
+backend/error.log
+backend/*.log
+backend/*_result*.txt
+backend/final_verify*.txt
+backend/test_relations.js
+backend/check-users*.js
+backend/check-users*.ts
+backend/fix-egan-user.ts
+backend/fix-*.ts
+backend/verify-*.ts
+backend/check-*.ts
+
+# Agent local config
+agent/*.json
+agent/tecman-discovery-config.json
+# Local env overrides
+.env.local
+frontend/.env.local

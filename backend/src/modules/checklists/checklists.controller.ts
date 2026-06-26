@@ -1,45 +1,41 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ChecklistsService } from './checklists.service.js';
-import { MaintenanceType } from '@prisma/client';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CreateChecklistDto } from './dto/create-checklist.dto.js';
 
-@UseGuards(JwtAuthGuard)
+@ApiTags('checklists')
+@ApiBearerAuth()
 @Controller('checklists')
 export class ChecklistsController {
-    constructor(private readonly checklistsService: ChecklistsService) { }
+  constructor(private readonly checklistsService: ChecklistsService) {}
 
-    @Post()
-    create(@Body() createChecklistDto: any) {
-        return this.checklistsService.create(createChecklistDto);
-    }
+  @Post()
+  @ApiOperation({ summary: 'Crear checklist con ítems' })
+  create(@Body() dto: CreateChecklistDto) {
+    return this.checklistsService.create(dto);
+  }
 
-    @Get()
-    findAll(@Query('categoryId') categoryId?: string, @Query('maintenanceType') maintenanceType?: MaintenanceType) {
-        return this.checklistsService.findAll({ categoryId, maintenanceType });
-    }
+  @Get()
+  @ApiOperation({ summary: 'Listar checklists con ítems' })
+  findAll() {
+    return this.checklistsService.findAll();
+  }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.checklistsService.findOne(id);
-    }
+  @Get(':id')
+  @ApiOperation({ summary: 'Obtener checklist por ID' })
+  findOne(@Param('id') id: string) {
+    return this.checklistsService.findOne(id);
+  }
 
-    @Put(':id')
-    update(@Param('id') id: string, @Body() updateChecklistDto: any) {
-        return this.checklistsService.update(id, updateChecklistDto);
-    }
+  @Put(':id')
+  @ApiOperation({ summary: 'Actualizar checklist e ítems' })
+  update(@Param('id') id: string, @Body() dto: Partial<CreateChecklistDto>) {
+    return this.checklistsService.update(id, dto);
+  }
 
-    @Put(':id/items')
-    updateItems(@Param('id') id: string, @Body() items: any[]) {
-        return this.checklistsService.updateItems(id, items);
-    }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.checklistsService.remove(id);
-    }
-
-    @Post(':id/duplicate')
-    duplicate(@Param('id') id: string, @Body('name') newName: string) {
-        return this.checklistsService.duplicate(id, newName);
-    }
+  @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar checklist' })
+  remove(@Param('id') id: string) {
+    return this.checklistsService.remove(id);
+  }
 }
