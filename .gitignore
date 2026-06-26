@@ -1,50 +1,82 @@
-# Dependencies
+# ── Dependencias ────────────────────────────────────────────────────────────
 node_modules/
+.pnpm-store/
 
-# Build outputs
+# ── Build outputs ──────────────────────────────────────────────────────────
 dist/
 .next/
 out/
+build/
 
-# Environment
+# ── TypeScript ────────────────────────────────────────────────────────────
+*.tsbuildinfo
+*.tsbuildinfo.*
+
+# ── Environment ────────────────────────────────────────────────────────────
 .env
 .env.local
 .env.*.local
+.env.production
 
-# IDE
+# ── IDE / Editor ────────────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+*.sublime-*
 
-# OS
+# ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-nul
+Desktop.ini
 
-# Uploads
+# ── Logs ───────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+
+# ── Testing / Coverage ─────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Uploads / Storage ─────────────────────────────────────────────────────
 uploads/
+storage/
 
-# Prisma
+# ── Prisma ────────────────────────────────────────────────────────────────
 prisma/*.db
 prisma/*.db-journal
 
-# Backend debug/seed/temp artifacts
+# ── Archives / Temp ────────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.rar
+*.7z
+tmp/
+temp/
+
+# ── Binaries / Executables ─────────────────────────────────────────────────
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ── Agent ─────────────────────────────────────────────────────────────────
+agent/*.json
+agent/tecman-discovery-config.json
+
+# ── Backend debug/seed/temp artifacts ──────────────────────────────────────
 backend/error.log
-backend/*.log
 backend/*_result*.txt
 backend/final_verify*.txt
 backend/test_relations.js
 backend/check-users*.js
 backend/check-users*.ts
-backend/fix-egan-user.ts
 backend/fix-*.ts
 backend/verify-*.ts
 backend/check-*.ts
 
-# Agent local config
-agent/*.json
-agent/tecman-discovery-config.json
-# Local env overrides
-.env.local
-frontend/.env.local
+# ── Error dumps ────────────────────────────────────────────────────────────
+errores.txt
+error_log.txt
