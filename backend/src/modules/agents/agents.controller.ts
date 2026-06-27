@@ -30,13 +30,13 @@ export class AgentsController {
     }
     
     let content = readFileSync(filePath, 'utf-8');
-    
-    // Injectar la API Key si se proporciona o si existe en Tenant
+
+    // Injectar la API Key después del param() para no romper la sintaxis PowerShell
     const key = apiKey || (await this.discoveryService.getApiKey()) || '';
     if (key) {
       content = content.replace('# API_KEY_PLACEHOLDER', `$script:ApiKey = "${key}"`);
     }
-    
+
     return res.send(content);
   }
 
@@ -49,15 +49,15 @@ export class AgentsController {
     if (!existsSync(filePath)) {
       throw new NotFoundException('Agente PowerShell no disponible');
     }
-    
+
     let content = readFileSync(filePath, 'utf-8');
-    
-    // Injectar la API Key si se proporciona
+
+    // Injectar la API Key después del param()
     const key = apiKey || (await this.discoveryService.getApiKey()) || '';
     if (key) {
       content = content.replace('# API_KEY_PLACEHOLDER', `$script:ApiKey = "${key}"`);
     }
-    
+
     return content;
   }
 
@@ -167,11 +167,15 @@ export class AgentsController {
     const srcPath = join(this.agentsDir, 'main.go');
 
     if (existsSync(exePath)) {
-      return res.download(exePath, 'tecman-discovery.exe');
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', 'attachment; filename="tecman-discovery.exe"');
+      return res.sendFile(exePath);
     }
 
     if (existsSync(srcPath)) {
-      return res.download(srcPath, 'tecman-discovery.go');
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="main.go"');
+      return res.sendFile(srcPath);
     }
 
     throw new NotFoundException('Agente Go no disponible');

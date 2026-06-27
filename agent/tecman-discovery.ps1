@@ -25,7 +25,7 @@
 # API_KEY_PLACEHOLDER
 
 param(
-    [string]$ServerUrl = "",
+    [string]$ServerUrl = "SERVER_PLACEHOLDER",
     [string]$ApiKey = "",
     [int]$IntervalHours = 0,
     [switch]$InstallTask,
@@ -255,14 +255,14 @@ function Install-ScheduledTask($config) {
     $scriptPath = $MyInvocation.MyCommand.Path
     $apiKeyArg = if ($config.ApiKey) { " -ApiKey `"$($config.ApiKey)`"" } else { "" }
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -ServerUrl `"$($config.ServerUrl)`"$apiKeyArg"
-    $trigger = New-ScheduledTaskTrigger -Daily -At "09:00" -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration (New-TimeSpan -Days 365)
-    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Highest
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 
     try {
         Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force
         Write-Host "[TecMan] ✅ Tarea programada '$taskName' instalada correctamente" -ForegroundColor Green
-        Write-Host "[TecMan] Se ejecutará cada hora como SYSTEM" -ForegroundColor Gray
+        Write-Host "[TecMan] Se ejecutará cada vez que inicies sesión" -ForegroundColor Gray
         return $true
     }
     catch {

@@ -118,10 +118,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$apiKey = '%API_KEY%';" ^
   "$observation = '%OBSERVACION%';" ^
   "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument \"-NoProfile -ExecutionPolicy Bypass -File `\"$scriptPath`\" -ServerUrl `\"$serverUrl`\" -ApiKey `\"$apiKey`\"\";" ^
-  "$trigger = New-ScheduledTaskTrigger -Daily -At '09:00' -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration (New-TimeSpan -Days 365);" ^
-  "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest;" ^
+  "$trigger = New-ScheduledTaskTrigger -AtLogOn;" ^
+  "$principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Highest;" ^
   "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable;" ^
-  "try { Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force; Write-Host '[OK] Tarea programada instalada' -ForegroundColor Green }" ^
+  "try { Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force; Write-Host '[OK] Tarea programada instalada - se ejecuta al iniciar sesion' -ForegroundColor Green }" ^
   "catch { Write-Host ('[ERROR] ' + $_.Exception.Message) -ForegroundColor Red; exit 1 }"
 
 echo [4/4] Ejecutando envio inicial...
@@ -141,7 +141,7 @@ echo.
 echo  El agente TecMan Discovery ha sido instalado:
 echo.
 echo    - Tarea programada: TecManDiscoveryAgent
-echo    - Frecuencia: Cada hora
+echo    - Frecuencia: Al iniciar sesion
 echo    - Ubicacion: %OBSERVACION%
 echo    - Servidor: %SERVER_URL%
 echo.
