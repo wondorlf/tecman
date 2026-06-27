@@ -2,9 +2,6 @@ import axios from 'axios';
 import type { PaginatedResponse } from './types';
 
 // Siempre usamos rutas relativas — Next.js rewrite (next.config.mjs) proxy /api/* al backend.
-// NEXT_PUBLIC_API_URL se define solo cuando el frontend se sirve desde un origen diferente
-// (ej. backend sirviendo frontend estático sin proxy), apuntando al backend.
-// Las NEXT_PUBLIC_* se sustituyen en tiempo de compilación por webpack.
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export const api = axios.create({
@@ -12,9 +9,7 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ── Token management (en memoria) ─────────────────────────────────────────────
-// El access_token se guarda en memoria (no en localStorage).
-// El refresh_token se almacena en una cookie httpOnly (manejada por el backend).
+// Token management (en memoria)
 let _accessToken: string | null = null;
 
 export function getAccessToken(): string | null {
@@ -25,8 +20,6 @@ export function setAccessToken(token: string | null) {
   _accessToken = token;
 }
 
-// ── User management ──────────────────────────────────────────────────────────
-// Datos del usuario (no sensibles) en localStorage para persistencia entre recargas.
 export function getUser(): any {
   if (typeof window === 'undefined') return null;
   try {
@@ -44,21 +37,15 @@ export function clearUser() {
   localStorage.removeItem('user');
 }
 
-// ── Auth initialization ──────────────────────────────────────────────────────
-// Intenta refrescar el access_token usando la cookie httpOnly.
-// Debe llamarse al cargar la app (en dashboard shells) o cuando se recibe un 401.
+// Auth initialization
 let _initPromise: Promise<boolean> | null = null;
 
 export async function initAuth(): Promise<boolean> {
-  // Si ya tenemos token en memoria, estamos autenticados
   if (_accessToken) return true;
-
-  // Evitar llamadas concurrentes
   if (_initPromise) return _initPromise;
 
   _initPromise = (async () => {
     try {
-      // Esta llamada envía la cookie httpOnly automáticamente (same-origin)
       const response = await api.post('/auth/refresh');
       const { access_token, user } = response.data;
       _accessToken = access_token;
@@ -75,7 +62,7 @@ export async function initAuth(): Promise<boolean> {
   return result;
 }
 
-// ── Interceptor: agregar token a requests ────────────────────────────────────
+// Interceptor: agregar token a requests
 api.interceptors.request.use((config) => {
   if (_accessToken) {
     config.headers.Authorization = `Bearer ${_accessToken}`;
@@ -83,10 +70,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ── Interceptor: refresh automático en 401 ────────────────────────────────────
+// Interceptor: refresh automático en 401
 let isRefreshing = false;
-let refreshSubscribers: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> =
-  [];
+let refreshSubscribers: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
 
 function onRefreshed(token: string) {
   refreshSubscribers.forEach((sub) => sub.resolve(token));
@@ -107,7 +93,6 @@ api.interceptors.response.use(
   async (err) => {
     const originalRequest = err.config;
 
-    // Si es 401 y no es el endpoint de refresh ni login, intentar refrescar
     if (
       err.response?.status === 401 &&
       !originalRequest._retry &&
@@ -115,7 +100,6 @@ api.interceptors.response.use(
       !originalRequest.url?.includes('/auth/refresh') &&
       typeof window !== 'undefined'
     ) {
-      // Si estamos refrescando, esperar
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           addRefreshSubscriber(
@@ -132,7 +116,6 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Llama a refresh — la cookie httpOnly se envía automáticamente
         const response = await api.post('/auth/refresh');
         const { access_token, user } = response.data;
 
@@ -157,21 +140,21 @@ api.interceptors.response.use(
   },
 );
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
+// ── AUTH ──
 export const authApi = {
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
 };
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+// ── DASHBOARD ──
 export const dashboardApi = {
   stats: () => api.get('/dashboard/stats'),
   recent: () => api.get('/dashboard/recent'),
   report: () => api.get('/dashboard/report', { responseType: 'blob' }),
 };
 
-// ── ASSETS ────────────────────────────────────────────────────────────────────
+// ── ASSETS ──
 export const assetsApi = {
   list: (params?: Record<string, string | number>) => api.get('/assets', { params }),
   get: (id: string) => api.get(`/assets/${id}`),
@@ -196,7 +179,7 @@ export const assetsApi = {
     api.put(`/assets/${id}/attribute-values`, { values }),
 };
 
-// ── MAINTENANCE ───────────────────────────────────────────────────────────────
+// ── MAINTENANCE ──
 export const maintenanceApi = {
   list: (params?: Record<string, string | number>) => api.get('/maintenance', { params }),
   get: (id: string) => api.get(`/maintenance/${id}`),
@@ -206,7 +189,7 @@ export const maintenanceApi = {
   exportXlsx: () => api.get('/maintenance/export', { responseType: 'blob' }),
 };
 
-// ── ALERTS ────────────────────────────────────────────────────────────────────
+// ── ALERTS ──
 export const alertsApi = {
   list: (params?: Record<string, string | number>) => api.get('/alerts', { params }),
   resolve: (id: string) => api.put(`/alerts/${id}/resolve`),
@@ -214,7 +197,7 @@ export const alertsApi = {
   check: () => api.post('/alerts/check'),
 };
 
-// ── TICKETS ───────────────────────────────────────────────────────────────────
+// ── TICKETS ──
 export const ticketsApi = {
   list: (params?: Record<string, string | number>) => api.get('/tickets', { params }),
   get: (id: string) => api.get(`/tickets/${id}`),
@@ -226,7 +209,7 @@ export const ticketsApi = {
   exportXlsx: () => api.get('/tickets/export', { responseType: 'blob' }),
 };
 
-// ── CHECKLISTS ────────────────────────────────────────────────────────────────
+// ── CHECKLISTS ──
 export const checklistsApi = {
   list: () => api.get('/checklists'),
   get: (id: string) => api.get(`/checklists/${id}`),
@@ -236,7 +219,7 @@ export const checklistsApi = {
   exportXlsx: () => api.get('/checklists/export', { responseType: 'blob' }),
 };
 
-// ── USERS ─────────────────────────────────────────────────────────────────────
+// ── USERS ──
 export const usersApi = {
   list: (params?: Record<string, string | number>) => api.get('/users', { params }),
   get: (id: string) => api.get(`/users/${id}`),
@@ -245,14 +228,13 @@ export const usersApi = {
   toggle: (id: string) => api.put(`/users/${id}/toggle`),
 };
 
-// ── CATEGORIES ────────────────────────────────────────────────────────────────
+// ── CATEGORIES ──
 export const categoriesApi = {
   list: () => api.get('/categories'),
   create: (data: any) => api.post('/categories', data),
   update: (id: string, data: any) => api.put(`/categories/${id}`, data),
   remove: (id: string) => api.delete(`/categories/${id}`),
   checkName: (name: string) => api.get(`/categories/check-name/${encodeURIComponent(name)}`),
-  // Attributes
   createAttribute: (catId: string, data: any) => api.post(`/categories/${catId}/attributes`, data),
   updateAttribute: (catId: string, attrId: string, data: any) => api.put(`/categories/${catId}/attributes/${attrId}`, data),
   removeAttribute: (catId: string, attrId: string) => api.delete(`/categories/${catId}/attributes/${attrId}`),
@@ -260,7 +242,7 @@ export const categoriesApi = {
     api.post(`/categories/${catId}/attributes/${attrId}/propagate`, { defaultValue }),
 };
 
-// ── SUBCATEGORIES ──────────────────────────────────────────────────────────────
+// ── SUBCATEGORIES ──
 export const subcategoriesApi = {
   create: (categoryId: string, data: { name: string; description?: string }) =>
     api.post(`/categories/${categoryId}/subcategories`, data),
@@ -270,7 +252,7 @@ export const subcategoriesApi = {
     api.delete(`/categories/${categoryId}/subcategories/${subId}`),
 };
 
-// ── LOCATIONS ─────────────────────────────────────────────────────────────────
+// ── LOCATIONS ──
 export const locationsApi = {
   list: () => api.get('/locations'),
   create: (data: any) => api.post('/locations', data),
@@ -278,7 +260,7 @@ export const locationsApi = {
   remove: (id: string) => api.delete(`/locations/${id}`),
 };
 
-// ── SUPPLIERS ─────────────────────────────────────────────────────────────────
+// ── SUPPLIERS ──
 export const suppliersApi = {
   list: () => api.get('/suppliers'),
   create: (data: any) => api.post('/suppliers', data),
@@ -286,7 +268,7 @@ export const suppliersApi = {
   remove: (id: string) => api.delete(`/suppliers/${id}`),
 };
 
-// ── DOCUMENTS ─────────────────────────────────────────────────────────────────
+// ── DOCUMENTS ──
 export const documentsApi = {
   list: (assetId?: string) => api.get('/documents', { params: assetId ? { assetId } : undefined }),
   upload: (formData: FormData) =>
@@ -294,12 +276,12 @@ export const documentsApi = {
   remove: (id: string) => api.delete(`/documents/${id}`),
 };
 
-// ── ROLES ─────────────────────────────────────────────────────────────────────
+// ── ROLES ──
 export const rolesApi = {
   list: () => api.get('/users/roles'),
 };
 
-// ── FASE 2: CUSTODIAS, RESERVAS, KITS, TAGS ───────────────────────────────────
+// ── FASE 2 ──
 export const custodiesApi = {
   list: (params?: Record<string, string | number>) => api.get('/custodies', { params }),
   assign: (data: { assetId: string; userId: string; notes?: string }) =>
@@ -332,7 +314,7 @@ export const tagsApi = {
   checkName: (name: string) => api.get(`/tags/check-name/${encodeURIComponent(name)}`),
 };
 
-// ── FASE 3: ITSM (SLA, SERVICE CATALOG, RFC, DISCOVERY) ──────────────────────
+// ── FASE 3 ──
 export const slasApi = {
   list: () => api.get('/slas'),
   create: (data: any) => api.post('/slas', data),
@@ -359,7 +341,7 @@ export const changeRequestsApi = {
     }),
 };
 
-// ── DISCOVERY / AGENTE ─────────────────────────────────────────────────────
+// ── DISCOVERY / AGENTE ──
 export const discoveryApi = {
   list: (params?: Record<string, string | number>) => api.get('/discovery', { params }),
   get: (id: string) => api.get(`/discovery/${id}`),
@@ -372,14 +354,14 @@ export const discoveryApi = {
   remove: (id: string) => api.delete(`/discovery/${id}`),
 };
 
-// ── TENANTS / CONFIGURACIÓN GLOBAL ───────────────────────────────────────────
+// ── TENANTS ──
 export const tenantsApi = {
   getPublicSettings: () => api.get('/tenants/public'),
   getSettings: () => api.get('/tenants/settings'),
   updateSettings: (id: string, data: any) => api.patch(`/tenants/settings/${id}`, data),
 };
 
-// ── KNOWLEDGE BASE ──────────────────────────────────────────────────────────
+// ── KNOWLEDGE BASE ──
 export const knowledgeApi = {
   listCategories: () => api.get('/knowledge/categories'),
   listArticles: (params?: Record<string, string | number>) =>
@@ -389,7 +371,7 @@ export const knowledgeApi = {
     api.post(`/knowledge/articles/${id}/rate`, { helpful }),
 };
 
-// ── Utilidad para descargar blob ──────────────────────────────────────────────
+// ── Download utility ──
 export function downloadBlob(blob: Blob, filename: string) {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
