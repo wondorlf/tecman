@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SolutionBlock } from '@/components/solution-block';
 import axios from 'axios';
 
 type Message = { id: string; role: 'user' | 'bot'; content: ReactNode; time: string };
@@ -173,6 +174,10 @@ export default function PublicChatbot({ onNavigate }: Props) {
   };
 
   const handleQuickAction = (text: string) => {
+    if (text === 'menu') {
+      setMessages([buildWelcome()]);
+      return;
+    }
     setMessages((prev) => [
       ...prev,
       { id: `u-${Date.now()}`, role: 'user', time: now(), content: <p className="text-sm">{text}</p> },
@@ -284,29 +289,21 @@ export default function PublicChatbot({ onNavigate }: Props) {
       // ── Soluciones comunes de Nivel 1 ──
       if (lower.includes('internet') || lower.includes('red') || lower.includes('wifi') || lower.includes('conexion') || lower.includes('conexión')) {
         addBotMessage(
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Soluciones de Red</p>
-            <p className="text-xs text-slate-600">Prueba estos pasos antes de crear un ticket:</p>
-            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
-              <li>Reinicia tu adaptador de red (Desactivar/Activar)</li>
-              <li>Reinicia el equipo y el router/módem</li>
-              <li>Libera la IP: <code className="bg-slate-100 px-1 rounded">ipconfig /release</code> y <code className="bg-slate-100 px-1 rounded">ipconfig /renew</code></li>
-              <li>Limpia DNS: <code className="bg-slate-100 px-1 rounded">ipconfig /flushdns</code></li>
-            </ol>
-            <div className="flex flex-wrap gap-2">
-              <a href="/api/fix-scripts/fix-network-dns.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 hover:bg-blue-100 transition-colors">
-                <Download size={11} /> Descargar solución de red (.bat)
-              </a>
-              {lower.includes('wifi') && (
-                <a href="/api/fix-scripts/fix-wifi.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-100 transition-colors">
-                  <Download size={11} /> Descargar solución WiFi (.bat)
-                </a>
-              )}
-              <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-                <Ticket size={12} className="mr-1" /> Crear ticket si no se resuelve
-              </Button>
-            </div>
-          </div>
+          <SolutionBlock
+            title="Nivel 1 — Soluciones de Red"
+            color="blue"
+            solutionId="network-dns"
+            steps={[
+              'Reinicia tu adaptador de red (Panel de control → Red → clic derecho → Desactivar/Activar)',
+              'Reinicia el equipo y el router/módem',
+              'Libia la IP: ejecuta <code className="bg-slate-100 px-1 rounded">ipconfig /release</code> y luego <code className="bg-slate-100 px-1 rounded">ipconfig /renew</code>',
+              'Limpia DNS: ejecuta <code className="bg-slate-100 px-1 rounded">ipconfig /flushdns</code>',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-network-dns.bat"
+            downloadLabel="Descargar solución de red (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
         );
         setLoading(false);
         return;
@@ -314,23 +311,21 @@ export default function PublicChatbot({ onNavigate }: Props) {
 
       if (lower.includes('impresora') || lower.includes('imprimir') || lower.includes('print')) {
         addBotMessage(
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-amber-700">Nivel 1 — Soluciones de Impresión</p>
-            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
-              <li>Verifica que la impresora esté encendida y con papel</li>
-              <li>Reinicia el spooler: <code className="bg-slate-100 px-1 rounded">net stop spooler &amp;&amp; net start spooler</code></li>
-              <li>Verifica que sea impresora predeterminada</li>
-              <li>Reinicia el equipo</li>
-            </ol>
-            <div className="flex flex-wrap gap-2">
-              <a href="/api/fix-scripts/fix-printer.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-700 hover:bg-amber-100 transition-colors">
-                <Download size={11} /> Descargar solución (.bat)
-              </a>
-              <Button size="sm" className="h-8 rounded-lg bg-amber-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-                <Ticket size={12} className="mr-1" /> Crear ticket
-              </Button>
-            </div>
-          </div>
+          <SolutionBlock
+            title="Nivel 1 — Soluciones de Impresión"
+            color="amber"
+            solutionId="printer-spooler"
+            steps={[
+              'Verifica que la impresora esté encendida y con papel',
+              'Reinicia el spooler de impresión',
+              'Verifica que sea impresora predeterminada',
+              'Reinicia el equipo si persiste',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-printer.bat"
+            downloadLabel="Descargar solución de impresora (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
         );
         setLoading(false);
         return;
@@ -338,23 +333,21 @@ export default function PublicChatbot({ onNavigate }: Props) {
 
       if (lower.includes('lento') || lower.includes('lentitud') || lower.includes('traba') || lower.includes('rendimiento')) {
         addBotMessage(
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-red-700">Nivel 1 — Rendimiento del Equipo</p>
-            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
-              <li>Cierra aplicaciones que no estés usando (Administrador de Tareas)</li>
-              <li>Libera espacio: elimina archivos temporales (<code className="bg-slate-100 px-1 rounded">%temp%</code>)</li>
-              <li>Reinicia el equipo si no lo has hecho hoy</li>
-              <li>Verifica actualizaciones de Windows pendientes</li>
-            </ol>
-            <div className="flex flex-wrap gap-2">
-              <a href="/api/fix-scripts/fix-slow-pc.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:bg-red-100 transition-colors">
-                <Download size={11} /> Descargar solución (.bat)
-              </a>
-              <Button size="sm" className="h-8 rounded-lg bg-red-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-                <Ticket size={12} className="mr-1" /> Crear ticket
-              </Button>
-            </div>
-          </div>
+          <SolutionBlock
+            title="Nivel 1 — Rendimiento del Equipo"
+            color="red"
+            solutionId="slow-pc"
+            steps={[
+              'Cierra aplicaciones que no estés usando (Administrador de Tareas: Ctrl+Shift+Esc)',
+              'Libera espacio: elimina archivos temporales',
+              'Reinicia el equipo si no lo has hecho hoy',
+              'Verifica actualizaciones de Windows pendientes',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-slow-pc.bat"
+            downloadLabel="Descargar solución de rendimiento (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
         );
         setLoading(false);
         return;
@@ -362,19 +355,19 @@ export default function PublicChatbot({ onNavigate }: Props) {
 
       if (lower.includes('contraseña') || lower.includes('password') || lower.includes('bloqueado') || lower.includes('olvide') || lower.includes('acceso') || lower.includes('login')) {
         addBotMessage(
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-slate-700">Nivel 1 — Accesos y Credenciales</p>
-            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
-              <li>Verifica que el teclado esté en el idioma correcto (ES/EN)</li>
-              <li>Escribe la contraseña en un bloc de notas para verificar caracteres</li>
-              <li>Si estás bloqueado, espera 15 minutos e intenta de nuevo</li>
-              <li>Si el dominio no carga, reconéctate a la red WiFi</li>
-            </ol>
-            <p className="text-xs text-amber-600 font-semibold">Si no puedes desbloquearte, necesitas contactar al administrador de TI.</p>
-            <Button size="sm" className="h-8 rounded-lg bg-slate-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-              <Ticket size={12} className="mr-1" /> Crear ticket
-            </Button>
-          </div>
+          <SolutionBlock
+            title="Nivel 1 — Accesos y Credenciales"
+            color="slate"
+            solutionId="access-password"
+            steps={[
+              'Verifica que el teclado esté en el idioma correcto (ES/EN)',
+              'Escribe la contraseña en un bloc de notas para verificar caracteres especiales',
+              'Si estás bloqueado, espera 15 minutos e intenta de nuevo',
+              'Si el dominio no carga, reconéctate a la red WiFi',
+            ]}
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
         );
         setLoading(false);
         return;
@@ -382,23 +375,21 @@ export default function PublicChatbot({ onNavigate }: Props) {
 
       if (lower.includes('correo') || lower.includes('email') || lower.includes('outlook') || lower.includes('mail')) {
         addBotMessage(
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-indigo-700">Nivel 1 — Correo Electrónico</p>
-            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
-              <li>Verifica tu conexión a internet</li>
-              <li>Cierra y vuelve a abrir Outlook</li>
-              <li>Si está en Web, prueba con otro navegador</li>
-              <li>Verifica credenciales: Ctrl+Alt+Supr → Cerrar sesión → Reingresar</li>
-            </ol>
-            <div className="flex flex-wrap gap-2">
-              <a href="/api/fix-scripts/fix-outlook.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors">
-                <Download size={11} /> Descargar solución (.bat)
-              </a>
-              <Button size="sm" className="h-8 rounded-lg bg-indigo-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-                <Ticket size={12} className="mr-1" /> Crear ticket
-              </Button>
-            </div>
-          </div>
+          <SolutionBlock
+            title="Nivel 1 — Correo Electrónico"
+            color="indigo"
+            solutionId="outlook-email"
+            steps={[
+              'Verifica tu conexión a internet',
+              'Cierra y vuelve a abrir Outlook',
+              'Si está en Web, prueba con otro navegador',
+              'Verifica credenciales: Ctrl+Alt+Supr → Cerrar sesión → Reingresar',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-outlook.bat"
+            downloadLabel="Descargar solución de Outlook (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
         );
         setLoading(false);
         return;
