@@ -29,6 +29,17 @@ async function bootstrap() {
     }),
   );
 
+  // Strip security headers added by reverse proxy for AdminJS panel
+  expressApp.use('/admin', (req, res, next) => {
+    res.removeHeader('Cross-Origin-Opener-Policy');
+    res.removeHeader('Cross-Origin-Embedder-Policy');
+    res.removeHeader('Cross-Origin-Resource-Policy');
+    res.removeHeader('Origin-Agent-Cluster');
+    res.removeHeader('Content-Security-Policy');
+    res.removeHeader('X-Content-Type-Options');
+    next();
+  });
+
   // Cookie parser (needed for httpOnly cookies)
   app.use(cookieParser());
 
@@ -121,7 +132,7 @@ async function bootstrap() {
       callback(new Error(`Origen no permitido por CORS: ${origin}`), false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     credentials: true,
   });
 
