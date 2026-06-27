@@ -70,12 +70,20 @@ export class AgentsController {
     let content = readFileSync(filePath, 'utf-8');
 
     const serverUrl = this.getServerUrl(req);
-    content = content.replace('SERVER_PLACEHOLDER', serverUrl);
-
     const key = apiKey || (await this.discoveryService.getApiKey()) || '';
-    if (key) {
-      content = content.replace('# API_KEY_PLACEHOLDER', `$script:ApiKey = "${key}"`);
-    }
+
+    // Strip the comment block (<# ... #>) and param() block
+    // so Invoke-Expression can execute it as inline code
+    content = content.replace(/<#[\s\S]*?#>\s*/m, '');
+    content = content.replace(/\bparam\s*\([^)]*\)\s*/m, '');
+
+    // Inject variables at the top (replacing param defaults)
+    const preamble = `$script:ServerUrl = "${serverUrl}"\n$script:ApiKey = "${key}"\n`;
+    content = preamble + content;
+
+    // Also replace any remaining placeholders
+    content = content.replace('SERVER_PLACEHOLDER', serverUrl);
+    content = content.replace('# API_KEY_PLACEHOLDER', '');
 
     return content;
   }
