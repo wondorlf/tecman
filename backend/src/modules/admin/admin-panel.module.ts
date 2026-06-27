@@ -289,8 +289,12 @@ class FixedAdminLoader extends AbstractLoader {
             cookiePassword: process.env.JWT_SECRET || 'some-secret-password-used-to-secure-cookie',
             cookieName: 'adminjs',
           },
-          // Session is already configured in main.ts — do NOT pass sessionOptions here
-          // to avoid creating a duplicate express-session middleware
+          sessionOptions: {
+            secret: process.env.JWT_SECRET || 'adminjs-session-secret',
+            resave: false,
+            saveUninitialized: false,
+            cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
+          },
         };
       },
     }),
