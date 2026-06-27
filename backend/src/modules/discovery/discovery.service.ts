@@ -192,9 +192,9 @@ export class DiscoveryService {
       const tenant = await this.prisma.tenant.findFirst({
         select: { discoveryApiKey: true },
       });
-      return tenant?.discoveryApiKey || null;
+      return tenant?.discoveryApiKey || process.env.DISCOVERY_API_KEY || null;
     } catch {
-      return null;
+      return process.env.DISCOVERY_API_KEY || null;
     }
   }
 
