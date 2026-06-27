@@ -19,6 +19,21 @@ export class AgentsController {
 
   constructor(private readonly discoveryService: DiscoveryService) {}
 
+  private getServerUrl(req: Request): string {
+    if (process.env.PRODUCTION_URL) return process.env.PRODUCTION_URL;
+    const protocol =
+      typeof req.headers['x-forwarded-proto'] === 'string'
+        ? sanitizeHost(req.headers['x-forwarded-proto'])
+        : 'http';
+    const rawHost =
+      typeof req.headers['x-forwarded-host'] === 'string'
+        ? req.headers['x-forwarded-host']
+        : typeof req.headers.host === 'string'
+          ? req.headers.host
+          : `localhost:${process.env.PORT || '2023'}`;
+    return `${protocol}://${sanitizeHost(rawHost)}`;
+  }
+
   @Public()
   @Get('powershell')
   @Header('Content-Type', 'text/plain; charset=utf-8')
@@ -28,10 +43,12 @@ export class AgentsController {
     if (!existsSync(filePath)) {
       throw new NotFoundException('Agente PowerShell no disponible');
     }
-    
+
     let content = readFileSync(filePath, 'utf-8');
 
-    // Injectar la API Key después del param() para no romper la sintaxis PowerShell
+    const serverUrl = this.getServerUrl(req);
+    content = content.replace('SERVER_PLACEHOLDER', serverUrl);
+
     const key = apiKey || (await this.discoveryService.getApiKey()) || '';
     if (key) {
       content = content.replace('# API_KEY_PLACEHOLDER', `$script:ApiKey = "${key}"`);
@@ -44,7 +61,7 @@ export class AgentsController {
   @Get('powershell/run')
   @Header('Content-Type', 'text/plain; charset=utf-8')
   @Header('Cache-Control', 'no-cache')
-  async getPowerShellRun(@Query('apiKey') apiKey: string) {
+  async getPowerShellRun(@Req() req: Request, @Query('apiKey') apiKey: string) {
     const filePath = join(this.agentsDir, 'tecman-discovery.ps1');
     if (!existsSync(filePath)) {
       throw new NotFoundException('Agente PowerShell no disponible');
@@ -52,7 +69,9 @@ export class AgentsController {
 
     let content = readFileSync(filePath, 'utf-8');
 
-    // Injectar la API Key después del param()
+    const serverUrl = this.getServerUrl(req);
+    content = content.replace('SERVER_PLACEHOLDER', serverUrl);
+
     const key = apiKey || (await this.discoveryService.getApiKey()) || '';
     if (key) {
       content = content.replace('# API_KEY_PLACEHOLDER', `$script:ApiKey = "${key}"`);
@@ -162,14 +181,64 @@ export class AgentsController {
 
   @Public()
   @Get('go')
-  async getGo(@Res() res: Response) {
+  async getGo(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
     const exePath = join(this.agentsDir, 'tecman-discovery.exe');
     const srcPath = join(this.agentsDir, 'main.go');
 
     if (existsSync(exePath)) {
-      res.setHeader('Content-Type', 'application/octet-stream');
-      res.setHeader('Content-Disposition', 'attachment; filename="tecman-discovery.exe"');
-      return res.sendFile(exePath);
+      // Generar .bat wrapper con flags correctos
+      const serverUrl = this.getServerUrl(req);
+      const key = apiKey || (await this.discoveryService.getApiKey()) || '';
+      const bat = [
+        '@echo off',
+        'title TecMan Discovery Agent - Instalador',
+        'echo.',
+        'echo  ============================================',
+        'echo     TecMan Discovery Agent',
+        'echo     Instalador con configuracion automatica',
+        'echo  ============================================',
+        'echo.',
+        `echo  Servidor: ${serverUrl}`,
+        'echo.',
+        'echo [1/3] Verificando permisos de administrador...',
+        'net session >nul 2>&1',
+        'if %errorlevel% neq 0 (',
+        '    echo Solicitando permisos de administrador...',
+        '    powershell -Command "Start-Process cmd -ArgumentList \'/c \\"\\"%~f0\\"\\"" -Verb RunAs"',
+        '    exit /b',
+        ')',
+        'echo [OK] Permisos de administrador',
+        'echo.',
+        'echo [2/3] Instalando servicio como Windows Service...',
+        `"%~dp0tecman-discovery.exe" --server "${serverUrl}"${key ? ` --api-key "${key}"` : ''} --install`,
+        'if %errorlevel% neq 0 (',
+        '    echo.',
+        '    echo [ERROR] Fallo la instalacion del servicio.',
+        '    pause',
+        '    exit /b 1',
+        ')',
+        'echo.',
+        'echo [3/3] Iniciando servicio...',
+        'net start TecManAgent 2>nul',
+        'if %errorlevel% neq 0 (',
+        '    "%~dp0tecman-discovery.exe" --start 2>nul',
+        ')',
+        'echo.',
+        'echo  ============================================',
+        'echo  INSTALACION COMPLETADA',
+        'echo  ============================================',
+        'echo.',
+        `echo  Servidor: ${serverUrl}`,
+        'echo  Servicio: TecManAgent',
+        'echo  Estado: Ejecutando',
+        'echo.',
+        'echo  El equipo sera inventorado automaticamente.',
+        'echo.',
+        'pause',
+      ].join('\r\n');
+      res.setHeader('Content-Type', 'application/x-msdos-program');
+      res.setHeader('Content-Disposition', 'attachment; filename="tecman-install.bat"');
+      return res.send(bat);
     }
 
     if (existsSync(srcPath)) {

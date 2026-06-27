@@ -325,10 +325,10 @@ export default function DownloadAgentsPage() {
               <Button
                 size="sm"
                 className="h-9 rounded-xl bg-blue-600 text-white text-xs"
-                onClick={() => window.open('/api/agents/go', '_blank')}
+                onClick={() => window.open(`/api/agents/go${apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}`, '_blank')}
               >
                 <Download size={13} className="mr-1.5" />
-                Descargar ejecutable (.exe)
+                Descargar instalador (.bat + .exe)
               </Button>
               <Button
                 variant="outline"
