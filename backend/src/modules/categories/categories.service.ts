@@ -74,4 +74,44 @@ export class CategoriesService {
   async removeSubcategory(id: string) {
     return this.prisma.subcategory.delete({ where: { id } });
   }
+
+  // ── Category Attributes ──────────────────────────────────────────────────
+
+  async createAttribute(categoryId: string, data: any) {
+    return this.prisma.categoryAttribute.create({
+      data: { ...data, categoryId },
+    });
+  }
+
+  async updateAttribute(id: string, data: any) {
+    return this.prisma.categoryAttribute.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async removeAttribute(id: string) {
+    return this.prisma.categoryAttribute.delete({ where: { id } });
+  }
+
+  async propagateAttributeValues(categoryId: string, attributeId: string, defaultValue: string) {
+    const assets = await this.prisma.asset.findMany({
+      where: { categoryId },
+      select: { id: true },
+    });
+
+    let created = 0;
+    for (const asset of assets) {
+      const existing = await this.prisma.assetAttributeValue.findUnique({
+        where: { assetId_attributeId: { assetId: asset.id, attributeId } },
+      });
+      if (!existing && defaultValue) {
+        await this.prisma.assetAttributeValue.create({
+          data: { assetId: asset.id, attributeId, value: defaultValue },
+        });
+        created++;
+      }
+    }
+    return { assets: assets.length, created };
+  }
 }

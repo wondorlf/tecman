@@ -298,6 +298,46 @@ export default function AssetDetailClient() {
           </CardContent>
         </Card>
 
+        {/* Características / Atributos de categoría */}
+        {asset.attributeValues && asset.attributeValues.length > 0 && (
+          <Card className="border-slate-100 rounded-2xl lg:col-span-3">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase">
+                  Características ({asset.attributeValues.length})
+                </p>
+                <button
+                  onClick={() => {
+                    setEditForm({
+                      ...editForm,
+                      attributeValues: asset.attributeValues.map((av: any) => ({
+                        attributeId: av.attributeId,
+                        value: av.value,
+                      })),
+                    });
+                    setEditing(true);
+                  }}
+                  className="text-xs text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-1"
+                >
+                  <Edit size={12} /> Editar
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {asset.attributeValues.map((av: any) => (
+                  <div key={av.id} className="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                      {av.attribute?.name || 'Atributo'}
+                    </p>
+                    <p className="text-sm text-slate-800 font-medium mt-0.5">
+                      {av.value} {av.attribute?.unit || ''}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex flex-col gap-4">
           {qrUrl && (
             <Card className="border-slate-100 rounded-2xl">
@@ -637,6 +677,42 @@ export default function AssetDetailClient() {
                   className="w-full h-16 rounded-lg border border-slate-200 text-sm px-3 py-2 resize-none"
                 />
               </div>
+
+              {/* Atributos de categoría */}
+              {asset.attributeValues && asset.attributeValues.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-slate-500 uppercase">Características</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {asset.attributeValues.map((av: any) => {
+                      const attrIdx = (editForm.attributeValues || []).findIndex(
+                        (e: any) => e.attributeId === av.attributeId
+                      );
+                      const currentVal = attrIdx >= 0 ? editForm.attributeValues[attrIdx].value : av.value;
+                      return (
+                        <div key={av.id} className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">
+                            {av.attribute?.name || 'Atributo'} {av.attribute?.unit ? `(${av.attribute.unit})` : ''}
+                          </label>
+                          <input
+                            type="text"
+                            value={currentVal}
+                            onChange={(e) => {
+                              const newVals = [...(editForm.attributeValues || [])];
+                              if (attrIdx >= 0) {
+                                newVals[attrIdx] = { ...newVals[attrIdx], value: e.target.value };
+                              } else {
+                                newVals.push({ attributeId: av.attributeId, value: e.target.value });
+                              }
+                              setEditForm({ ...editForm, attributeValues: newVals });
+                            }}
+                            className="w-full h-9 rounded-lg border border-slate-200 text-sm px-3"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100">
               <button
@@ -650,7 +726,11 @@ export default function AssetDetailClient() {
                 onClick={async () => {
                   setSaving(true);
                   try {
-                    await assetsApi.update(id!, editForm);
+                    const { attributeValues, ...assetData } = editForm;
+                    await assetsApi.update(id!, assetData);
+                    if (attributeValues && attributeValues.length > 0) {
+                      await assetsApi.updateAttributeValues(id!, attributeValues);
+                    }
                     setEditing(false);
                     refetch();
                   } catch (e: any) {

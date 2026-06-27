@@ -198,6 +198,8 @@ export const assetsApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  updateAttributeValues: (id: string, values: { attributeId: string; value: string }[]) =>
+    api.put(`/assets/${id}/attribute-values`, { values }),
 };
 
 // ── MAINTENANCE ───────────────────────────────────────────────────────────────
@@ -254,6 +256,12 @@ export const categoriesApi = {
   update: (id: string, data: any) => api.put(`/categories/${id}`, data),
   remove: (id: string) => api.delete(`/categories/${id}`),
   checkName: (name: string) => api.get(`/categories/check-name/${encodeURIComponent(name)}`),
+  // Attributes
+  createAttribute: (catId: string, data: any) => api.post(`/categories/${catId}/attributes`, data),
+  updateAttribute: (catId: string, attrId: string, data: any) => api.put(`/categories/${catId}/attributes/${attrId}`, data),
+  removeAttribute: (catId: string, attrId: string) => api.delete(`/categories/${catId}/attributes/${attrId}`),
+  propagateAttribute: (catId: string, attrId: string, defaultValue: string) =>
+    api.post(`/categories/${catId}/attributes/${attrId}/propagate`, { defaultValue }),
 };
 
 // ── SUBCATEGORIES ──────────────────────────────────────────────────────────────

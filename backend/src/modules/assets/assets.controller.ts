@@ -99,6 +99,15 @@ export class AssetsController {
     return this.assetsService.update(id, dto);
   }
 
+  @Put(':id/attribute-values')
+  @ApiOperation({ summary: 'Actualizar valores de atributos del activo' })
+  updateAttributeValues(
+    @Param('id') id: string,
+    @Body() body: { values: { attributeId: string; value: string }[] },
+  ) {
+    return this.assetsService.updateAttributeValues(id, body.values);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar activo' })
   remove(@Param('id') id: string) {

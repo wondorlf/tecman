@@ -303,6 +303,25 @@ export class AssetsService {
     }
   }
 
+  async updateAttributeValues(assetId: string, values: { attributeId: string; value: string }[]) {
+    for (const v of values) {
+      const existing = await this.prisma.assetAttributeValue.findUnique({
+        where: { assetId_attributeId: { assetId, attributeId: v.attributeId } },
+      });
+      if (existing) {
+        await this.prisma.assetAttributeValue.update({
+          where: { id: existing.id },
+          data: { value: v.value },
+        });
+      } else {
+        await this.prisma.assetAttributeValue.create({
+          data: { assetId, attributeId: v.attributeId, value: v.value },
+        });
+      }
+    }
+    return this.findOne(assetId);
+  }
+
   async linkDiscoveryDevice(discoveryId: string, data: { createNew: boolean; assetData?: any }) {
     const device = await this.prisma.discoveredDevice.findUnique({ where: { id: discoveryId } });
     if (!device) throw new NotFoundException(`Dispositivo discovery ${discoveryId} no encontrado`);
@@ -471,6 +490,9 @@ export class AssetsService {
         },
         documents: { orderBy: { createdAt: 'desc' } },
         customFields: true,
+        attributeValues: {
+          include: { attribute: { select: { id: true, name: true, type: true, unit: true, options: true } } },
+        },
         custodies: {
           where: { returnedAt: null },
           include: {

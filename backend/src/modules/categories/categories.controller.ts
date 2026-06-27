@@ -64,4 +64,39 @@ export class CategoriesController {
   removeSubcategory(@Param('subId') subId: string) {
     return this.categoriesService.removeSubcategory(subId);
   }
+
+  // ── Category Attributes ──────────────────────────────────────────────────
+
+  @Post(':id/attributes')
+  @ApiOperation({ summary: 'Crear atributo de categoría' })
+  createAttribute(
+    @Param('id') categoryId: string,
+    @Body() dto: any,
+  ) {
+    return this.categoriesService.createAttribute(categoryId, dto);
+  }
+
+  @Put(':id/attributes/:attrId')
+  @ApiOperation({ summary: 'Actualizar atributo de categoría' })
+  updateAttribute(
+    @Param('attrId') attrId: string,
+    @Body() dto: any,
+  ) {
+    return this.categoriesService.updateAttribute(attrId, dto);
+  }
+
+  @Delete(':id/attributes/:attrId')
+  @ApiOperation({ summary: 'Eliminar atributo de categoría' })
+  removeAttribute(@Param('attrId') attrId: string) {
+    return this.categoriesService.removeAttribute(attrId);
+  }
+
+  @Post(':id/attributes/:attrId/propagate')
+  @ApiOperation({ summary: 'Propagar valor de atributo a todos los activos de la categoría' })
+  propagateAttributeValue(
+    @Param('attrId') attrId: string,
+    @Body() dto: { defaultValue: string },
+  ) {
+    return this.categoriesService.propagateAttributeValues('', attrId, dto.defaultValue);
+  }
 }
