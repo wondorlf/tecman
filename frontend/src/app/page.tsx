@@ -195,7 +195,7 @@ function LandingContent() {
         </div>
         <p className="text-slate-500 text-lg max-w-lg mx-auto mb-14 leading-relaxed">
           {branding?.supportPortalSubtitle ||
-            'Plataforma inteligente de gestión de activos, mantenimiento y soporte técnico.'}
+            'Sistema de seguimiento y mantenimiento de activos físicos'}
         </p>
 
         {/* 3 Action Cards */}

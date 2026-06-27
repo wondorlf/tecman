@@ -3,6 +3,7 @@ import { Response, Request } from 'express';
 import { join } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { DiscoveryService } from '../discovery/discovery.service.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 
 /**
  * Sanitiza un valor de hostname para prevenir header injection.
@@ -180,6 +181,7 @@ export class AgentsController {
     return readFileSync(srcPath, 'utf-8');
   }
 
+  @Public()
   @Get('info')
   async info() {
     const apiKey = await this.discoveryService.getApiKey();

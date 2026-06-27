@@ -103,7 +103,7 @@ export class TicketsService {
     const nextNum = maxNum + 1;
     const code = `TKT-${String(nextNum).padStart(4, '0')}`;
 
-    const { macAddress, ...ticketData } = data;
+    const { macAddress, creatorName, creatorPhone, ...ticketData } = data;
     let finalAssetId = ticketData.assetId;
 
     // Si viene de un Agente (macAddress), intentar vincular el activo automáticamente

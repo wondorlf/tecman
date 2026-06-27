@@ -12,6 +12,8 @@ async function main() {
     { name: 'Biomédico', slug: 'biomedico', icon: '🏥', order: 4 },
     { name: 'Energía', slug: 'energia', icon: '⚡', order: 5 },
     { name: 'Soporte General', slug: 'soporte-general', icon: '🎧', order: 6 },
+    { name: 'Software y Aplicaciones', slug: 'software', icon: '📦', order: 7 },
+    { name: 'Accesos y Seguridad', slug: 'accesos', icon: '🔐', order: 8 },
   ];
 
   const createdCategories: Record<string, string> = {};
@@ -482,6 +484,401 @@ Algunos equipos requieren calibración posterior a un corte de energía:
       categoryId: createdCategories['redes'],
       difficulty: 'INTERMEDIO',
       estimatedMinutes: 4,
+    },
+    {
+      title: 'Nivel 1 — Mi equipo no enciende',
+      slug: 'nivel1-equipo-no-enciende',
+      excerpt: 'Pasos básicos antes de escalar al nivel 2.',
+      content: `
+# Nivel 1 — Mi equipo no enciende
+
+## Checklist rápido (antes de llamar soporte)
+
+### 1. Verificar energía
+- ¿El cable de alimentación está conectado firmemente?
+- ¿El tomacorriente funciona? (probar con otro aparato)
+- Si es laptop: ¿la batería tiene carga? Conectar cargador 15 min.
+
+### 2. Monitor
+- ¿El monitor está encendido? (LED de energía)
+- ¿Está en la entrada correcta? (HDMI, DisplayPort, VGA)
+- Probar con otro cable o puerto.
+
+### 3. Reinicio forzado
+- **Desktop:** Mantener botón de encendido 10 seg → soltar → esperar 30 seg → encender
+- **Laptop:** Mantener botón 10 seg → quitar batería (si es posible) → reconectar → encender
+
+### 4. Periféricos
+- Desconectar todos los USB excepto teclado y mouse
+- Quitar dock, USB hub, etc.
+
+## Si no funciona → Escalar a Nivel 2
+- Crear ticket indicando: equipo, modelo, número de serie, LED visible
+      `,
+      categoryId: createdCategories['soporte-general'],
+      difficulty: 'BASICO',
+      estimatedMinutes: 3,
+    },
+    {
+      title: 'Nivel 1 — No puedo enviar/recibir correos',
+      slug: 'nivel1-correo-falla',
+      excerpt: 'Diagnóstico rápido de problemas de correo electrónico.',
+      content: `
+# Nivel 1 — No puedo enviar/recibir correos
+
+## Checklist rápido
+
+### 1. Verificar internet
+- ¿Navegas normalmente en el navegador?
+- Si no → resolver primero el problema de red
+
+### 2. Outlook no responde
+- Cerrar Outlook completamente (verificar en Administrador de tareas)
+- Reabrir Outlook
+- Si pide contraseña → reingresar credenciales de dominio
+
+### 3. No envía correos
+- Verificar tamaño del archivo adjunto (máx 25 MB en la mayoría)
+- Intentar sin adjuntos
+- Guardar borrador y reenviar
+
+### 4. No recibe correos
+- Verificar carpeta de correo no deseado
+- Verificar reglas de Outlook (podrían mover correos)
+- Abrir Outlook Web para verificar si el servidor recibe
+
+### 5. Outlook Web como alternativa
+- Abrir navegador → ingresar URL del webmail
+- Si funciona en web → problema con cliente Outlook local
+
+## Si no funciona → Escalar a Nivel 2
+- Crear ticket con: usuario, fecha/hora del último correo recibido, error exacto
+      `,
+      categoryId: createdCategories['soporte-general'],
+      difficulty: 'BASICO',
+      estimatedMinutes: 3,
+    },
+    {
+      title: 'Nivel 1 — Necesito instalar un programa',
+      slug: 'nivel1-instalar-programa',
+      excerpt: 'Procedimiento para solicitar instalación de software.',
+      content: `
+# Nivel 1 — Necesito instalar un programa
+
+## Antes de solicitar
+
+### 1. Verificar si ya está disponible
+- Revisar el menú Inicio → buscar el programa
+- Verificar en Panel de control → Programas
+
+### 2. Catálogo aprobado
+- Consultar con tu supervisor si el software está en el catálogo
+- Software no aprobado requiere validación de seguridad
+
+### 3. Autogestión
+- Algunas empresas tienen un portal de autoservicio
+- Verificar si el software está disponible en ese portal
+
+## Si no está disponible
+1. Crear ticket con:
+   - Nombre del software y versión necesaria
+   - Justificación del uso laboral
+   - Si requiere licencia: indicar si ya se compra o se necesita
+
+## Importante
+- **No instalar software pirata** o sin licencia
+- **No instalar software de fuente no confiable**
+- Ciertos software requieren aprobación de TI y Seguridad
+
+## Escalar a Nivel 2/3
+- Si requiere configuración especial
+- Si necesita acceso a servidor o dominio
+      `,
+      categoryId: createdCategories['software'],
+      difficulty: 'BASICO',
+      estimatedMinutes: 2,
+    },
+    {
+      title: 'Nivel 1 — Equipo muy lento después de actualización',
+      slug: 'nivel1-lento-actualizacion',
+      excerpt: 'Soluciones cuando el equipo se pone lento tras actualizar Windows.',
+      content: `
+# Nivel 1 — Equipo muy lento después de actualización
+
+## Soluciones rápidas
+
+### 1. Esperar la finalización
+- Windows puede estar instalando actualizaciones en segundo plano
+- Dejar el equipo encendido 30-60 minutos sin usar
+- No apagar durante este proceso
+
+### 2. Verificar en Administrador de Tareas
+- Ctrl+Shift+Esc → pestaña Procesos
+- Buscar "Windows Update" o "TiWorker" usando CPU alta
+- Si es así → esperar a que termine
+
+### 3. Liberar espacio en disco
+- Windows Update necesita espacio temporal
+- Verificar que disco C tenga al menos 10 GB libres
+- Limpiar archivos temporales: <code>cleanmgr</code>
+
+### 4. Reiniciar
+- Si después de 1 hora sigue lento → reiniciar
+- Puede haber actualizaciones pendientes de reinicio
+
+## Si no mejora → Escalar a Nivel 2
+- Crear ticket indicando:
+  - Versión de Windows instalada
+  - Espacio libre en disco C
+  - Tiempo desde la actualización
+      `,
+      categoryId: createdCategories['computadores'],
+      difficulty: 'BASICO',
+      estimatedMinutes: 3,
+    },
+    {
+      title: 'Nivel 1 — No puedo conectarme al dominio / WiFi',
+      slug: 'nivel1-conexion-dominio-wifi',
+      excerpt: 'Pasos para resolver problemas de autenticación de dominio y WiFi.',
+      content: `
+# Nivel 1 — No puedo conectarme al dominio / WiFi
+
+## WiFi no conecta
+
+### 1. Olvidar y reconocer
+- Configuración → WiFi → Red conocida → Olvidar
+- Reconectar ingresando la contraseña
+
+### 2. Verificar other
+- ¿Otros equipos se conectan a la misma red?
+- Si no → el problema es el router/Access Point
+
+### 3. Olvidar y reconectar
+- Configuración → Red → WiFi → Olvidar red
+- Reiniciar adaptador de red
+- Conectar nuevamente
+
+## Dominio no carga
+
+### 1. Reconectar a la red
+- Si WiFi se desconecta frecuentemente → cable de red
+
+### 2. Verificar credenciales
+- ¿La contraseña de dominio es correcta?
+- ¿La cuenta está bloqueada? (esperar 15 min o llamar TI)
+
+### 3. Equipo fuera del dominio
+- Si el equipo fue reformateado → necesita re-unirse al dominio
+- Contactar Nivel 2
+
+## Si no funciona → Escalar a Nivel 2
+- Ticket con: usuario, máquina, red, error exacto
+      `,
+      categoryId: createdCategories['redes'],
+      difficulty: 'BASICO',
+      estimatedMinutes: 3,
+    },
+    {
+      title: 'Nivel 2 — Error de driver o dispositivo no reconocido',
+      slug: 'nivel2-driver-dispositivo',
+      excerpt: 'Soluciones intermedias para dispositivos que no funcionan correctamente.',
+      content: `
+# Nivel 2 — Error de driver o dispositivo no reconocido
+
+## Diagnóstico
+
+### 1. Administrador de dispositivos
+- Win + X → Administrador de dispositivos
+- Buscar dispositivo con ícono amarillo (⚠️) o rojo (❌)
+- Notar el mensaje de error exacto
+
+### 2. Códigos de error comunes
+- **Código 28:** Driver no instalado
+- **Código 43:** Dispositivo reportó un problema
+- **Código 10:** No se puede iniciar el dispositivo
+- **Código 52:** Firma digital no verificada
+
+## Soluciones
+
+### Driver no instalado
+1. Descargar driver oficial del fabricante
+2. Ejecutar como Administrador
+3. Reiniciar después de la instalación
+
+### Dispositivo no reconocido
+1. Desconectar y reconectar (USB)
+2. Probar otro puerto
+3. Probar en otro equipo para descartar falla del hardware
+
+### Actualización de Windows bloquea driver
+1. Configuración → Actualización → Opciones avanzadas
+2. "Omitir actualizaciones de calidad"
+3. Restaurar driver anterior si es necesario
+
+## Cuándo escalar a Nivel 3
+- Si el dispositivo requiere firmware especializado
+- Si es equipo biomédico o crítico
+- Si el hardware está dañado físicamente
+      `,
+      categoryId: createdCategories['computadores'],
+      difficulty: 'INTERMEDIO',
+      estimatedMinutes: 6,
+    },
+    {
+      title: 'Nivel 2 — Configurar impresora de red nueva',
+      slug: 'nivel2-impresora-red-nueva',
+      excerpt: 'Guía para técnicos: agregar una impresora de red al dominio.',
+      content: `
+# Nivel 2 — Configurar impresora de red nueva
+
+## Requisitos
+- IP estática asignada para la impresora
+- Acceso a la consola de la impresora (panel frontal)
+- Driver oficial del fabricante
+
+## Pasos
+
+### 1. Configurar IP en la impresora
+- Menú de la impresora → Red → TCP/IP
+- Asignar IP fuera del rango DHCP (ej: 192.168.1.200)
+- Subnet mask: 255.255.255.0
+- Gateway: IP del router
+
+### 2. Verificar conectividad
+\`\`\`
+ping [IP de la impresora]
+\`\`\`
+
+### 3. Agregar en Windows
+1. Panel de control → Dispositivos e impresoras
+2. "Agregar impresora"
+3. "Agregar impresora con configuración manual"
+4. "Usar una impresora existente" → TCP/IP
+5. Ingresar IP de la impresora
+6. Seleccionar driver correspondiente
+
+### 4. Configurar cola
+- Propiedades de impresora → Colas → Configurar
+- Habilitar "Spool print documents"
+- "Start printing after last page is spooled"
+
+### 5. Compartir
+- Propiedades → Compartir → Compartir esta impresora
+- Nombre de compartición descriptivo
+
+## Pruebas
+- Imprimir página de prueba desde propiedades
+- Verificar desde otro equipo
+- Documentar IP y ubicación en inventario
+      `,
+      categoryId: createdCategories['impresoras'],
+      difficulty: 'INTERMEDIO',
+      estimatedMinutes: 8,
+    },
+    {
+      title: 'Nivel 3 — Recuperación de datos y disco dañado',
+      slug: 'nivel3-disco-danado',
+      excerpt: 'Procedimientos avanzados para recuperación de datos y discos.',
+      content: `
+# Nivel 3 — Recuperación de datos y disco dañado
+
+## ⚠️ IMPORTANTE
+- **No intentar escribir** en el disco dañado
+- **No ejecutar CHKDSK /F** si hay datos críticos sin respaldo
+- **Disconnectar inmediatamente** si se escuchan ruidos anormales (clics, zumbidos)
+
+## Diagnóstico
+
+### 1. SMART del disco
+\`\`\`
+wmic diskdrive get status
+\`\`\`
+O usar CrystalDiskInfo para lectura SMART completa
+
+### 2. Síntomas de falla
+- Archivos que desaparecen o están corruptos
+- Tiempos de acceso excesivos
+- Errores al copiar archivos
+- Pantalla azul con error CRITICAL_PROCESS_DIED
+
+## Nivel 3 — Procedimiento
+
+### 1. Crear imagen del disco
+- Usar Clonezilla o dd para crear imagen bit a bit
+- Trabajar SOLO con la imagen, nunca con el disco original
+- Verificar integridad de la imagen
+
+### 2. Recuperación con herramientas
+- **TestDisk:** Recuperar particiones
+- **PhotoRec:** Recuperar archivos eliminados
+- **R-Studio:** Recuperación profesional
+
+### 3. Documentación
+- Documentar: modelo, capacidad, tipo de falla, datos recuperados
+- Registrar en hoja de vida del activo
+- Notificar al usuario sobre estado de los datos
+
+## Reemplazo
+- Formatear disco nuevo
+- Instalar SO desde imagen corporativa
+- Restaurar datos desde backup o imagen
+- Verificar funcionamiento por 48 horas
+
+## Prevenir futuras fallas
+- Verificar SMART mensualmente
+- Mantener backup actualizado
+- Reemplazar discos mayores a 5 años
+      `,
+      categoryId: createdCategories['computadores'],
+      difficulty: 'AVANZADO',
+      estimatedMinutes: 15,
+    },
+    {
+      title: 'Nivel 3 — Configuración de servidor de impresión',
+      slug: 'nivel3-servidor-impresion',
+      excerpt: 'Instalación y configuración de role de impresión en servidor Windows.',
+      content: `
+# Nivel 3 — Configuración de servidor de impresión
+
+## Requisitos
+- Servidor Windows con role "Servicios de impresión"
+- IPs estáticas para todas las impresoras
+- Driver de cada modelo de impresora (x64 y x86)
+
+## Instalación del role
+
+### 1. Server Manager
+- Agregar roles → Servicios de impresión
+- Incluir: Server for Print Queues, LPD Service
+
+### 2. Compartir impresoras
+- Todas las impresoras conectadas al servidor se comparten automáticamente
+- Verificar permisos: Users = Print, Administrators = Full
+
+### 3. Deploy con GPO
+\`\`\`powershell
+# Script de deploy
+rundll32 printui.dll,PrintUIEntry /in /n "Nombre del Servidor\\Nombre Impresora"
+\`\`\`
+
+### 4. Driver Management
+- Mantener repositorio de drivers actualizado
+- Usar "Driver Isolation" para estabilidad
+- Probar driver antes de distribuir
+
+## Monitoreo
+- Usar Print Management Console
+- Alertas por cola de impresión atascada
+- Estadísticas de uso por impresora/usuario
+
+## Backup y DR
+- Exportar configuración de impresoras periódicamente
+- Documentar mapping impresora-IP-usuarios
+- Tener plan de failover si el servidor cae
+      `,
+      categoryId: createdCategories['impresoras'],
+      difficulty: 'AVANZADO',
+      estimatedMinutes: 12,
     },
   ];
 

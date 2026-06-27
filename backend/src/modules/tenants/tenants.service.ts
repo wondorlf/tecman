@@ -20,7 +20,7 @@ export class TenantsService implements OnModuleInit {
           secondaryColor: '#0f172a',
           supportPortalTitle: 'Mesa de Ayuda TI',
           supportPortalSubtitle:
-            'Sistema inteligente de reporte y seguimiento de incidencias técnicas.',
+            'Sistema de seguimiento y mantenimiento de activos físicos',
         },
       });
     }

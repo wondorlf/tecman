@@ -18,6 +18,7 @@ import {
   Download,
   UserCheck,
   Monitor,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,13 +41,18 @@ export default function FloatingHelp() {
       content: (
         <div className="space-y-2">
           <p className="text-sm text-slate-700">
-            ¡Hola! Soy el asistente de TecMan. ¿En qué puedo ayudarte?
+            ¡Hola! Soy <strong>EganBot</strong>, tu asistente ITIL. Puedo ayudarte con soluciones de soporte, consultar activos o gestionar tickets.
           </p>
           <div className="flex flex-wrap gap-2">
             <QuickChip
               icon={<Ticket size={12} />}
               label="Nuevo ticket"
               onClick={() => handleQuick('/dashboard/tickets')}
+            />
+            <QuickChip
+              icon={<HelpCircle size={12} />}
+              label="Soluciones comunes"
+              onClick={() => handleQuick('/dashboard/knowledge')}
             />
             <QuickChip
               icon={<ScanBarcode size={12} />}
@@ -67,21 +73,6 @@ export default function FloatingHelp() {
               icon={<Monitor size={12} />}
               label="Discovery"
               onClick={() => handleQuick('/dashboard/discovery')}
-            />
-            <QuickChip
-              icon={<Network size={12} />}
-              label="Soporte público"
-              onClick={() => handleQuick('/soporte')}
-            />
-            <QuickChip
-              icon={<Download size={12} />}
-              label="Descargar Agente"
-              onClick={() => handleQuick('/dashboard/agents')}
-            />
-            <QuickChip
-              icon={<BookOpen size={12} />}
-              label="Conocimiento"
-              onClick={() => handleQuick('/dashboard/knowledge')}
             />
           </div>
         </div>
@@ -196,8 +187,139 @@ export default function FloatingHelp() {
           );
         }
       }
-      // ── Detectar intenciones existentes ──
+      // ── ITIL Nivel 1: Soluciones rápidas comunes ──
       else if (
+        lower.includes('internet') || lower.includes('red') || lower.includes('wifi') ||
+        lower.includes('conexion') || lower.includes('conexión') || lower.includes('网络')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Soluciones de Red</p>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Prueba estas soluciones antes de crear un ticket:
+            </p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Reinicia tu adaptador de red: Panel de control → Red → clic derecho → Desactivar/Activar</li>
+              <li>Reinicia el equipo y el router/módem</li>
+              <li>Libera la IP: <code className="bg-slate-100 px-1 rounded">ipconfig /release</code> y luego <code className="bg-slate-100 px-1 rounded">ipconfig /renew</code></li>
+              <li>Limpia caché DNS: <code className="bg-slate-100 px-1 rounded">ipconfig /flushdns</code></li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Crear ticket de soporte
+            </Button>
+          </div>
+        );
+      } else if (
+        lower.includes('impresora') || lower.includes('imprimir') || lower.includes('print')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Soluciones de Impresión</p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Verifica que la impresora esté encendida y con papel</li>
+              <li>Reinicia el spooler: <code className="bg-slate-100 px-1 rounded">net stop spooler &amp;&amp; net start spooler</code></li>
+              <li>Verifica que esté seleccionada como impresora predeterminada</li>
+              <li>Reinicia el equipo</li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Crear ticket
+            </Button>
+          </div>
+        );
+      } else if (
+        lower.includes('lento') || lower.includes('lentitud') || lower.includes('rendimiento') ||
+        lower.includes('traba') || lower.includes('freeze') || lower.includes('congel')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Rendimiento del Equipo</p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Cierra aplicaciones que no estés usando (verifica en el Administrador de Tareas)</li>
+              <li>Libera espacio en disco: elimina archivos temporales (<code className="bg-slate-100 px-1 rounded">%temp%</code>)</li>
+              <li>Reinicia el equipo si no lo has hecho hoy</li>
+              <li>Verifica que no haya actualizaciones de Windows pendientes de reinicio</li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Crear ticket
+            </Button>
+          </div>
+        );
+      } else if (
+        lower.includes('correo') || lower.includes('email') || lower.includes('outlook') ||
+        lower.includes('mail')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Correo Electrónico</p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Verifica tu conexión a internet primero</li>
+              <li>Cierra y vuelve a abrir Outlook</li>
+              <li>Si está en Outlook Web, prueba con otro navegador</li>
+              <li>Libera espacio en la bandeja de entrada (archivos {'>'} 20MB)</li>
+              <li>Verifica credenciales con Ctrl+Alt+Supr → Cerrar sesión → Reingresar</li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Crear ticket
+            </Button>
+          </div>
+        );
+      } else if (
+        lower.includes('pantalla') || lower.includes('monitor') || lower.includes('video') ||
+        lower.includes('no prende') || lower.includes('no enciende') || lower.includes('black') ||
+        lower.includes('negro')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Pantalla / Encendido</p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Verifica que el cable de alimentación esté conectado</li>
+              <li>Revisa que el monitor esté encendido (LED de energía)</li>
+              <li>Prueba otro cable o puerto de video si es posible</li>
+              <li>Si es laptop: mantén presionado el botón de encendido 10 segundos, suelta y vuelve a encender</li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Crear ticket Nivel 2/3
+            </Button>
+          </div>
+        );
+      } else if (
+        lower.includes('acceso') || lower.includes('contraseña') || lower.includes('password') ||
+        lower.includes('bloqueado') || lower.includes('login') || lower.includes('sesion') ||
+        lower.includes('sesión')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1 — Accesos y Credenciales</p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Verifica que el teclado esté en el idioma correcto (ES/EN)</li>
+              <li>Escribe la contraseña en un bloc de notas para verificar caracteres especiales</li>
+              <li>Si el dominio no carga, desconéctate de la red WiFi y reconéctate</li>
+              <li>Si estás bloqueado, espera 15 minutos o contacta al administrador</li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Crear ticket
+            </Button>
+          </div>
+        );
+      } else if (
+        lower.includes('software') || lower.includes('programa') || lower.includes('aplicacion') ||
+        lower.includes('aplicación') || lower.includes('instalar')
+      ) {
+        botContent = (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-blue-700">Nivel 1/2 — Instalación de Software</p>
+            <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
+              <li>Verifica si el software está en el catálogo aprobado de la empresa</li>
+              <li>Reinicia el equipo antes de intentar reinstalar</li>
+              <li>Ejecuta como Administrador si requiere permisos elevados</li>
+              <li>Si falla, desinstala versiones previas antes de reinstalar</li>
+            </ol>
+            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuick('/dashboard/tickets')}>
+              <Ticket size={13} className="mr-1.5" /> Solicitar instalación
+            </Button>
+          </div>
+        );
+      } else if (
         lower.includes('ticket') ||
         lower.includes('soporte') ||
         lower.includes('ayuda') ||
@@ -426,8 +548,8 @@ export default function FloatingHelp() {
                 <Bot size={16} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900">Asistente TecMan</p>
-                <p className="text-[10px] text-slate-500">Soporte y Knowledge Base</p>
+                <p className="text-sm font-semibold text-slate-900">EganBot</p>
+                <p className="text-[10px] text-slate-500">Asistente ITIL · Soporte y Knowledge Base</p>
               </div>
             </div>
             <Button

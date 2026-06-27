@@ -893,7 +893,7 @@ model Tenant {
   primaryColor                 String?  @default("#16a34a")
   secondaryColor               String?  @default("#0f172a")
   supportPortalTitle           String?  @default("Mesa de Ayuda TI")
-  supportPortalSubtitle        String?  @default("Sistema inteligente de reporte y seguimiento de incidencias técnicas.")
+  supportPortalSubtitle        String?  @default("Sistema de seguimiento y mantenimiento de activos físicos")
   supportPortalBackgroundUrl   String?
   telegramBotToken             String?
   telegramChatId               String?

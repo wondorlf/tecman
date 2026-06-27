@@ -238,7 +238,7 @@ function SupportPortalContent() {
             </h1>
             <p className="text-slate-500 mt-2 max-w-lg mx-auto">
               {branding?.supportPortalSubtitle ||
-                'Sistema inteligente de reporte y seguimiento de incidencias técnicas.'}
+                'Sistema de seguimiento y mantenimiento de activos físicos'}
             </p>
           </div>
         </div>

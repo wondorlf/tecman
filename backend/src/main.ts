@@ -27,7 +27,7 @@ async function bootstrap() {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
       },
@@ -75,7 +75,8 @@ async function bootstrap() {
         `http://localhost:${frontendPort}`,
         `http://127.0.0.1:${frontendPort}`,
         `http://localhost:${process.env.PORT || '2023'}`,
-      ];
+        process.env.PRODUCTION_URL,
+      ].filter(Boolean);
 
       if (allowed.includes(origin)) {
         return callback(null, true);

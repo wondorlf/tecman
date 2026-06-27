@@ -118,7 +118,7 @@ export function PublicLayout({
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer className="relative z-10 pb-6 text-center text-slate-400 text-xs font-medium">
-        &copy; {new Date().getFullYear()} E-GAN &middot; EGAN-TECH &middot; Sistema de Gesti&oacute;n de TI
+        &copy; 2026 E-GAN by Jorge Montiel &middot; Sistema ITIL
       </footer>
     </div>
   );
