@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Plus, Search, Image as ImageIcon, CheckCircle2, Monitor, Camera, X, Upload } from 'lucide-react';
 import axios from 'axios';
 import { PublicLayout } from '@/components/shared/PublicLayout';
+import PublicChatbot from '@/components/public-chatbot';
 
 function SupportPortalContent() {
   const [activeTab, setActiveTab] = useState<'new' | 'tracking'>('new');
@@ -532,6 +533,8 @@ function SupportPortalContent() {
           </CardContent>
         </Card>
       </div>
+
+      <PublicChatbot />
     </PublicLayout>
   );
 }
