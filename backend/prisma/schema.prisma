@@ -486,6 +486,9 @@ enum DocumentType {
   WARRANTY
   INVOICE
   TECHNICAL_SHEET
+  TUTORIAL
+  IMAGE
+  VIDEO
   OTHER
 }
 

@@ -12,6 +12,9 @@ export type DocumentType =
   | 'WARRANTY'
   | 'INVOICE'
   | 'TECHNICAL_SHEET'
+  | 'TUTORIAL'
+  | 'IMAGE'
+  | 'VIDEO'
   | 'OTHER';
 export type EventType =
   | 'CREATED'
@@ -424,6 +427,9 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   WARRANTY: 'Garantia',
   INVOICE: 'Factura',
   TECHNICAL_SHEET: 'Ficha tecnica',
+  TUTORIAL: 'Tutorial',
+  IMAGE: 'Imagen',
+  VIDEO: 'Video',
   OTHER: 'Otro',
 };
 

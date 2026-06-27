@@ -123,7 +123,7 @@ export class AssetsService {
 
   async findByQrCode(code: string) {
     const asset = await this.prisma.asset.findFirst({
-      where: { OR: [{ qrCode: code }, { code }] },
+      where: { OR: [{ qrCode: code }, { code }, { serialNumber: code }] },
       include: {
         category: { select: { id: true, name: true, icon: true, color: true } },
         subcategory: { select: { id: true, name: true } },
@@ -132,10 +132,8 @@ export class AssetsService {
         attributeValues: {
           include: { attribute: { select: { name: true, unit: true, type: true } } },
         },
-        // Incluir documentos públicos — manuales y fichas técnicas
         documents: {
-          where: { type: { in: ['MANUAL', 'TECHNICAL_SHEET'] } },
-          select: { id: true, name: true, type: true, filename: true, mimeType: true, size: true, description: true },
+          select: { id: true, name: true, type: true, filename: true, mimeType: true, size: true, description: true, path: true },
           orderBy: { createdAt: 'desc' },
         },
         // Incluir datos del discovery vinculado (para mostrar cambios HW)

@@ -150,7 +150,10 @@ export class TicketsService {
   }
 
   async update(id: string, data: any) {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
+    if (existing.status === 'RESOLVED' || existing.status === 'CLOSED') {
+      throw new Error(`No se puede editar un ticket con estado ${existing.status}`);
+    }
     const updateData: any = { ...data };
     if (data.status === 'RESOLVED' && !data.resolvedAt) {
       updateData.resolvedAt = new Date();

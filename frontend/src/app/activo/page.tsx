@@ -119,6 +119,21 @@ function AssetViewContent() {
       }
     : null;
 
+  const DOC_CATEGORIES: Record<string, { label: string; icon: any; color: string; bg: string }> = {
+    MANUAL: { label: 'Manuales', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
+    TECHNICAL_SHEET: { label: 'Fichas Técnicas', icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    TUTORIAL: { label: 'Tutoriales', icon: Monitor, color: 'text-violet-600', bg: 'bg-violet-50' },
+    IMAGE: { label: 'Imágenes', icon: QrCode, color: 'text-amber-600', bg: 'bg-amber-50' },
+    VIDEO: { label: 'Videos', icon: Video, color: 'text-red-600', bg: 'bg-red-50' },
+  };
+  const groupedDocs = asset?.documents?.reduce((acc: Record<string, any[]>, doc: any) => {
+    const cat = doc.type || 'OTHER';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(doc);
+    return acc;
+  }, {}) || {};
+  const activeDocCats = Object.keys(groupedDocs).filter((k) => DOC_CATEGORIES[k]);
+
   return (
     <PublicLayout showBack backLabel="Inicio" maxWidth="max-w-2xl">
       <div className="pt-12 pb-6">
@@ -140,7 +155,7 @@ function AssetViewContent() {
               <input
                 id="qr-search-input"
                 type="text"
-                placeholder="Ingresa el código (ej: TECMAN-xxxx o TEC-001)"
+                placeholder="Código, QR o número de serie (ej: TECMAN-xxxx, TEC-001, SN12345)"
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 className="flex-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 px-4 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all text-sm font-mono"
@@ -271,37 +286,45 @@ function AssetViewContent() {
               </div>
             )}
 
-            {/* Documentos: manuales y fichas técnicas */}
-            {asset.documents && asset.documents.length > 0 && (
-              <div className="px-7 pb-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                  <FileText size={11} />
-                  Manuales y Recursos
-                </p>
-                <div className="space-y-2">
-                  {asset.documents.map((doc: any) => (
-                    <a
-                      key={doc.id}
-                      href={`/api/storage/public/${doc.filename}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 transition-all group"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                        <BookOpen size={14} className="text-red-400" />
+            {/* Documentos categorizados */}
+            {activeDocCats.length > 0 && (
+              <div className="px-7 pb-4 space-y-4">
+                {activeDocCats.map((catKey) => {
+                  const cat = DOC_CATEGORIES[catKey];
+                  const Icon = cat.icon;
+                  return (
+                    <div key={catKey}>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <Icon size={11} className={cat.color} />
+                        {cat.label} ({groupedDocs[catKey].length})
+                      </p>
+                      <div className="space-y-1.5">
+                        {groupedDocs[catKey].map((doc: any) => (
+                          <a
+                            key={doc.id}
+                            href={`/api/storage/public/${doc.filename}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center gap-3 p-3 rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 transition-all group`}
+                          >
+                            <div className={`w-8 h-8 rounded-lg ${cat.bg} flex items-center justify-center shrink-0`}>
+                              <Icon size={14} className={cat.color} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-slate-800 truncate group-hover:text-blue-700 transition-colors">
+                                {doc.name}
+                              </p>
+                              <p className="text-xs text-slate-400">
+                                {doc.mimeType?.split('/')[1]?.toUpperCase() || doc.type}
+                                {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
+                              </p>
+                            </div>
+                          </a>
+                        ))}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800 truncate group-hover:text-blue-700 transition-colors">
-                          {doc.name}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {doc.type === 'MANUAL' ? 'Manual' : 'Ficha técnica'}
-                          {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
-                        </p>
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 

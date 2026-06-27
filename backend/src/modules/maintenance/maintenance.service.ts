@@ -92,7 +92,10 @@ export class MaintenanceService {
   }
 
   async update(id: string, data: any) {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
+    if (existing.status === 'COMPLETED' || existing.status === 'CANCELLED') {
+      throw new Error(`No se puede editar un mantenimiento con estado ${existing.status}`);
+    }
     return this.prisma.maintenance.update({
       where: { id },
       data,
