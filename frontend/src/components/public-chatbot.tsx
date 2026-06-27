@@ -48,11 +48,13 @@ function ResponseMenu({ onAction }: { onAction: (text: string) => void }) {
       <p className="text-[10px] text-slate-400 mb-1.5 font-medium">¿Qué necesitas?</p>
       <div className="flex flex-wrap gap-1.5">
         <QuickAction icon={<Ticket size={11} />} label="Crear ticket" color="emerald" onClick={() => onAction('crear ticket')} />
-        <QuickAction icon={<QrCode size={11} />} label="Escanear QR" color="violet" onClick={() => onAction('escanear qr')} />
-        <QuickAction icon={<HelpCircle size={11} />} label="Ver artículos" color="blue" onClick={() => onAction('ver artículos')} />
         <QuickAction icon={<Wifi size={11} />} label="Internet" color="blue" onClick={() => onAction('no tengo internet')} />
         <QuickAction icon={<Printer size={11} />} label="Impresora" color="amber" onClick={() => onAction('impresora')} />
-        <QuickAction icon={<Monitor size={11} />} label="Equipo lento" color="red" onClick={() => onAction('equipo lento')} />
+        <QuickAction icon={<HardDrive size={11} />} label="Equipo lento" color="red" onClick={() => onAction('equipo lento')} />
+        <QuickAction icon={<Monitor size={11} />} label="Pantalla azul" color="slate" onClick={() => onAction('pantalla azul')} />
+        <QuickAction icon={<Globe size={11} />} label="Outlook" color="cyan" onClick={() => onAction('outlook')} />
+        <QuickAction icon={<KeyRound size={11} />} label="Contraseña" color="indigo" onClick={() => onAction('contraseña')} />
+        <QuickAction icon={<Download size={11} />} label="Herramientas" color="violet" onClick={() => onAction('instalar herramientas')} />
       </div>
     </div>
   );
@@ -80,20 +82,14 @@ export default function PublicChatbot({ onNavigate }: Props) {
     content: (
       <div className="space-y-3">
         <p className="text-sm text-slate-700">
-          ¡Hola! Soy <strong>EganBot</strong>, tu asistente de soporte. Puedo ayudarte con:
+          ¡Hola! Soy <strong>EganBot</strong>, tu asistente de soporte TI. Puedo ayudarte con:
         </p>
         <div className="space-y-1.5">
           <QuickAction
             icon={<Ticket size={13} />}
-            label="Crear un ticket de soporte"
+            label="Crear ticket de soporte"
             color="emerald"
             onClick={() => handleBotQuery('como crear ticket')}
-          />
-          <QuickAction
-            icon={<QrCode size={13} />}
-            label="Escanear código QR de un activo"
-            color="violet"
-            onClick={() => handleBotQuery('como escanear qr')}
           />
           <QuickAction
             icon={<Wifi size={13} />}
@@ -103,7 +99,7 @@ export default function PublicChatbot({ onNavigate }: Props) {
           />
           <QuickAction
             icon={<Printer size={13} />}
-            label="La impresora no imprime"
+            label="Impresora no imprime"
             color="amber"
             onClick={() => handleBotQuery('impresora no imprime')}
           />
@@ -114,40 +110,34 @@ export default function PublicChatbot({ onNavigate }: Props) {
             onClick={() => handleBotQuery('equipo lento')}
           />
           <QuickAction
-            icon={<Monitor size={13} />}
-            label="Soporte remoto"
-            color="indigo"
-            onClick={() => handleBotQuery('soporte remoto')}
-          />
-          <QuickAction
             icon={<Globe size={13} />}
-            label="Outlook no funciona"
+            label="Outlook / Correo"
             color="cyan"
             onClick={() => handleBotQuery('outlook no funciona')}
           />
           <QuickAction
             icon={<Monitor size={13} />}
-            label="Mi equipo está lento"
-            color="red"
-            onClick={() => handleBotQuery('equipo lento')}
+            label="Pantalla azul / negra"
+            color="slate"
+            onClick={() => handleBotQuery('pantalla azul')}
           />
           <QuickAction
             icon={<KeyRound size={13} />}
-            label="Olvidé mi contraseña"
-            color="slate"
-            onClick={() => handleBotQuery('olvide mi contraseña')}
-          />
-          <QuickAction
-            icon={<BookOpen size={13} />}
-            label="Ver artículos de ayuda"
+            label="Contraseña / Acceso"
             color="indigo"
-            onClick={() => handleBotQuery('ver artículos de ayuda')}
+            onClick={() => handleBotQuery('contraseña bloqueada')}
           />
           <QuickAction
-            icon={<HelpCircle size={13} />}
-            label="Seguimiento de ticket"
-            color="cyan"
-            onClick={() => handleBotQuery('seguimiento de ticket')}
+            icon={<Download size={13} />}
+            label="Instalar herramientas"
+            color="violet"
+            onClick={() => handleBotQuery('instalar herramientas')}
+          />
+          <QuickAction
+            icon={<QrCode size={13} />}
+            label="Escanear activo QR"
+            color="slate"
+            onClick={() => handleBotQuery('escanear qr')}
           />
         </div>
       </div>
@@ -290,14 +280,15 @@ export default function PublicChatbot({ onNavigate }: Props) {
       if (lower.includes('internet') || lower.includes('red') || lower.includes('wifi') || lower.includes('conexion') || lower.includes('conexión')) {
         addBotMessage(
           <SolutionBlock
-            title="Nivel 1 — Soluciones de Red"
+            title="Nivel 1 — Sin Internet / DNS no resuelve"
             color="blue"
             solutionId="network-dns"
             steps={[
-              'Reinicia tu adaptador de red (Panel de control → Red → clic derecho → Desactivar/Activar)',
-              'Reinicia el equipo y el router/módem',
-              'Libia la IP: ejecuta <code className="bg-slate-100 px-1 rounded">ipconfig /release</code> y luego <code className="bg-slate-100 px-1 rounded">ipconfig /renew</code>',
-              'Limpia DNS: ejecuta <code className="bg-slate-100 px-1 rounded">ipconfig /flushdns</code>',
+              '<strong>Paso 1:</strong> Descarga el script de solución haciendo clic en el botón azul de abajo',
+              '<strong>Paso 2:</strong> Haz clic derecho sobre el archivo → <strong>Ejecutar como Administrador</strong>',
+              '<strong>Paso 3:</strong> Espera a que termine (1 minuto)',
+              'El script ejecutará: liberar IP, renovar IP, limpiar DNS, resetear Winsock',
+              'Si persiste, reinicia el equipo y el router/módem',
             ]}
             downloadUrl="/api/fix-scripts/fix-network-dns.bat"
             downloadLabel="Descargar solución de red (.bat)"
@@ -398,19 +389,113 @@ export default function PublicChatbot({ onNavigate }: Props) {
       // ── Soporte remoto ──
       if (lower.includes('soporte remoto') || lower.includes('anydesk') || lower.includes('rustdesk') || lower.includes('acceso remoto') || lower.includes('ayuda remota')) {
         addBotMessage(
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-indigo-700">Soporte Remoto</p>
-            <p className="text-xs text-slate-600">Descarga e instala un programa de acceso remoto para recibir asistencia:</p>
-            <div className="flex flex-wrap gap-2">
-              <a href="/api/fix-scripts/install-anydesk.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors">
-                <Download size={11} /> Instalar AnyDesk (.bat)
-              </a>
-              <a href="/api/fix-scripts/install-rustdesk.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-100 transition-colors">
-                <Download size={11} /> Instalar RustDesk (.bat)
-              </a>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1">Descarga el .bat, haz clic derecho → Ejecutar como Administrador. Comparte el código de acceso con soporte.</p>
-          </div>
+          <SolutionBlock
+            title="Soporte Remoto"
+            color="indigo"
+            solutionId="remote-support"
+            steps={[
+              'Descarga el instalador haciendo clic en el botón de abajo',
+              'Haz clic derecho sobre el archivo descargado → <strong>Ejecutar como Administrador</strong>',
+              'En AnyDesk: comparte el "Código de acceso" con el equipo de soporte',
+              'En RustDesk: comparte el "ID" y "Contraseña" con soporte',
+            ]}
+            downloadUrl="/api/fix-scripts/install-anydesk.bat"
+            downloadLabel="Descargar AnyDesk (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ── Pantalla azul / BSOD ──
+      if (lower.includes('pantalla azul') || lower.includes('bsod') || lower.includes('pantalla azul') || lower.includes('error azul') || lower.includes('se reinicia solo')) {
+        addBotMessage(
+          <SolutionBlock
+            title="Pantalla Azul (BSOD) — Diagnóstico"
+            color="slate"
+            solutionId="bsod-diag"
+            steps={[
+              '<strong>Paso 1:</strong> Descarga el diagnóstico haciendo clic en el botón',
+              '<strong>Paso 2:</strong> Haz clic derecho → <strong>Ejecutar como Administrador</strong>',
+              '<strong>Paso 3:</strong> Se genera un archivo <code>reporte-bsod.txt</code> en tu Escritorio',
+              '<strong>Paso 4:</strong> Envía ese archivo al equipo de soporte junto con el código de error',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-bsod-diag.bat"
+            downloadLabel="Descargar diagnóstico BSOD (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ── Instalar herramientas ──
+      if (lower.includes('instalar herramientas') || lower.includes('instalar programas') || lower.includes('herramientas') || lower.includes('software') || lower.includes('winget') || lower.includes('chocolatey')) {
+        addBotMessage(
+          <SolutionBlock
+            title="Instalador de Herramientas TI (Winget)"
+            color="violet"
+            solutionId="install-tools-winget"
+            steps={[
+              '<strong>Paso 1:</strong> Descarga el instalador haciendo clic en el botón',
+              '<strong>Paso 2:</strong> Haz clic derecho → <strong>Ejecutar como Administrador</strong>',
+              '<strong>Paso 3:</strong> Espera a que termine (cada herramienta tarda 10-30 seg)',
+              'Se instalan: Chrome, Firefox, LibreOffice, 7-Zip, Notepad++, VLC, AnyDesk, RustDesk, Everything, CrystalDiskInfo',
+            ]}
+            downloadUrl="/api/fix-scripts/install-tools-winget.bat"
+            downloadLabel="Descargar instalador de herramientas (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ── VPN ──
+      if (lower.includes('vpn') || lower.includes('red privada') || lower.includes('conectar oficina')) {
+        addBotMessage(
+          <SolutionBlock
+            title="VPN No Conecta"
+            color="cyan"
+            solutionId="fix-vpn"
+            steps={[
+              '<strong>Paso 1:</strong> Descarga el script de reparación',
+              '<strong>Paso 2:</strong> Ejecuta como Administrador',
+              '<strong>Paso 3:</strong> Espera a que termine (1-2 minutos)',
+              '<strong>Paso 4:</strong> Reconecta tu VPN y prueba',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-vpn.bat"
+            downloadLabel="Descargar solución VPN (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ── Reparar Windows ──
+      if (lower.includes('reparar windows') || lower.includes('reparar sistema') || lower.includes('sfc') || lower.includes('dism')) {
+        addBotMessage(
+          <SolutionBlock
+            title="Reparación Completa de Windows"
+            color="amber"
+            solutionId="fix-repair-windows"
+            steps={[
+              '<strong>Paso 1:</strong> Descarga el script de reparación',
+              '<strong>Paso 2:</strong> Ejecuta como Administrador',
+              '<strong>Paso 3:</strong> Espera 15-45 minutos (SFC + DISM + verificación de disco)',
+              '<strong>Paso 4:</strong> <strong>Reinicia el equipo</strong> para completar la reparación',
+            ]}
+            downloadUrl="/api/fix-scripts/fix-repair-windows.bat"
+            downloadLabel="Descargar reparación completa (.bat)"
+            onTicket={() => handleQuickAction('crear ticket')}
+            onMenu={() => handleQuickAction('menu')}
+          />
         );
         setLoading(false);
         return;

@@ -1,21 +1,21 @@
 @echo off
-title TecMan Fix - Windows Update Trabado
+title TecMan Fix - VPN No Conecta
 color 0A
 cls
 echo.
 echo  ╔══════════════════════════════════════════════════════╗
-echo  ║  TecMan - Solucion de Windows Update                ║
-echo  ║  Actualizaciones no descargan o se quedan trabadas  ║
+echo  ║  TecMan - Solucion de VPN                           ║
+echo  ║  VPN no conecta o se desconecta                     ║
 echo  ╚══════════════════════════════════════════════════════╝
 echo.
 echo  Este script realizara las siguientes acciones:
 echo.
-echo    1. Detener servicios de Windows Update
-echo    2. Vaciar cache de descargas
-echo    3. Reiniciar servicios
-echo    4. Forzar verificacion de actualizaciones
+echo    1. Limpiar cache DNS
+echo    2. Resetear adaptador de red
+echo    3. Verificar servicios de VPN
+echo    4. Reiniciar servicios de red
 echo.
-echo  NOTA: Se requieren permisos de Administrador.
+echo  NOTA: Despues de ejecutar, reconecta tu VPN.
 echo.
 pause
 echo.
@@ -23,34 +23,40 @@ echo ─────────────────────────
 echo  EJECUTANDO SOLUCION...
 echo ─────────────────────────────────────────────────────────
 echo.
-echo [1/4] Deteniendo servicios de Windows Update...
-net stop wuauserv >nul 2>&1
-net stop cryptSvc >nul 2>&1
-net stop bits >nul 2>&1
-net stop msiserver >nul 2>&1
-echo      [OK] Servicios detenidos
+echo [1/4] Limpiando cache DNS...
+ipconfig /flushdns >nul 2>&1
+echo      [OK] DNS limpiada
 echo.
-echo [2/4] Vaciando cache de descargas...
-del /q /f /s "%windir%\SoftwareDistribution\Download\*" >nul 2>&1
-del /q /f /s "%windir%\SoftwareDistribution\DataStore\*" >nul 2>&1
-echo      [OK] Cache vaciada
+echo [2/4] Resetear adaptador de red...
+netsh int ip reset >nul 2>&1
+netsh winsock reset >nul 2>&1
+echo      [OK] Adaptador reseteado
 echo.
-echo [3/4] Reiniciando servicios...
-net start wuauserv >nul 2>&1
-net start cryptSvc >nul 2>&1
-net start bits >nul 2>&1
-net start msiserver >nul 2>&1
+echo [3/4] Verificando servicios de VPN...
+sc query RasMan >nul 2>&1
+if %errorlevel%==0 (
+    echo      [OK] Servicio RasMan activo
+) else (
+    echo      [WARN] Servicio RasMan no encontrado
+    net start RasMan >nul 2>&1
+)
+sc query IKEEXT >nul 2>&1
+if %errorlevel%==0 (
+    echo      [OK] Servicio IKEEXT activo
+) else (
+    echo      [WARN] Servicio IKEEXT no encontrado
+    net start IKEEXT >nul 2>&1
+)
+echo.
+echo [4/4] Reiniciando servicios de red...
+net stop "IPsec Policy Agent" >nul 2>&1
+net start "IPsec Policy Agent" >nul 2>&1
 echo      [OK] Servicios reiniciados
-echo.
-echo [4/4] Forzando verificacion de actualizaciones...
-wuauclt /detectnow >nul 2>&1
-wuauclt /updatenow >nul 2>&1
-echo      [OK] Verificacion iniciada
 echo.
 echo ─────────────────────────────────────────────────────────
 echo  SOLUCION COMPLETADA
-echo  Abre Windows Update y verifica las actualizaciones.
-echo  Si persiste, reinicia el equipo e intenta de nuevo.
+echo  Reconecta tu VPN y verifica si funciona.
+echo  Si persiste, verifica las credenciales de la VPN.
 echo ─────────────────────────────────────────────────────────
 echo.
 echo  --------------------------------------------------------
