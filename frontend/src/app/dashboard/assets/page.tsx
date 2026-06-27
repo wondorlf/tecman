@@ -147,6 +147,8 @@ export default function AssetsPage() {
       url.search = '';
       window.history.replaceState({}, '', url.toString());
     }
+    // Forzar refetch de activos al montar la página
+    refetch();
   }, []);
 
   const handleQrSearch = async (code: string) => {
@@ -232,12 +234,15 @@ export default function AssetsPage() {
   if (statusFilter !== 'ALL') queryParams.status = statusFilter;
   if (catFilter !== 'ALL') queryParams.categoryId = catFilter;
 
-  const { data: assetsResponse, isLoading } = useQuery({
+  const { data: assetsResponse, isLoading, refetch } = useQuery({
     queryKey: ['assets', page, search, statusFilter, catFilter],
     queryFn: async () => {
       const r = await assetsApi.list(queryParams);
       return r.data as PaginatedResponse<Asset>;
     },
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
   const assets = assetsResponse?.data ?? [];
   const meta = assetsResponse?.meta ?? { total: 0, page: 1, limit: 20, totalPages: 1 };
