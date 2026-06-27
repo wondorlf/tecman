@@ -21,6 +21,9 @@ import {
   Link2,
   Globe,
   Plus,
+  Edit,
+  Save,
+  X,
 } from 'lucide-react';
 import { getAccessToken } from '@/lib/api';
 import { MAINTENANCE_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from '@/lib/types';
@@ -54,8 +57,11 @@ export default function AssetDetailClient() {
   const id = params?.id;
   const router = useRouter();
   const [qrUrl, setQrUrl] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState<any>({});
+  const [saving, setSaving] = useState(false);
 
-  const { data: asset, isLoading } = useQuery({
+  const { data: asset, isLoading, refetch } = useQuery({
     queryKey: ['asset', id],
     queryFn: async () => (await assetsApi.history(id!)).data,
     enabled: !!id,
@@ -156,6 +162,26 @@ export default function AssetDetailClient() {
             <QrCode size={15} /> QR
           </button>
         )}
+        <button
+          onClick={() => {
+            setEditForm({
+              name: asset.name || '',
+              brand: asset.brand || '',
+              model: asset.model || '',
+              serialNumber: asset.serialNumber || '',
+              description: asset.description || '',
+              notes: asset.notes || '',
+              status: asset.status || 'ACTIVE',
+              acquisitionDate: asset.acquisitionDate ? asset.acquisitionDate.split('T')[0] : '',
+              acquisitionCost: asset.acquisitionCost || '',
+              warrantyExpiry: asset.warrantyExpiry ? asset.warrantyExpiry.split('T')[0] : '',
+            });
+            setEditing(true);
+          }}
+          className="flex items-center gap-2 px-3 py-2 border border-blue-200 bg-blue-50 rounded-xl hover:bg-blue-100 text-sm text-blue-700 font-semibold transition-colors"
+        >
+          <Edit size={15} /> Editar
+        </button>
         <button
           onClick={() => {
             const token = getAccessToken();
@@ -549,6 +575,99 @@ export default function AssetDetailClient() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Dialog */}
+      {editing && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setEditing(false)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">Editar Activo</h2>
+              <button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { key: 'name', label: 'Nombre', type: 'text' },
+                  { key: 'brand', label: 'Marca', type: 'text' },
+                  { key: 'model', label: 'Modelo', type: 'text' },
+                  { key: 'serialNumber', label: 'Serial', type: 'text' },
+                  { key: 'status', label: 'Estado', type: 'select', options: ['ACTIVE','MAINTENANCE','INACTIVE','DISPOSED','RESERVED'] },
+                  { key: 'acquisitionDate', label: 'Fecha adquisición', type: 'date' },
+                  { key: 'acquisitionCost', label: 'Costo', type: 'number' },
+                  { key: 'warrantyExpiry', label: 'Garantía hasta', type: 'date' },
+                ].map((field) => (
+                  <div key={field.key} className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase">{field.label}</label>
+                    {field.type === 'select' ? (
+                      <select
+                        value={editForm[field.key] || ''}
+                        onChange={(e) => setEditForm({ ...editForm, [field.key]: e.target.value })}
+                        className="w-full h-9 rounded-lg border border-slate-200 text-sm px-3"
+                      >
+                        {field.options?.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type}
+                        value={editForm[field.key] || ''}
+                        onChange={(e) => setEditForm({ ...editForm, [field.key]: e.target.value })}
+                        className="w-full h-9 rounded-lg border border-slate-200 text-sm px-3"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">Descripción</label>
+                <textarea
+                  value={editForm.description || ''}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="w-full h-20 rounded-lg border border-slate-200 text-sm px-3 py-2 resize-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">Notas</label>
+                <textarea
+                  value={editForm.notes || ''}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  className="w-full h-16 rounded-lg border border-slate-200 text-sm px-3 py-2 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100">
+              <button
+                onClick={() => setEditing(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={saving}
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    await assetsApi.update(id!, editForm);
+                    setEditing(false);
+                    refetch();
+                  } catch (e: any) {
+                    alert('Error al guardar: ' + (e.response?.data?.message || e.message));
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Save size={14} />
+                {saving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
