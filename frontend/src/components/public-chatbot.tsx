@@ -38,6 +38,22 @@ type Props = {
   onNavigate?: (href: string) => void;
 };
 
+function ResponseMenu({ onAction }: { onAction: (text: string) => void }) {
+  return (
+    <div className="mt-2 pt-2 border-t border-slate-200/60">
+      <p className="text-[10px] text-slate-400 mb-1.5 font-medium">¿Qué necesitas?</p>
+      <div className="flex flex-wrap gap-1.5">
+        <QuickAction icon={<Ticket size={11} />} label="Crear ticket" color="emerald" onClick={() => onAction('crear ticket')} />
+        <QuickAction icon={<QrCode size={11} />} label="Escanear QR" color="violet" onClick={() => onAction('escanear qr')} />
+        <QuickAction icon={<HelpCircle size={11} />} label="Ver artículos" color="blue" onClick={() => onAction('ver artículos')} />
+        <QuickAction icon={<Wifi size={11} />} label="Internet" color="blue" onClick={() => onAction('no tengo internet')} />
+        <QuickAction icon={<Printer size={11} />} label="Impresora" color="amber" onClick={() => onAction('impresora')} />
+        <QuickAction icon={<Monitor size={11} />} label="Equipo lento" color="red" onClick={() => onAction('equipo lento')} />
+      </div>
+    </div>
+  );
+}
+
 export default function PublicChatbot({ onNavigate }: Props) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -125,8 +141,14 @@ export default function PublicChatbot({ onNavigate }: Props) {
 
   const now = () => new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
 
-  const addBotMessage = (content: ReactNode) => {
-    setMessages((prev) => [...prev, { id: `b-${Date.now()}`, role: 'bot', time: now(), content }]);
+  const addBotMessage = (content: ReactNode, includeMenu = true) => {
+    const wrapped = includeMenu ? (
+      <div>
+        {content}
+        <ResponseMenu onAction={handleQuickAction} />
+      </div>
+    ) : content;
+    setMessages((prev) => [...prev, { id: `b-${Date.now()}`, role: 'bot', time: now(), content: wrapped }]);
   };
 
   const handleQuickAction = (text: string) => {
@@ -560,7 +582,11 @@ export default function PublicChatbot({ onNavigate }: Props) {
           </div>
         ) : (
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setMessages([buildWelcome()]);
+              setExpandedArticle(null);
+              setOpen(true);
+            }}
             className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-blue-600 text-white shadow-lg shadow-emerald-200 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
           >
             <MessageSquare size={24} />

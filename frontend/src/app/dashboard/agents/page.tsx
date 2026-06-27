@@ -24,6 +24,7 @@ import { getAccessToken } from '@/lib/api';
 
 type AgentInfo = {
   hasApiKeyConfigured: boolean;
+  serverUrl: string;
   go: {
     name: string;
     description: string;
@@ -235,13 +236,13 @@ export default function DownloadAgentsPage() {
           <div className="bg-slate-900 rounded-xl p-3 font-mono text-xs text-emerald-300 border border-emerald-600/30 relative group">
             <code className="break-all">
               powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object
-              System.Net.WebClient).DownloadString('{baseUrl}/api/agents/powershell/run{apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}'))"
+              System.Net.WebClient).DownloadString('{agents?.serverUrl || baseUrl}/api/agents/powershell/run{apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}'))"
             </code>
             <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() =>
                   copyToClipboard(
-                    `powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('${baseUrl}/api/agents/powershell/run${apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}'))"`,
+                    `powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('${agents?.serverUrl || baseUrl}/api/agents/powershell/run${apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : ''}'))"`,
                     'run-ps',
                   )
                 }

@@ -19,6 +19,7 @@ export class AgentsController {
 
   constructor(private readonly discoveryService: DiscoveryService) {}
 
+  @Public()
   @Get('powershell')
   @Header('Content-Type', 'text/plain; charset=utf-8')
   @Header('Cache-Control', 'no-cache')
@@ -39,6 +40,7 @@ export class AgentsController {
     return res.send(content);
   }
 
+  @Public()
   @Get('powershell/run')
   @Header('Content-Type', 'text/plain; charset=utf-8')
   @Header('Cache-Control', 'no-cache')
@@ -59,6 +61,7 @@ export class AgentsController {
     return content;
   }
 
+  @Public()
   @Get('powershell/install.bat')
   async getPowerShellBatch(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
     const batchPath = join(this.agentsDir, 'install-agent.bat');
@@ -93,6 +96,7 @@ export class AgentsController {
     return res.send(content);
   }
 
+  @Public()
   @Get('powershell/unattended.bat')
   async getUnattendedBatch(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
     const batchPath = join(this.agentsDir, 'tecman-discovery-unattended.bat');
@@ -124,6 +128,7 @@ export class AgentsController {
     return res.send(content);
   }
 
+  @Public()
   @Get('powershell/manual.bat')
   async getManualBatch(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
     const batchPath = join(this.agentsDir, 'tecman-discovery-manual.bat');
@@ -155,6 +160,7 @@ export class AgentsController {
     return res.send(content);
   }
 
+  @Public()
   @Get('go')
   async getGo(@Res() res: Response) {
     const exePath = join(this.agentsDir, 'tecman-discovery.exe');
@@ -171,6 +177,7 @@ export class AgentsController {
     throw new NotFoundException('Agente Go no disponible');
   }
 
+  @Public()
   @Get('go/source')
   @Header('Content-Type', 'text/plain; charset=utf-8')
   getGoSource() {
@@ -183,24 +190,39 @@ export class AgentsController {
 
   @Public()
   @Get('info')
-  async info() {
+  async info(@Req() req: Request) {
     const apiKey = await this.discoveryService.getApiKey();
+
+    const protocol =
+      typeof req.headers['x-forwarded-proto'] === 'string'
+        ? sanitizeHost(req.headers['x-forwarded-proto'])
+        : 'http';
+    const rawHost =
+      typeof req.headers['x-forwarded-host'] === 'string'
+        ? req.headers['x-forwarded-host']
+        : typeof req.headers.host === 'string'
+          ? req.headers.host
+          : `localhost:${process.env.PORT || '2023'}`;
+    const host = sanitizeHost(rawHost);
+    const serverUrl = process.env.PRODUCTION_URL || `${protocol}://${host}`;
+
     return {
       hasApiKeyConfigured: !!apiKey,
+      serverUrl,
       go: {
         name: 'TecMan Discovery Agent (Go)',
         description: 'Agente multiplataforma para reporte de hardware',
         os: ['Windows', 'Linux', 'macOS'],
         install: 'go build -o tecman-discovery.exe main.go',
         config: 'tecman-discovery-config.json',
-        usage: '.\\tecman-discovery.exe -install -server http://<tu-servidor>:3001 --api-key "<tu-api-key>"',
+        usage: `.\\tecman-discovery.exe -install -server ${serverUrl} --api-key "${apiKey || '<api-key>'}"`,
       },
       powershell: {
         name: 'TecMan Discovery Agent (PowerShell)',
         description: 'Agente nativo para Windows (recomendado)',
         os: ['Windows'],
         install: 'Ejecutar como administrador:',
-        usage: '.\\tecman-discovery.ps1 -ServerUrl "http://<tu-servidor>:3001" -ApiKey "<tu-api-key>" -InstallTask',
+        usage: `.\\tecman-discovery.ps1 -ServerUrl "${serverUrl}" -ApiKey "${apiKey || '<api-key>'}" -InstallTask`,
         features: [
           'Recopila serial number (BIOS)',
           'Tarea programada automática',
