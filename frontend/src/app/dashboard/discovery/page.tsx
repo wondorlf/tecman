@@ -46,6 +46,7 @@ import {
   Plus,
   Package,
   Terminal,
+  Trash2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -1452,6 +1453,22 @@ export default function DiscoveryPage() {
                     <Package size={14} className="text-slate-400 shrink-0" />
                     <span className="text-xs font-semibold text-slate-600">Ir a Activos</span>
                   </a>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿Eliminar este dispositivo discovery? Esta acción no se puede deshacer.')) return;
+                      try {
+                        await discoveryApi.remove(detail.id);
+                        setDetailDevice(null);
+                        window.location.reload();
+                      } catch (e: any) {
+                        alert('Error al eliminar: ' + (e.response?.data?.message || e.message));
+                      }
+                    }}
+                    className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl p-2.5 hover:bg-red-100 transition-colors group"
+                  >
+                    <Trash2 size={14} className="text-red-400 shrink-0" />
+                    <span className="text-xs font-semibold text-red-600">Eliminar discovery</span>
+                  </button>
                 </div>
               )}
 

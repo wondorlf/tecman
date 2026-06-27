@@ -365,6 +365,7 @@ export const discoveryApi = {
   sendAgentData: (data: any) => api.post('/discovery/agent', data),
   linkToAsset: (id: string, data: { createNew: boolean; assetData?: any }) =>
     api.put(`/discovery/${id}/link-to-asset`, data),
+  remove: (id: string) => api.delete(`/discovery/${id}`),
 };
 
 // ── TENANTS / CONFIGURACIÓN GLOBAL ───────────────────────────────────────────

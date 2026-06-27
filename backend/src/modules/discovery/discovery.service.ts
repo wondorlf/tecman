@@ -427,4 +427,11 @@ export class DiscoveryService {
 
     return existingAsset;
   }
+
+  async remove(id: string) {
+    const device = await this.prisma.discoveredDevice.findUnique({ where: { id } });
+    if (!device) throw new NotFoundException(`Dispositivo ${id} no encontrado`);
+    await this.prisma.discoveredDevice.delete({ where: { id } });
+    return { deleted: true };
+  }
 }

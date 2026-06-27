@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Param,
   Body,
   Query,
@@ -72,5 +73,12 @@ export class DiscoveryController {
     @Body() body: { createNew: boolean; assetData?: any },
   ) {
     return this.discoveryService.linkDiscoveryDevice(id, body);
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar un dispositivo discovery' })
+  async remove(@Param('id') id: string) {
+    return this.discoveryService.remove(id);
   }
 }
