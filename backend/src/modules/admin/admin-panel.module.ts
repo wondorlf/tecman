@@ -255,32 +255,36 @@ class FixedAdminLoader extends AbstractLoader {
           },
           auth: {
             authenticate: async (email, password) => {
-              const user = await prisma.user.findFirst({
-                where: {
-                  OR: [{ email: email }, { username: email }],
-                },
-                include: { role: true },
-              });
+              try {
+                const user = await prisma.user.findFirst({
+                  where: {
+                    OR: [{ email: email }, { username: email }],
+                  },
+                  include: { role: true },
+                });
 
-              // Verificar que el usuario exista y tenga rol de Administrador
-              if (
-                user &&
-                user.role &&
-                (user.role.name === 'Administrador' ||
+                if (!user || !user.role) return null;
+
+                const isAdmin =
+                  user.role.name === 'Administrador' ||
                   user.role.name === 'Superadministrador' ||
-                  user.role.permissions.includes('"admin":true'))
-              ) {
+                  user.role.permissions?.includes('"admin":true');
+
+                if (!isAdmin) return null;
+
                 const bcrypt = await import('bcrypt');
                 const isValid = await bcrypt.compare(password, user.password);
-                if (isValid) {
-                  return {
-                    email: user.email,
-                    title: user.name,
-                    role: user.role.name,
-                  };
-                }
+                if (!isValid) return null;
+
+                return {
+                  email: user.email,
+                  title: user.name,
+                  role: user.role.name,
+                };
+              } catch (err) {
+                console.error('[AdminJS] Auth error:', err);
+                return null;
               }
-              return null;
             },
             cookiePassword: process.env.JWT_SECRET || 'some-secret-password-used-to-secure-cookie',
             cookieName: 'adminjs',
