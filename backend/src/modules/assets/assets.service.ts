@@ -472,6 +472,7 @@ export class AssetsService {
           },
         },
         documents: { orderBy: { createdAt: 'desc' } },
+        customFields: true,
         custodies: {
           where: { returnedAt: null },
           include: {

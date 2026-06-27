@@ -149,7 +149,7 @@ export class AssetsController {
   async exportHojaVidaPdf(@Param('id') id: string, @Res() res: Response) {
     const asset = await this.assetsService.getDeviceHistory(id);
     const tenant = await this.tenantsService.getPublicSettings();
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const doc = new PDFDocument({ margin: 50, size: 'letter', bufferPages: true });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
@@ -158,220 +158,269 @@ export class AssetsController {
     );
     doc.pipe(res);
 
-    // ── Generar QR del activo ──
+    // ── QR Code ──
     let qrImageBuffer: Buffer | null = null;
     if (asset.qrCode) {
       try {
-        qrImageBuffer = await QRCode.toBuffer(asset.qrCode, {
-          width: 200,
-          margin: 1,
-          color: { dark: '#0f172a', light: '#ffffff' },
-        });
-      } catch {
-        // Ignorar si no se puede generar el QR
-      }
+        qrImageBuffer = await QRCode.toBuffer(asset.qrCode, { width: 180, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } });
+      } catch {}
     }
 
-    // ── Header con logo de la empresa ──
     const companyName = tenant?.companyName || tenant?.name || 'TecMan';
     const companyLogo = tenant?.companyLogoUrl || tenant?.logoUrl || null;
     const companyDoc = tenant?.companyDocument || '';
     const companyAddr = tenant?.companyAddress || '';
     const companyPhone = tenant?.companyPhone || '';
     const companyEmail = tenant?.companyEmail || '';
+    const PAGE_W = 612;
+    const MARGIN = 50;
+    const CONTENT_W = PAGE_W - MARGIN * 2;
 
-    // Logo (si hay URL)
+    // ── Helper: section title with colored bar ──
+    const sectionTitle = (icon: string, title: string) => {
+      if (doc.y > 680) doc.addPage();
+      doc.moveDown(0.4);
+      doc.rect(MARGIN, doc.y, CONTENT_W, 22).fill('#f1f5f9');
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#1e293b').text(`${icon}  ${title}`, MARGIN + 8, doc.y - 16, { width: CONTENT_W - 16 });
+      doc.fillColor('#000000');
+      doc.moveDown(0.3);
+    };
+
+    // ── Helper: key-value row ──
+    const kvRow = (label: string, value: string) => {
+      doc.fontSize(8).font('Helvetica-Bold').fillColor('#64748b').text(label, MARGIN, doc.y, { continued: true, width: 120 });
+      doc.font('Helvetica').fillColor('#1e293b').text(`  ${value || '—'}`);
+    };
+
+    // ── Helper: colored badge ──
+    const statusColor = (s: string) => {
+      const map: Record<string, string> = { ACTIVE: '#16a34a', MAINTENANCE: '#f59e0b', INACTIVE: '#ef4444', DISPOSED: '#6b7280', RESERVED: '#8b5cf6' };
+      return map[s] || '#64748b';
+    };
+
+    // ══════════════════════════════════════════════════════════════════
+    // HEADER
+    // ══════════════════════════════════════════════════════════════════
     if (companyLogo) {
-      try {
-        doc.image(companyLogo, 50, 50, { width: 60, height: 60 });
-      } catch {
-        // Ignorar si la imagen no se puede cargar
-      }
+      try { doc.image(companyLogo, MARGIN, 40, { width: 50, height: 50 }); } catch {}
     }
 
-    // QR Code en la esquina superior derecha
     if (qrImageBuffer) {
-      doc.image(qrImageBuffer, 485, 45, { width: 65, height: 65 });
+      doc.image(qrImageBuffer, PAGE_W - MARGIN - 55, 35, { width: 55, height: 55 });
     }
 
-    // Información de la empresa a la derecha (right-aligned al margen derecho x=545)
-    const rightX = qrImageBuffer ? 475 : 545;
-    doc
-      .fontSize(16)
-      .font('Helvetica-Bold')
-      .fillColor('#1e293b')
-      .text(companyName, rightX, companyLogo ? 55 : 50, { align: 'right' });
+    const titleX = companyLogo ? MARGIN + 65 : MARGIN;
+    doc.fontSize(18).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', titleX, 42, { width: 300 });
+    doc.fontSize(9).font('Helvetica').fillColor('#64748b').text(`${asset.name}  ·  ${asset.code}`, titleX, 64, { width: 300 });
 
-    const infoLines = [
-      companyDoc && `NIT: ${companyDoc}`,
-      companyAddr,
-      companyPhone && `Tel: ${companyPhone}`,
-      companyEmail && `Email: ${companyEmail}`,
-    ]
-      .filter(Boolean)
-      .join(' | ');
-
-    if (infoLines) {
-      doc.fontSize(7).font('Helvetica').fillColor('#64748b').text(infoLines, { align: 'right' });
+    // Company info line
+    const compInfo = [companyName, companyDoc && `NIT: ${companyDoc}`, companyAddr, companyPhone && `Tel: ${companyPhone}`].filter(Boolean).join('  |  ');
+    if (compInfo) {
+      doc.fontSize(7).fillColor('#94a3b8').text(compInfo, MARGIN, 82, { width: CONTENT_W, align: 'center' });
     }
 
-    // Title
-    doc
-      .fontSize(20)
-      .font('Helvetica-Bold')
-      .fillColor('#0f172a')
-      .text('Hoja de Vida', { align: 'center' });
-    doc
-      .fontSize(10)
-      .font('Helvetica')
-      .fillColor('#64748b')
-      .text(`Activo: ${asset.name} (${asset.code})`, { align: 'center' });
+    doc.moveDown(1);
+    doc.rect(MARGIN, doc.y, CONTENT_W, 1).fill('#e2e8f0');
     doc.moveDown(0.5);
 
-    // ── Separador ──
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke();
-    doc.moveDown();
+    // ══════════════════════════════════════════════════════════════════
+    // INFORMACIÓN GENERAL
+    // ══════════════════════════════════════════════════════════════════
+    sectionTitle('📋', 'Información General');
+    const leftCol = MARGIN;
+    const rightCol = MARGIN + CONTENT_W / 2 + 10;
+    const startY = doc.y;
 
-    // ── Información general ──
-    doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b').text('Información General');
-    doc.moveDown(0.3);
-    doc.fontSize(9).font('Helvetica').fillColor('#475569');
-
-    const infoRows = [
+    doc.fontSize(8).font('Helvetica');
+    const generalInfo = [
       ['Código', asset.code],
       ['Nombre', asset.name],
-      ['Estado', asset.status],
       ['Categoría', asset.category?.name || '—'],
       ['Subcategoría', asset.subcategory?.name || '—'],
+      ['Proveedor', asset.supplier?.name || '—'],
+      ['Serial', asset.serialNumber || '—'],
+    ];
+    const generalInfo2 = [
+      ['Estado', asset.status],
       ['Marca', asset.brand || '—'],
       ['Modelo', asset.model || '—'],
-      ['Serial', asset.serialNumber || '—'],
       ['Ubicación', asset.location?.name || '—'],
-      ['Proveedor', asset.supplier?.name || '—'],
-      [
-        'Fecha Adq.',
-        asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString('es-CO') : '—',
-      ],
-      [
-        'Garantía hasta',
-        asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString('es-CO') : '—',
-      ],
+      ['Costo', asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString('es-CO')}` : '—'],
     ];
 
-    for (const [label, value] of infoRows) {
-      doc.text(`${label}: ${value}`, { continued: false });
+    doc.y = startY;
+    for (const [label, value] of generalInfo) {
+      kvRow(label, value);
     }
-    doc.moveDown();
+    const leftEndY = doc.y;
+    doc.y = startY;
+    for (const [label, value] of generalInfo2) {
+      kvRow(label, value);
+    }
+    doc.y = Math.max(leftEndY, doc.y) + 4;
 
-    // ── Eventos (Hoja de Vida) ──
-    const events = asset.hojaVida?.events || [];
-    if (events.length > 0) {
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke();
-      doc.moveDown();
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b').text('Línea de Tiempo');
-      doc.moveDown(0.3);
+    // Dates row
+    doc.fontSize(8).font('Helvetica');
+    const dates = [
+      ['Adquisición', asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString('es-CO') : '—'],
+      ['Garantía', asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString('es-CO') : '—'],
+      ['Ciclos', String(asset.usageCycles || 0)],
+      ['Horas uso', String(asset.usageHours || 0)],
+    ];
+    for (const [label, value] of dates) {
+      kvRow(label, value);
+    }
+    doc.moveDown(0.3);
 
-      for (const ev of events) {
-        const date = new Date(ev.createdAt).toLocaleDateString('es-CO', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-        // Check if we need a new page
-        if (doc.y > 700) {
-          doc.addPage();
-        }
-        doc.fontSize(8).font('Helvetica-Bold').fillColor('#3b82f6').text(`▸ ${date}`);
-        doc
-          .fontSize(9)
-          .font('Helvetica')
-          .fillColor('#334155')
-          .text(`   ${ev.description}`, { width: 460 });
-        doc.moveDown(0.3);
+    // ══════════════════════════════════════════════════════════════════
+    // HARDWARE (Discovery data)
+    // ══════════════════════════════════════════════════════════════════
+    const hw = asset.discoveredDevice;
+    if (hw) {
+      sectionTitle('🖥️', 'Especificaciones del Equipo');
+      const hwInfo = [
+        ['Hostname', hw.hostname],
+        ['IP', hw.ipAddress || '—'],
+        ['MAC', hw.macAddress || '—'],
+        ['OS', hw.os || '—'],
+      ];
+      for (const [label, value] of hwInfo) {
+        kvRow(label, value || '—');
       }
+      doc.moveDown(0.3);
     }
 
-    // ── Mantenimientos ──
-    const maintenances = asset.maintenances || [];
-    if (maintenances.length > 0) {
-      if (doc.y > 650) doc.addPage();
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke();
-      doc.moveDown();
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b').text('Mantenimientos');
+    // ══════════════════════════════════════════════════════════════════
+    // CUSTOM FIELDS
+    // ══════════════════════════════════════════════════════════════════
+    const customFields = asset.customFields || [];
+    if (customFields.length > 0) {
+      sectionTitle('🏷️', 'Campos Personalizados');
+      for (const cf of customFields) {
+        kvRow(cf.name, cf.value);
+      }
       doc.moveDown(0.3);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // MANTENIMIENTOS
+    // ══════════════════════════════════════════════════════════════════
+    const maintenances = asset.maintenances || [];
+    sectionTitle('🔧', `Mantenimientos (${maintenances.length})`);
+    if (maintenances.length === 0) {
+      doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin registros de mantenimiento').fillColor('#000');
+    } else {
+      // Table header
+      const tY = doc.y;
+      doc.fontSize(7).font('Helvetica-Bold').fillColor('#64748b');
+      doc.text('Código', MARGIN, tY, { width: 80, continued: true });
+      doc.text('Tipo', { width: 70, continued: true });
+      doc.text('Estado', { width: 80, continued: true });
+      doc.text('Técnico', { width: 120, continued: true });
+      doc.text('Fecha', { width: 100 });
+      doc.rect(MARGIN, doc.y, CONTENT_W, 0.5).fill('#cbd5e1');
 
       for (const m of maintenances) {
-        if (doc.y > 700) doc.addPage();
-        doc
-          .fontSize(9)
-          .font('Helvetica')
-          .fillColor('#334155')
-          .text(
-            `${m.code} · ${m.type} · ${m.status}` +
-              (m.technician?.name ? ` · Técnico: ${m.technician.name}` : '') +
-              (m.completedAt ? ` · ${new Date(m.completedAt).toLocaleDateString('es-CO')}` : ''),
-          );
-        doc.moveDown(0.2);
+        if (doc.y > 720) doc.addPage();
+        doc.fontSize(7).font('Helvetica').fillColor('#334155');
+        const mY = doc.y + 2;
+        doc.text(m.code, MARGIN, mY, { width: 80, continued: true });
+        doc.text(m.type, { width: 70, continued: true });
+        doc.text(m.status, { width: 80, continued: true });
+        doc.text(m.technician?.name || '—', { width: 120, continued: true });
+        doc.text(m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—');
+        doc.moveDown(0.15);
       }
     }
+    doc.moveDown(0.3);
 
-    // ── Tickets ──
+    // ══════════════════════════════════════════════════════════════════
+    // TICKETS
+    // ══════════════════════════════════════════════════════════════════
     const tickets = asset.tickets || [];
-    if (tickets.length > 0) {
-      if (doc.y > 650) doc.addPage();
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke();
-      doc.moveDown();
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b').text('Tickets Asociados');
-      doc.moveDown(0.3);
+    sectionTitle('🎫', `Tickets de Soporte (${tickets.length})`);
+    if (tickets.length === 0) {
+      doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin tickets asociados').fillColor('#000');
+    } else {
+      const tY = doc.y;
+      doc.fontSize(7).font('Helvetica-Bold').fillColor('#64748b');
+      doc.text('Código', MARGIN, tY, { width: 70, continued: true });
+      doc.text('Título', { width: 180, continued: true });
+      doc.text('Estado', { width: 80, continued: true });
+      doc.text('Categoría', { width: 80, continued: true });
+      doc.text('Fecha', { width: 90 });
+      doc.rect(MARGIN, doc.y, CONTENT_W, 0.5).fill('#cbd5e1');
 
       for (const t of tickets) {
         if (doc.y > 720) doc.addPage();
-        doc
-          .fontSize(9)
-          .font('Helvetica')
-          .fillColor('#334155')
-          .text(
-            `${t.code} · ${t.title} · ${t.status} · ${new Date(t.createdAt).toLocaleDateString('es-CO')}`,
-          );
-        doc.moveDown(0.2);
+        doc.fontSize(7).font('Helvetica').fillColor('#334155');
+        const tY2 = doc.y + 2;
+        doc.text(t.code, MARGIN, tY2, { width: 70, continued: true });
+        doc.text(t.title?.substring(0, 40) || '—', { width: 180, continued: true });
+        doc.text(t.status, { width: 80, continued: true });
+        doc.text(t.category || '—', { width: 80, continued: true });
+        doc.text(new Date(t.createdAt).toLocaleDateString('es-CO'));
+        doc.moveDown(0.15);
+      }
+    }
+    doc.moveDown(0.3);
+
+    // ══════════════════════════════════════════════════════════════════
+    // DOCUMENTOS
+    // ══════════════════════════════════════════════════════════════════
+    const documents = asset.documents || [];
+    if (documents.length > 0) {
+      sectionTitle('📁', `Documentos (${documents.length})`);
+      for (const d of documents) {
+        if (doc.y > 720) doc.addPage();
+        doc.fontSize(8).font('Helvetica').fillColor('#334155');
+        doc.text(`  ${d.name}  ·  ${d.type}  ·  v${d.version}  ·  ${new Date(d.createdAt).toLocaleDateString('es-CO')}`);
+        doc.moveDown(0.1);
+      }
+      doc.moveDown(0.3);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // LÍNEA DE TIEMPO
+    // ══════════════════════════════════════════════════════════════════
+    const events = asset.hojaVida?.events || [];
+    sectionTitle('📅', `Línea de Tiempo (${events.length} eventos)`);
+
+    if (events.length === 0) {
+      doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin eventos registrados').fillColor('#000');
+    } else {
+      for (const ev of events) {
+        if (doc.y > 700) doc.addPage();
+        const date = new Date(ev.createdAt);
+        const dateStr = date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
+        // Timeline dot and line
+        const dotY = doc.y + 3;
+        doc.circle(MARGIN + 4, dotY, 3).fill('#3b82f6');
+        if (ev !== events[events.length - 1]) {
+          doc.rect(MARGIN + 3, dotY + 5, 1, 14).fill('#e2e8f0');
+        }
+
+        doc.fontSize(7).font('Helvetica-Bold').fillColor('#3b82f6').text(`${dateStr}  ${timeStr}`, MARGIN + 14, doc.y - 2);
+        doc.fontSize(8).font('Helvetica').fillColor('#334155').text(ev.description, MARGIN + 14, doc.y, { width: CONTENT_W - 30 });
+        doc.moveDown(0.4);
       }
     }
 
-    // ── Footer con datos de empresa ──
-    doc.moveDown(2);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke();
-    doc.moveDown(0.5);
-
-    // Línea 1: nombre empresa
-    doc
-      .fontSize(8)
-      .font('Helvetica-Bold')
-      .fillColor('#64748b')
-      .text(companyName, { align: 'center' });
-
-    // Línea 2: datos de contacto
-    const footerInfo = [
-      companyDoc && `NIT: ${companyDoc}`,
-      companyPhone && `Tel: ${companyPhone}`,
-      companyEmail,
-    ]
-      .filter(Boolean)
-      .join(' · ');
-    if (footerInfo) {
-      doc.fontSize(7).font('Helvetica').fillColor('#94a3b8').text(footerInfo, { align: 'center' });
+    // ══════════════════════════════════════════════════════════════════
+    // FOOTER (en cada página)
+    // ══════════════════════════════════════════════════════════════════
+    const pageCount = doc.bufferedPageRange();
+    for (let i = 0; i < pageCount.count; i++) {
+      doc.switchToPage(i);
+      const footerY = 780;
+      doc.rect(MARGIN, footerY, CONTENT_W, 0.5).fill('#e2e8f0');
+      doc.fontSize(6).font('Helvetica').fillColor('#94a3b8');
+      doc.text(companyName, MARGIN, footerY + 4, { width: CONTENT_W, align: 'left' });
+      doc.text(`Hoja de Vida · ${asset.code} · Generado ${new Date().toLocaleDateString('es-CO')}`, MARGIN, footerY + 4, { width: CONTENT_W, align: 'right' });
+      doc.text(`Página ${i + 1} de ${pageCount.count}`, MARGIN, footerY + 12, { width: CONTENT_W, align: 'center' });
     }
-
-    // Línea 3: fecha de generación
-    doc
-      .fontSize(7)
-      .font('Helvetica')
-      .fillColor('#94a3b8')
-      .text(
-        `Generado el ${new Date().toLocaleString('es-CO')} · TecMan © ${new Date().getFullYear()}`,
-        { align: 'center' },
-      );
 
     doc.end();
   }
