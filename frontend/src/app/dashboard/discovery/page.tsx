@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { discoveryApi, assetsApi } from '@/lib/api';
+import { discoveryApi, assetsApi, categoriesApi, locationsApi } from '@/lib/api';
 import { PageHeader, LoadingSpinner, EmptyState } from '@/components/shared/page-header';
 import { SearchBar } from '@/components/shared/search-bar';
 import { Button } from '@/components/ui/button';
@@ -133,6 +133,18 @@ export default function DiscoveryPage() {
   const [page, setPage] = useState(1);
   const [detailDevice, setDetailDevice] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [linkCategoryId, setLinkCategoryId] = useState('');
+  const [linkLocationId, setLinkLocationId] = useState('');
+  const [linkLoading, setLinkLoading] = useState(false);
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories-list'],
+    queryFn: async () => { const r = await categoriesApi.list(); return r.data; },
+  });
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations-list'],
+    queryFn: async () => { const r = await locationsApi.list(); return r.data; },
+  });
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -1356,25 +1368,65 @@ export default function DiscoveryPage() {
                     <p className="text-xs text-slate-400">No vinculado a ningún activo en TecMan</p>
                   </div>
                   {/* Botón: Crear activo desde Discovery */}
-                  <button
-                    onClick={async () => {
-                      try {
-                        const r = await discoveryApi.linkToAsset(detail.id, {
-                          createNew: true,
-                          assetData: { name: detail.hostname },
-                        });
-                        const newAsset = r.data;
-                        setDetailDevice(null);
-                        window.location.href = `/dashboard/assets/${newAsset.id}`;
-                      } catch (e: any) {
-                        alert('Error al crear activo: ' + (e.response?.data?.message || e.message));
-                      }
-                    }}
-                    className="flex items-center gap-2 w-full bg-blue-600 border border-blue-500 rounded-xl p-2.5 hover:bg-blue-700 transition-colors group text-white"
-                  >
-                    <Plus size={14} className="shrink-0" />
-                    <span className="text-xs font-semibold">Crear activo desde Discovery</span>
-                  </button>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Categoría *</label>
+                        <select
+                          value={linkCategoryId}
+                          onChange={(e) => setLinkCategoryId(e.target.value)}
+                          className="w-full h-9 rounded-lg border border-slate-200 text-xs px-2 mt-1"
+                        >
+                          <option value="">Seleccionar...</option>
+                          {(categories as any[]).map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Ubicación *</label>
+                        <select
+                          value={linkLocationId}
+                          onChange={(e) => setLinkLocationId(e.target.value)}
+                          className="w-full h-9 rounded-lg border border-slate-200 text-xs px-2 mt-1"
+                        >
+                          <option value="">Seleccionar...</option>
+                          {(locations as any[]).map((l: any) => (
+                            <option key={l.id} value={l.id}>{l.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <button
+                      disabled={!linkCategoryId || !linkLocationId || linkLoading}
+                      onClick={async () => {
+                        setLinkLoading(true);
+                        try {
+                          const r = await discoveryApi.linkToAsset(detail.id, {
+                            createNew: true,
+                            assetData: {
+                              name: detail.hostname,
+                              categoryId: linkCategoryId,
+                              locationId: linkLocationId,
+                            },
+                          });
+                          const newAsset = r.data;
+                          setDetailDevice(null);
+                          setLinkCategoryId('');
+                          setLinkLocationId('');
+                          window.location.href = `/dashboard/assets/${newAsset.id}`;
+                        } catch (e: any) {
+                          alert('Error al crear activo: ' + (e.response?.data?.message || e.message));
+                        } finally {
+                          setLinkLoading(false);
+                        }
+                      }}
+                      className="flex items-center gap-2 w-full bg-blue-600 border border-blue-500 rounded-xl p-2.5 hover:bg-blue-700 transition-colors group text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Plus size={14} className="shrink-0" />
+                      <span className="text-xs font-semibold">{linkLoading ? 'Creando...' : 'Crear activo desde Discovery'}</span>
+                    </button>
+                  </div>
                   {/* Acciones para dispositivo no vinculado */}
                   {(() => {
                     const searchTerm = [detail.hostname, detail.serialNumber, detail.macAddress]

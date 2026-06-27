@@ -32,6 +32,9 @@ param(
 
 # API_KEY_PLACEHOLDER
 
+# Fallback when running via Invoke-Expression ($PSScriptRoot is empty)
+if (-not $PSScriptRoot) { $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path }
+if (-not $PSScriptRoot) { $PSScriptRoot = $PWD.Path }
 $script:ConfigPath = Join-Path $PSScriptRoot "tecman-discovery-config.json"
 
 # ── Config ────────────────────────────────────────────────────────────────────
