@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { StorageService } from '../storage/storage.service.js';
 
@@ -18,6 +18,25 @@ export class DocumentsService {
 
   async create(data: any) {
     return this.prisma.document.create({ data });
+  }
+
+  async uploadAndCreate(file: Express.Multer.File, body: any) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    const filename = await this.storageService.saveFile(file);
+
+    const docData = {
+      name: body.name || file.originalname,
+      description: body.description || null,
+      type: body.type || 'OTHER',
+      path: `/api/storage/${filename}`,
+      filename,
+      mimeType: file.mimetype,
+      size: file.size,
+      assetId: body.assetId || null,
+    };
+
+    return this.prisma.document.create({ data: docData });
   }
 
   async remove(id: string) {

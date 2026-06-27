@@ -477,9 +477,45 @@ export default function AssetDetailClient() {
         <TabsContent value="documents">
           <Card className="border-slate-100 rounded-2xl">
             <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase">
+                  Documentos ({documents.length})
+                </p>
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold cursor-pointer hover:bg-blue-700 transition-colors">
+                  <Plus size={12} />
+                  Adjuntar documento
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.zip,.rar"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const type = file.type.startsWith('image/') ? 'IMAGE'
+                        : file.type.startsWith('video/') ? 'VIDEO'
+                        : file.type === 'application/pdf' && file.name.toLowerCase().includes('manual') ? 'MANUAL'
+                        : file.type === 'application/pdf' && (file.name.toLowerCase().includes('ficha') || file.name.toLowerCase().includes('tecnica')) ? 'TECHNICAL_SHEET'
+                        : file.type === 'application/pdf' && file.name.toLowerCase().includes('tutorial') ? 'TUTORIAL'
+                        : 'OTHER';
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      formData.append('assetId', id!);
+                      formData.append('name', file.name);
+                      formData.append('type', type);
+                      try {
+                        const { documentsApi } = await import('@/lib/api');
+                        await documentsApi.upload(formData);
+                        window.location.reload();
+                      } catch (err: any) {
+                        alert('Error al subir: ' + (err.response?.data?.message || err.message));
+                      }
+                    }}
+                  />
+                </label>
+              </div>
               {documents.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-sm">
-                  Sin documentos adjuntos
+                  Sin documentos adjuntos. Haz clic en "Adjuntar documento" para agregar uno.
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -494,13 +530,17 @@ export default function AssetDetailClient() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 truncate">{d.name}</p>
                         <p className="text-xs text-slate-400">
-                          {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS]} · v
-                          {d.version} · {(d.size / 1024).toFixed(0)} KB
+                          {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS]} · v{d.version} · {(d.size / 1024).toFixed(0)} KB
                         </p>
                       </div>
-                      <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+                      <a
+                        href={`/api/storage/public/${d.filename}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                      >
                         <Download size={14} />
-                      </button>
+                      </a>
                     </div>
                   ))}
                 </div>
