@@ -103,13 +103,7 @@ function addRefreshSubscriber(resolve: (token: string) => void, reject: (err: an
 }
 
 api.interceptors.response.use(
-  (res) => {
-    // Si el backend devuelve un objeto paginado { data: [...], meta: {...} }, extraemos el array
-    if (res.data && res.data.data && Array.isArray(res.data.data) && res.data.meta !== undefined) {
-      res.data = res.data.data;
-    }
-    return res;
-  },
+  (res) => res,
   async (err) => {
     const originalRequest = err.config;
 
@@ -227,6 +221,8 @@ export const ticketsApi = {
   create: (data: any) => api.post('/tickets', data),
   update: (id: string, data: any) => api.put(`/tickets/${id}`, data),
   reply: (id: string, data: any) => api.post(`/tickets/${id}/messages`, data),
+  selfAssign: (id: string) => api.put(`/tickets/${id}/self-assign`),
+  changePriority: (id: string, priority: string) => api.put(`/tickets/${id}/change-priority`, { priority }),
   exportXlsx: () => api.get('/tickets/export', { responseType: 'blob' }),
 };
 

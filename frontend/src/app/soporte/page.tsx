@@ -187,24 +187,23 @@ function SupportPortalContent() {
   // ── Success screen ─────────────────────────────────────────────────────────
   if (successCode) {
     return (
-      <PublicLayout showBack backLabel="Inicio" maxWidth="max-w-lg">
-        <div className="flex items-center justify-center min-h-[70vh]">
-          <Card className="w-full p-8 text-center space-y-6 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.07)] rounded-3xl">
-            <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-12 h-12 text-green-600" />
+      <PublicLayout showBack backLabel="Inicio" maxWidth="max-w-lg">      <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[70vh] px-2">
+          <Card className="w-full p-5 sm:p-8 text-center space-y-4 sm:space-y-6 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.07)] rounded-2xl sm:rounded-3xl">
+            <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-900">¡Ticket Generado con Éxito!</h2>
-              <p className="text-slate-500">
+            <div className="space-y-1.5 sm:space-y-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 px-2">¡Ticket Generado con Éxito!</h2>
+              <p className="text-slate-500 text-sm sm:text-base">
                 Guarda este código para hacer seguimiento a tu solicitud:
               </p>
-              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-3xl font-mono font-bold text-slate-800 tracking-wider">
+              <div className="bg-slate-50 border border-slate-200 p-3 sm:p-4 rounded-2xl text-xl sm:text-3xl font-mono font-bold text-slate-800 tracking-wider break-all">
                 {successCode}
               </div>
             </div>
             <Button
               id="success-new-ticket"
-              className="w-full h-12 text-base font-bold rounded-xl"
+              className="w-full h-11 sm:h-12 text-sm sm:text-base font-bold rounded-xl"
               style={{ backgroundColor: primaryColor }}
               onClick={() => setSuccessCode(null)}
             >
@@ -213,7 +212,7 @@ function SupportPortalContent() {
             <Button
               id="success-track"
               variant="ghost"
-              className="w-full"
+              className="w-full text-sm sm:text-base"
               onClick={() => {
                 setSuccessCode(null);
                 setActiveTab('tracking');
@@ -230,14 +229,14 @@ function SupportPortalContent() {
   // ── Main form ──────────────────────────────────────────────────────────────
   return (
     <PublicLayout showBack backLabel="Inicio" maxWidth="max-w-4xl">
-      <div className="pt-12 pb-6">
+      <div className="pt-6 sm:pt-12 pb-6 w-full max-w-full">
         {/* Page header */}
-        <div className="flex flex-col items-center text-center mb-10 space-y-3">
+        <div className="flex flex-col items-center text-center mb-6 sm:mb-10 space-y-2 sm:space-y-3 px-2">
           <div>
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight px-2">
               {branding?.supportPortalTitle || 'Mesa de Ayuda TI'}
             </h1>
-            <p className="text-slate-500 mt-2 max-w-lg mx-auto">
+            <p className="text-slate-500 mt-1.5 sm:mt-2 text-sm sm:text-base max-w-lg mx-auto px-4">
               {branding?.supportPortalSubtitle ||
                 'Sistema de seguimiento y mantenimiento de activos físicos'}
             </p>
@@ -246,106 +245,106 @@ function SupportPortalContent() {
 
         {/* Agent info banner */}
         {macAddress && (
-          <div className="mb-6 bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-between text-blue-700 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center gap-3">
-              <Monitor className="w-5 h-5" />
-              <div className="text-xs">
-                <p className="font-bold">Equipo Detectado</p>
-                <p className="font-mono">
+          <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-100 p-2.5 sm:p-3 rounded-xl flex items-center justify-between text-blue-700 animate-in fade-in slide-in-from-top-2 gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <Monitor className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+              <div className="text-[11px] sm:text-xs min-w-0">
+                <p className="font-bold truncate">Equipo Detectado</p>
+                <p className="font-mono truncate text-[10px] sm:text-xs">
                   {macAddress} {reportedUser ? `(${reportedUser})` : ''}
                 </p>
               </div>
             </div>
-            <div className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded">
+            <div className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-1.5 sm:px-2 py-0.5 rounded shrink-0">
               Vinculación Automática
             </div>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-slate-100/50 p-1 rounded-2xl flex w-full max-w-md shadow-inner border border-slate-200">
+        <div className="flex justify-center mb-6 sm:mb-8">
+          <div className="bg-slate-100/50 p-1 rounded-xl sm:rounded-2xl flex w-full max-w-sm sm:max-w-md shadow-inner border border-slate-200">
             <button
               id="tab-new"
               onClick={() => setActiveTab('new')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 rounded-xl font-bold transition-all ${
+              className={`flex-1 flex items-center justify-center space-x-1.5 sm:space-x-2 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold transition-all text-xs sm:text-sm ${
                 activeTab === 'new'
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Nuevo Ticket</span>
             </button>
             <button
               id="tab-tracking"
               onClick={() => setActiveTab('tracking')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 rounded-xl font-bold transition-all ${
+              className={`flex-1 flex items-center justify-center space-x-1.5 sm:space-x-2 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold transition-all text-xs sm:text-sm ${
                 activeTab === 'tracking'
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Seguimiento</span>
             </button>
           </div>
         </div>
 
         {/* Content card */}
-        <Card className="border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-3xl overflow-hidden">
-          <CardContent className="p-8 md:p-12">
+        <Card className="border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-full">
+          <CardContent className="p-5 sm:p-8 md:p-12">
             {activeTab === 'new' ? (
-              <form onSubmit={handleCreateTicket} className="space-y-8">
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold text-slate-900">Solicitar Soporte</h2>
-                  <p className="text-slate-500">
+              <form onSubmit={handleCreateTicket} className="space-y-5 sm:space-y-8">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Solicitar Soporte</h2>
+                  <p className="text-slate-500 text-sm sm:text-base">
                     Complete el formulario para generar un nuevo ticket de atención.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold text-slate-700">Nombre Completo</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs sm:text-sm font-bold text-slate-700">Nombre Completo</Label>
                     <Input
                       id="support-name"
                       placeholder="Ej. Juan Pérez"
-                      className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                      className="h-11 sm:h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all text-sm"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold text-slate-700">Celular</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs sm:text-sm font-bold text-slate-700">Celular</Label>
                     <Input
                       id="support-phone"
                       placeholder="Ej. 300 123 4567"
-                      className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                      className="h-11 sm:h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all text-sm"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold text-slate-700">Cargo / Dependencia</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs sm:text-sm font-bold text-slate-700">Cargo / Dependencia</Label>
                     <Input
                       id="support-position"
                       placeholder="Ej. Enfermería"
-                      className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                      className="h-11 sm:h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all text-sm"
                       value={position}
                       onChange={(e) => setPosition(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold text-slate-700">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs sm:text-sm font-bold text-slate-700">
                       Categoría de la Solicitud
                     </Label>
                     <Select value={category} onValueChange={setCategory}>
                       <SelectTrigger
                         id="support-category"
-                        className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                        className="h-11 sm:h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all text-sm"
                       >
                         <SelectValue placeholder="Soporte Técnico" />
                       </SelectTrigger>
@@ -360,20 +359,20 @@ function SupportPortalContent() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Requerimiento o Falla</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm font-bold text-slate-700">Requerimiento o Falla</Label>
                   <Textarea
                     id="support-description"
                     placeholder="Describa detalladamente el problema que presenta..."
-                    className="min-h-[120px] rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all resize-none"
+                    className="min-h-[100px] sm:min-h-[120px] rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all resize-none text-sm"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm font-bold text-slate-700">
                     Adjuntar Imagen / Tomar Foto (Opcional)
                   </Label>
 
@@ -390,15 +389,15 @@ function SupportPortalContent() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group"
+                      className="w-full border-2 border-dashed border-slate-200 rounded-xl p-4 sm:p-6 flex flex-col items-center justify-center gap-1.5 sm:gap-2 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                        <Camera className="w-6 h-6 text-blue-400" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                        <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                       </div>
-                      <p className="text-sm text-slate-500 font-medium group-hover:text-blue-600 transition-colors">
+                      <p className="text-xs sm:text-sm text-slate-500 font-medium group-hover:text-blue-600 transition-colors">
                         Tomar foto o seleccionar archivo
                       </p>
-                      <p className="text-xs text-slate-400">JPG, PNG, WebP — hasta 5MB</p>
+                      <p className="text-[10px] sm:text-xs text-slate-400">JPG, PNG, WebP — hasta 5MB</p>
                     </button>
                   ) : (
                     <div className="relative border-2 border-emerald-200 rounded-xl overflow-hidden bg-emerald-50/30">
@@ -406,32 +405,32 @@ function SupportPortalContent() {
                         <img
                           src={previewUrl}
                           alt="Preview"
-                          className="w-full h-48 object-cover"
+                          className="w-full h-36 sm:h-48 object-cover"
                         />
                       )}
-                      <div className="flex items-center justify-between px-4 py-2 bg-white/80">
-                        <div className="flex items-center gap-2">
-                          <Upload className="w-4 h-4 text-emerald-500" />
-                          <span className="text-xs text-slate-600 font-medium truncate max-w-[200px]">
+                      <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                          <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
+                          <span className="text-[10px] sm:text-xs text-slate-600 font-medium truncate max-w-[120px] sm:max-w-[200px]">
                             {selectedFile.name}
                           </span>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-[10px] sm:text-xs text-slate-400 shrink-0">
                             ({(selectedFile.size / 1024).toFixed(0)} KB)
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={handleRemoveFile}
-                          className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                          className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors shrink-0"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </div>
                   )}
                   {uploadingFile && (
-                    <div className="flex items-center gap-2 text-xs text-blue-600">
-                      <Loader2 className="animate-spin" size={12} />
+                    <div className="flex items-center gap-2 text-[11px] sm:text-xs text-blue-600">
+                      <Loader2 className="animate-spin" size={11} />
                       Subiendo imagen...
                     </div>
                   )}
@@ -440,27 +439,27 @@ function SupportPortalContent() {
                 <Button
                   id="support-submit"
                   type="submit"
-                  className="w-full h-14 text-lg font-black uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                  className="w-full h-12 sm:h-14 text-base sm:text-lg font-black uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-[0.98]"
                   style={{ backgroundColor: primaryColor }}
                   disabled={loading}
                 >
-                  {loading ? <Loader2 className="animate-spin" /> : 'Generar Ticket'}
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : 'Generar Ticket'}
                 </Button>
               </form>
             ) : (
-              <div className="space-y-8">
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold text-slate-900">Seguimiento de Ticket</h2>
-                  <p className="text-slate-500">
+              <div className="space-y-5 sm:space-y-8">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Seguimiento de Ticket</h2>
+                  <p className="text-slate-500 text-sm sm:text-base">
                     Ingresa el código de tu ticket para conocer su estado actual.
                   </p>
                 </div>
 
-                <form onSubmit={handleTrackTicket} className="flex flex-col md:flex-row gap-4">
+                <form onSubmit={handleTrackTicket} className="flex flex-col md:flex-row gap-3 sm:gap-4">
                   <Input
                     id="track-code"
                     placeholder="Ej. TKT-0001"
-                    className="h-14 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all text-xl font-mono uppercase text-center md:text-left"
+                    className="h-12 sm:h-14 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all text-lg sm:text-xl font-mono uppercase text-center md:text-left"
                     value={searchCode}
                     onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
                     required
@@ -468,25 +467,25 @@ function SupportPortalContent() {
                   <Button
                     id="track-submit"
                     type="submit"
-                    className="h-14 px-8 rounded-xl font-bold"
+                    className="h-12 sm:h-14 px-6 sm:px-8 rounded-xl font-bold text-sm sm:text-base"
                     style={{ backgroundColor: primaryColor }}
                     disabled={loading}
                   >
-                    {loading ? <Loader2 className="animate-spin" /> : 'Consultar'}
+                    {loading ? <Loader2 className="animate-spin" size={18} /> : 'Consultar'}
                   </Button>
                 </form>
 
                 {trackedTicket && (
-                  <div className="mt-8 border border-slate-200 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="bg-slate-50 p-6 border-b border-slate-200 flex justify-between items-center">
-                      <div>
-                        <h3 className="font-bold text-slate-900">{trackedTicket.code}</h3>
-                        <p className="text-sm text-slate-500">
+                  <div className="mt-6 sm:mt-8 border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-slate-50 p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">{trackedTicket.code}</h3>
+                        <p className="text-xs sm:text-sm text-slate-500">
                           {new Date(trackedTicket.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div
-                        className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${
+                        className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-xs font-black uppercase tracking-widest shrink-0 ${
                           trackedTicket.status === 'OPEN'
                             ? 'bg-blue-100 text-blue-700'
                             : trackedTicket.status === 'RESOLVED'
@@ -497,29 +496,29 @@ function SupportPortalContent() {
                         {trackedTicket.status}
                       </div>
                     </div>
-                    <div className="p-6 space-y-4">
+                    <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                       <div>
                         <Label className="text-[10px] uppercase font-black text-slate-400 tracking-[0.15em]">
                           Asunto
                         </Label>
-                        <p className="font-semibold text-slate-800">{trackedTicket.title}</p>
+                        <p className="font-semibold text-slate-800 text-sm sm:text-base">{trackedTicket.title}</p>
                       </div>
                       <div>
                         <Label className="text-[10px] uppercase font-black text-slate-400 tracking-[0.15em]">
                           Descripción
                         </Label>
-                        <p className="text-slate-600 whitespace-pre-wrap text-sm">
+                        <p className="text-slate-600 whitespace-pre-wrap text-xs sm:text-sm break-words">
                           {trackedTicket.description}
                         </p>
                       </div>
                       {trackedTicket.asset && (
-                        <div className="pt-4 border-t border-slate-100">
+                        <div className="pt-3 sm:pt-4 border-t border-slate-100">
                           <Label className="text-[10px] uppercase font-black text-slate-400 tracking-[0.15em]">
                             Equipo Asociado
                           </Label>
                           <div className="flex items-center space-x-2 mt-1">
-                            <Monitor className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-700">
+                            <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
+                            <span className="text-xs sm:text-sm font-medium text-slate-700 truncate">
                               {trackedTicket.asset.name} ({trackedTicket.asset.code})
                             </span>
                           </div>

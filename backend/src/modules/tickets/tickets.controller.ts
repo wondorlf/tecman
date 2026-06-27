@@ -94,9 +94,24 @@ export class TicketsController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Actualizar estado/asignación del ticket' })
-  update(@Param('id') id: string, @Body() dto: Partial<CreateTicketDto>) {
+  @ApiOperation({ summary: 'Actualizar estado/asignación/prioridad/solución del ticket' })
+  update(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateTicketDto> & { solution?: string },
+  ) {
     return this.ticketsService.update(id, dto);
+  }
+
+  @Put(':id/self-assign')
+  @ApiOperation({ summary: 'Auto-asignarse un ticket' })
+  selfAssign(@Param('id') id: string, @Request() req: { user?: { id: string } }) {
+    return this.ticketsService.selfAssign(id, req.user?.id);
+  }
+
+  @Put(':id/change-priority')
+  @ApiOperation({ summary: 'Cambiar prioridad del ticket' })
+  changePriority(@Param('id') id: string, @Body() dto: { priority: string }) {
+    return this.ticketsService.update(id, { priority: dto.priority });
   }
 
   @Post(':id/messages')

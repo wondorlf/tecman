@@ -27,7 +27,7 @@ export default function AlertsPage() {
       if (filter === 'active') params.resolved = 'false';
       if (filter === 'resolved') params.resolved = 'true';
       const r = await alertsApi.list(params);
-      return r.data as Alert[];
+      return (r.data as any).data as Alert[];
     },
   });
 

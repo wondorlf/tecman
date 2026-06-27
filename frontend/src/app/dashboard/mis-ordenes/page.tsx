@@ -32,7 +32,7 @@ export default function MisOrdenesPage() {
     queryKey: ['mis-ordenes-maint'],
     queryFn: async () => {
       const r = await maintenanceApi.list({ technicianId: user?.id || '', limit: '50' });
-      return r.data as Maintenance[];
+      return (r.data as any).data as Maintenance[];
     },
     enabled: !!user?.id,
   });
@@ -41,7 +41,7 @@ export default function MisOrdenesPage() {
     queryKey: ['mis-ordenes-tickets'],
     queryFn: async () => {
       const r = await ticketsApi.list({ assigneeId: user?.id || '', limit: '50' });
-      return r.data as Ticket[];
+      return (r.data as any).data as Ticket[];
     },
     enabled: !!user?.id,
   });

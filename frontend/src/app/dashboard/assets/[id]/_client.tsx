@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { assetsApi } from '@/lib/api';
+import { assetsApi, categoriesApi, locationsApi, suppliersApi } from '@/lib/api';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { LoadingSpinner } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +24,9 @@ import {
   Edit,
   Save,
   X,
+  MapPin,
+  Building2,
+  Truck,
 } from 'lucide-react';
 import { getAccessToken } from '@/lib/api';
 import { MAINTENANCE_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from '@/lib/types';
@@ -71,6 +74,28 @@ export default function AssetDetailClient() {
     queryKey: ['asset-depr', id],
     queryFn: async () => (await assetsApi.depreciation(id!)).data,
     enabled: !!id,
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories-edit'],
+    queryFn: async () => {
+      const r = await categoriesApi.list();
+      return r.data as any[];
+    },
+  });
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations-edit'],
+    queryFn: async () => {
+      const r = await locationsApi.list();
+      return r.data as any[];
+    },
+  });
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers-edit'],
+    queryFn: async () => {
+      const r = await suppliersApi.list();
+      return r.data as any[];
+    },
   });
 
   useEffect(() => {
@@ -172,6 +197,10 @@ export default function AssetDetailClient() {
               description: asset.description || '',
               notes: asset.notes || '',
               status: asset.status || 'ACTIVE',
+              categoryId: asset.categoryId || '',
+              locationId: asset.locationId || '',
+              supplierId: asset.supplier?.id || '',
+              subcategoryId: asset.subcategory?.id || '',
               acquisitionDate: asset.acquisitionDate ? asset.acquisitionDate.split('T')[0] : '',
               acquisitionCost: asset.acquisitionCost || '',
               warrantyExpiry: asset.warrantyExpiry ? asset.warrantyExpiry.split('T')[0] : '',
@@ -660,6 +689,57 @@ export default function AssetDetailClient() {
                     )}
                   </div>
                 ))}
+
+                {/* Categoría */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+                    <Building2 size={12} /> Categoría
+                  </label>
+                  <select
+                    value={editForm.categoryId || ''}
+                    onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value, subcategoryId: '' })}
+                    className="w-full h-9 rounded-lg border border-slate-200 text-sm px-3"
+                  >
+                    <option value="">Seleccionar...</option>
+                    {categories.map((c: any) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Ubicación */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+                    <MapPin size={12} /> Ubicación
+                  </label>
+                  <select
+                    value={editForm.locationId || ''}
+                    onChange={(e) => setEditForm({ ...editForm, locationId: e.target.value })}
+                    className="w-full h-9 rounded-lg border border-slate-200 text-sm px-3"
+                  >
+                    <option value="">Seleccionar...</option>
+                    {locations.map((l: any) => (
+                      <option key={l.id} value={l.id}>{l.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Proveedor */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+                    <Truck size={12} /> Proveedor
+                  </label>
+                  <select
+                    value={editForm.supplierId || ''}
+                    onChange={(e) => setEditForm({ ...editForm, supplierId: e.target.value })}
+                    className="w-full h-9 rounded-lg border border-slate-200 text-sm px-3"
+                  >
+                    <option value="">Sin proveedor</option>
+                    {suppliers.map((s: any) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase">Descripción</label>

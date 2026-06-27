@@ -6,10 +6,10 @@ import { getAccessToken, initAuth } from './api';
 
 // Determine the WebSocket server URL
 // Usamos misma-origen (ruta relativa) para evitar CORB/CORS.
-// Next.js redirect /ws/* → http://localhost:3001/ws/* via rewrites en next.config.mjs.
+// Next.js rewrite proxy /socket.io/* → backend via next.config.mjs.
 function getSocketUrl(): string {
   if (typeof window === 'undefined') return '';
-  // Siempre usamos misma-origen — Next.js rewrite proxy /ws/* al backend
+  // Siempre usamos misma-origen — Next.js rewrite proxy /socket.io/* al backend
   return '';
 }
 
@@ -35,11 +35,13 @@ function getSocket(): Socket | null {
   const url = getSocketUrl();
   globalSocket = io(`${url}/ws/tickets`, {
     auth: { token },
-    transports: ['websocket', 'polling'],
+    // Solo polling — Next.js rewrites no soportan upgrades WebSocket.
+    // El proxy HTTP de /socket.io/* al backend maneja el polling correctamente.
+    transports: ['polling'],
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 2000,
-    timeout: 10000,
+    timeout: 15000,
   });
 
   globalSocket.on('connect', () => {

@@ -213,14 +213,20 @@ export interface Ticket {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
-  creator?: Pick<User, 'id' | 'name'>;
-  assignee?: Pick<User, 'id' | 'name'>;
+  creator?: Pick<User, 'id' | 'name' | 'email'> & { phone?: string; username?: string };
+  assignee?: Pick<User, 'id' | 'name' | 'email'>;
   asset?: Pick<Asset, 'id' | 'code' | 'name'>;
   messages?: TicketMessage[];
+  // Solución formal
+  solution?: string;
   // CSAT post-resolución
   csatScore?: number;
   csatComment?: string;
   csatAnsweredAt?: string;
+  // Creador del portal público
+  reportedUser?: string;
+  creatorName?: string;
+  creatorPhone?: string;
 }
 
 export interface Document {

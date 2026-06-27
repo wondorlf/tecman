@@ -532,6 +532,9 @@ model Ticket {
   slaId       String? // Fase 3: SLA aplicado al ticket
   reportedUser String? // Usuario de dominio reportado por el Agente
   
+  // Solución formal (escrita por el técnico al resolver)
+  solution     String?  @db.Text
+  
   // CSAT (Customer Satisfaction) post-resolución
   csatScore    Int?     // 1-5
   csatComment  String?  @db.Text

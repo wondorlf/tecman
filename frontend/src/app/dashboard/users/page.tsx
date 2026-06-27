@@ -43,7 +43,7 @@ export default function UsersPage() {
     queryKey: ['users'],
     queryFn: async () => {
       const r = await usersApi.list();
-      return r.data as User[];
+      return (r.data as any).data as User[];
     },
   });
   const { data: roles = [] } = useQuery({

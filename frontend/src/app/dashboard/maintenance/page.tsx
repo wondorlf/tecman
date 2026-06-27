@@ -120,21 +120,21 @@ export default function MaintenancePage() {
     queryKey: ['maintenances'],
     queryFn: async () => {
       const r = await maintenanceApi.list();
-      return r.data as Maintenance[];
+      return (r.data as any).data as Maintenance[];
     },
   });
   const { data: assets = [] } = useQuery({
     queryKey: ['assets-simple'],
     queryFn: async () => {
       const r = await assetsApi.list();
-      return r.data as any[];
+      return (r.data as any).data as any[];
     },
   });
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const r = await usersApi.list();
-      return r.data as any[];
+      return (r.data as any).data as any[];
     },
   });
   const { data: checklists = [] } = useQuery({

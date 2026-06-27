@@ -40,6 +40,15 @@ import {
   Package,
   Wrench,
   Monitor,
+  User,
+  Mail,
+  Phone,
+  ArrowRightCircle,
+  CheckCircle2,
+  XCircle,
+  ImageIcon,
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 import { getAccessToken } from '@/lib/api';
 
@@ -66,26 +75,29 @@ export default function TicketsPage() {
   const [replyMsg, setReplyMsg] = useState('');
   const [form, setForm] = useState({ ...EMPTY });
   const [saving, setSaving] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showResolveForm, setShowResolveForm] = useState(false);
+  const [solutionText, setSolutionText] = useState('');
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ['tickets'],
     queryFn: async () => {
       const r = await ticketsApi.list();
-      return r.data as Ticket[];
+      return (r.data as any).data as Ticket[];
     },
   });
   const { data: assets = [] } = useQuery({
     queryKey: ['assets-simple'],
     queryFn: async () => {
       const r = await assetsApi.list();
-      return r.data as any[];
+      return (r.data as any).data as any[];
     },
   });
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const r = await usersApi.list();
-      return r.data as any[];
+      return (r.data as any).data as any[];
     },
   });
   const { data: ticketDetail } = useQuery({
@@ -139,6 +151,51 @@ export default function TicketsPage() {
       toast({ title: 'Mensaje enviado' });
       qc.invalidateQueries({ queryKey: ['ticket-detail', detailTicket.id] });
       setReplyMsg('');
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message, variant: 'destructive' });
+    }
+  };
+
+  const handleSelfAssign = async () => {
+    if (!detailTicket) return;
+    try {
+      await ticketsApi.selfAssign(detailTicket.id);
+      toast({ title: 'Ticket auto-asignado' });
+      qc.invalidateQueries({ queryKey: ['ticket-detail', detailTicket.id] });
+      qc.invalidateQueries({ queryKey: ['tickets'] });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message, variant: 'destructive' });
+    }
+  };
+
+  const handleStatusChange = async (status: string) => {
+    if (!detailTicket) return;
+    setUpdatingStatus(true);
+    try {
+      const data: any = { status };
+      if (status === 'RESOLVED' && solutionText.trim()) {
+        data.solution = solutionText.trim();
+      }
+      await ticketsApi.update(detailTicket.id, data);
+      toast({ title: `Ticket actualizado a ${TICKET_STATUS_LABELS[status as keyof typeof TICKET_STATUS_LABELS]}` });
+      qc.invalidateQueries({ queryKey: ['ticket-detail', detailTicket.id] });
+      qc.invalidateQueries({ queryKey: ['tickets'] });
+      setShowResolveForm(false);
+      setSolutionText('');
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message, variant: 'destructive' });
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleReassign = async (assigneeId: string) => {
+    if (!detailTicket) return;
+    try {
+      await ticketsApi.update(detailTicket.id, { assigneeId: assigneeId || null });
+      toast({ title: 'Ticket reasignado' });
+      qc.invalidateQueries({ queryKey: ['ticket-detail', detailTicket.id] });
+      qc.invalidateQueries({ queryKey: ['tickets'] });
     } catch (e: any) {
       toast({ title: 'Error', description: e.response?.data?.message, variant: 'destructive' });
     }
@@ -413,10 +470,11 @@ export default function TicketsPage() {
       {/* Detail / Chat Dialog */}
       <Dialog open={!!detailTicket} onOpenChange={(o) => !o && setDetailTicket(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
-          <div className="p-5 border-b border-slate-100 shrink-0">
+          <div className="p-5 border-b border-slate-100 shrink-0 overflow-y-auto">
             <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex-1 min-w-0">
+                {/* ── Badges row ── */}
+                <div className="flex items-center gap-2 flex-wrap mb-2">
                   <span className="font-mono text-xs text-slate-400">
                     {(ticketDetail || detailTicket)?.code}
                   </span>
@@ -426,12 +484,59 @@ export default function TicketsPage() {
                     {TICKET_CATEGORY_LABELS[(ticketDetail || detailTicket)?.category as any] || ''}
                   </span>
                 </div>
-                <h2 className="text-base font-semibold text-slate-900 mt-1">
+
+                {/* ── Title & Description ── */}
+                <h2 className="text-base font-semibold text-slate-900">
                   {(ticketDetail || detailTicket)?.title}
                 </h2>
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="text-sm text-slate-500 mt-1 whitespace-pre-wrap">
                   {(ticketDetail || detailTicket)?.description}
                 </p>
+                {/* Imágenes en la descripción */}
+                {ticketDetail?.description && extractImageUrls(ticketDetail.description).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {extractImageUrls(ticketDetail.description).map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="group">
+                        <img
+                          src={url}
+                          alt={`Adjunto ${i + 1}`}
+                          className="w-24 h-24 object-cover rounded-xl border border-slate-200 group-hover:border-blue-300 transition-colors"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Creator Data ── */}
+                {(ticketDetail?.creator?.email || ticketDetail?.creator?.phone || ticketDetail?.reportedUser) && (
+                  <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500 bg-slate-50 rounded-xl p-3">
+                    {ticketDetail.creator?.name && (
+                      <span className="flex items-center gap-1">
+                        <User size={12} className="text-slate-400" />
+                        {ticketDetail.creator.name}
+                      </span>
+                    )}
+                    {ticketDetail.creator?.email && (
+                      <span className="flex items-center gap-1">
+                        <Mail size={12} className="text-slate-400" />
+                        {ticketDetail.creator.email}
+                      </span>
+                    )}
+                    {ticketDetail.creator?.phone && (
+                      <span className="flex items-center gap-1">
+                        <Phone size={12} className="text-slate-400" />
+                        {ticketDetail.creator.phone}
+                      </span>
+                    )}
+                    {ticketDetail.reportedUser && (
+                      <span className="text-amber-600 font-medium">
+                        Usuario dominio: {ticketDetail.reportedUser}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Asset Links ── */}
                 {(ticketDetail || detailTicket)?.asset && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     <a
@@ -458,7 +563,22 @@ export default function TicketsPage() {
                   </div>
                 )}
 
-                {/* CSAT Survey - mostrar cuando el ticket está RESOLVED o CLOSED y no tiene csatScore */}
+                {/* ── Solution Block ── */}
+                {ticketDetail?.solution && (
+                  <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle2 size={16} className="text-emerald-600" />
+                      <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">
+                        Solución
+                      </span>
+                    </div>
+                    <p className="text-sm text-emerald-800 whitespace-pre-wrap">
+                      {ticketDetail.solution}
+                    </p>
+                  </div>
+                )}
+
+                {/* ── CSAT ── */}
                 {ticketDetail &&
                   ['RESOLVED', 'CLOSED'].includes(ticketDetail.status) &&
                   !ticketDetail.csatScore && (
@@ -470,7 +590,6 @@ export default function TicketsPage() {
                     />
                   )}
 
-                {/* CSAT Score ya respondido */}
                 {ticketDetail?.csatScore && (
                   <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
                     <Star size={14} className="text-amber-400 fill-amber-400" />
@@ -484,10 +603,136 @@ export default function TicketsPage() {
                     )}
                   </div>
                 )}
+
+                {/* ── Action Bar ── */}
+                {ticketDetail && ticketDetail.status !== 'CLOSED' && (
+                  <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
+                    {/* Status actions */}
+                    <div className="flex flex-wrap gap-2">
+                      {ticketDetail.status === 'OPEN' && (
+                        <button
+                          onClick={() => handleStatusChange('IN_PROGRESS')}
+                          disabled={updatingStatus}
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        >
+                          <ArrowRightCircle size={13} />
+                          Tomar ticket
+                        </button>
+                      )}
+                      {['OPEN', 'IN_PROGRESS', 'WAITING_ON_USER'].includes(ticketDetail.status) && (
+                        <>
+                          {!showResolveForm ? (
+                            <button
+                              onClick={() => setShowResolveForm(true)}
+                              disabled={updatingStatus}
+                              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                            >
+                              <CheckCircle2 size={13} />
+                              Resolver
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setShowResolveForm(false)}
+                              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                            >
+                              <XCircle size={13} />
+                              Cancelar
+                            </button>
+                          )}
+                        </>
+                      )}
+                      {ticketDetail.status === 'RESOLVED' && (
+                        <button
+                          onClick={() => handleStatusChange('CLOSED')}
+                          disabled={updatingStatus}
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-slate-700 text-white text-xs font-semibold hover:bg-slate-800 transition-colors disabled:opacity-50"
+                        >
+                          <XCircle size={13} />
+                          Cerrar ticket
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Solution textarea (when resolving) */}
+                    {showResolveForm && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                          <FileText size={12} />
+                          Solución / Procedimiento realizado
+                        </label>
+                        <Textarea
+                          value={solutionText}
+                          onChange={(e) => setSolutionText(e.target.value)}
+                          placeholder="Describe la solución aplicada o el procedimiento realizado para resolver el ticket..."
+                          rows={3}
+                          className="text-sm rounded-xl resize-none"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleStatusChange('RESOLVED')}
+                            disabled={updatingStatus || !solutionText.trim()}
+                            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                          >
+                            {updatingStatus ? 'Guardando...' : 'Resolver con solución'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Priority & Reassign */}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 font-medium">Prioridad:</span>                          <select
+                            value={ticketDetail.priority}
+                            onChange={async (e) => {
+                              try {
+                                await ticketsApi.changePriority(ticketDetail.id, e.target.value);
+                                toast({ title: 'Prioridad actualizada' });
+                                qc.invalidateQueries({ queryKey: ['ticket-detail', ticketDetail.id] });
+                                qc.invalidateQueries({ queryKey: ['tickets'] });
+                              } catch {
+                                toast({ title: 'Error al cambiar prioridad', variant: 'destructive' });
+                              }
+                            }}
+                          className="h-7 rounded-lg border border-slate-200 text-xs px-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          {PRIORITIES.map((p) => (
+                            <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 font-medium">Asignado a:</span>
+                        <select
+                          value={ticketDetail.assignee?.id || ''}
+                          onChange={(e) => handleReassign(e.target.value)}
+                          className="h-7 rounded-lg border border-slate-200 text-xs px-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          <option value="">Sin asignar</option>
+                          {users.map((u: any) => (
+                            <option key={u.id} value={u.id}>{u.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {!ticketDetail.assignee && (
+                        <button
+                          onClick={handleSelfAssign}
+                          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition-colors"
+                        >
+                          <User size={12} />
+                          Auto-asignarme
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
+          {/* ── Messages Thread ── */}
           <div
             className="flex-1 overflow-y-auto p-5 space-y-3"
             style={{ minHeight: '200px', maxHeight: '340px' }}
@@ -503,8 +748,8 @@ export default function TicketsPage() {
                   <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600 shrink-0">
                     {msg.user?.name?.[0] || '?'}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-semibold text-slate-700">{msg.user?.name}</span>
                       {msg.isInternal && (
                         <span className="text-[10px] bg-amber-100 text-amber-600 px-1.5 rounded font-semibold">
@@ -518,15 +763,30 @@ export default function TicketsPage() {
                         })}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-700 mt-0.5 bg-slate-50 rounded-xl px-3 py-2">
+                    <p className="text-sm text-slate-700 mt-0.5 bg-slate-50 rounded-xl px-3 py-2 whitespace-pre-wrap">
                       {msg.message}
                     </p>
+                    {/* Imágenes en el mensaje */}
+                    {extractImageUrls(msg.message).length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {extractImageUrls(msg.message).map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={url}
+                              alt={`Imagen ${i + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg border border-slate-200 hover:border-blue-300 transition-colors cursor-pointer"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
             )}
           </div>
 
+          {/* ── Reply Area ── */}
           <div className="p-4 border-t border-slate-100 flex gap-2 shrink-0">
             <Textarea
               value={replyMsg}
@@ -550,6 +810,13 @@ export default function TicketsPage() {
       </Dialog>
     </div>
   );
+}
+
+// ── Extraer URLs de imágenes de un texto ───────────────────────────────────────
+function extractImageUrls(text: string): string[] {
+  const urlRegex = /https?:\/\/[^\s"'\)>]+(?:\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?[^\s"'\)>]*)?)/gi;
+  const matches = text.match(urlRegex);
+  return matches ? Array.from(new Set(matches)) : [];
 }
 
 // ── Componente CSAT Survey ──────────────────────────────────────────────────────

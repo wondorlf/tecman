@@ -19,6 +19,7 @@ import {
 import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -50,6 +51,7 @@ export default function ScanPage() {
   const scannerRef = useRef<any>(null);
   const scannerContainerRef = useRef<HTMLDivElement>(null);
   const [scannerReady, setScannerReady] = useState(false);
+  const { toast } = useToast();
 
   // ── Buscar activo por código QR ─────────────────────────────────────────────
   const lookupAsset = async (code: string) => {
@@ -59,6 +61,10 @@ export default function ScanPage() {
     try {
       const res = await axios.get(`/api/assets/qr/${encodeURIComponent(code)}`);
       setAsset(res.data);
+      toast({
+        title: '✅ QR detectado',
+        description: `Activo encontrado: ${res.data.name}`,
+      });
       // Generar QR image
       if (res.data.qrCode) {
         try {
@@ -164,35 +170,35 @@ export default function ScanPage() {
   const status = asset ? STATUS_CONFIG[asset.status] || STATUS_CONFIG['ACTIVE'] : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
-      <div className="max-w-2xl mx-auto space-y-4">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-50 to-slate-100 p-3 sm:p-4 md:p-6 overflow-x-hidden">
+      <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4 w-full max-w-full">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-slate-900">Escáner de Activos</h1>
-          <p className="text-sm text-slate-500">
+        <div className="text-center space-y-1.5 sm:space-y-2 px-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Escáner de Activos</h1>
+          <p className="text-xs sm:text-sm text-slate-500">
             Escanea un código QR o ingresa el código manualmente para consultar el activo
           </p>
         </div>
 
         {/* Scanner Card */}
-        <Card className="p-6 rounded-2xl border-slate-100 shadow-sm">
+        <Card className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border-slate-100 shadow-sm w-full max-w-full">
           {!scanning && !asset ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Vista previa cámara */}
               <div
                 id="qr-live-scanner-region"
                 ref={scannerContainerRef}
-                className="aspect-video bg-slate-100 rounded-2xl flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-200 overflow-hidden"
+                className="aspect-video bg-slate-100 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-2 sm:gap-3 border-2 border-dashed border-slate-200 overflow-hidden"
               >
-                <QrCode size={48} className="text-slate-300" />
-                <p className="text-sm text-slate-400">Escáner listo</p>
+                <QrCode size={36} className="sm:size-12 text-slate-300" />
+                <p className="text-xs sm:text-sm text-slate-400">Escáner listo</p>
               </div>
 
               <Button
                 onClick={startLiveScan}
-                className="w-full h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium"
+                className="w-full h-11 sm:h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm font-medium"
               >
-                <Camera size={16} className="mr-2" />
+                <Camera size={15} className="sm:size-4 mr-1.5 sm:mr-2" />
                 Activar escáner
               </Button>
 
@@ -201,17 +207,17 @@ export default function ScanPage() {
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-slate-100" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
+                <div className="relative flex justify-center text-[10px] sm:text-xs uppercase">
                   <span className="bg-white px-2 text-slate-400">o ingresa manualmente</span>
                 </div>
               </div>
 
               {/* Manual input */}
               <div className="flex gap-2">
-                <div className="relative flex-1">
+                <div className="relative flex-1 min-w-0">
                   <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={15}
+                    className="sm:size-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                   />
                   <input
                     type="text"
@@ -219,40 +225,40 @@ export default function ScanPage() {
                     onChange={(e) => setManualCode(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
                     placeholder="Código (TECMAN-xxxx o TEC-001)"
-                    className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    className="w-full h-10 sm:h-11 pl-9 pr-3 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   />
                 </div>
                 <Button
                   onClick={handleManualSearch}
                   disabled={!manualCode.trim() || loading}
-                  className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-50"
+                  className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl bg-slate-900 text-white text-xs sm:text-sm hover:bg-slate-800 disabled:opacity-50 shrink-0"
                 >
-                  {loading ? <Loader2 className="animate-spin" size={16} /> : 'Buscar'}
+                  {loading ? <Loader2 className="animate-spin" size={15} /> : 'Buscar'}
                 </Button>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100">
-                  <AlertTriangle size={16} className="text-amber-600 shrink-0" />
-                  <p className="text-xs text-amber-700">{error}</p>
+                <div className="flex items-start gap-2 p-2.5 sm:p-3 rounded-xl bg-amber-50 border border-amber-100">
+                  <AlertTriangle size={14} className="sm:size-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[11px] sm:text-xs text-amber-700 break-words">{error}</p>
                 </div>
               )}
             </div>
           ) : scanning ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               <div
                 id="qr-live-scanner-region"
-                className="w-full aspect-square max-h-[300px] mx-auto rounded-xl overflow-hidden bg-slate-900"
+                className="w-full aspect-square max-h-[260px] sm:max-h-[300px] mx-auto rounded-xl overflow-hidden bg-slate-900"
               />
-              <p className="text-xs text-center text-emerald-600 font-medium animate-pulse">
+              <p className="text-[11px] sm:text-xs text-center text-emerald-600 font-medium animate-pulse">
                 {scannerReady ? 'Escaneando... apunta la cámara al código QR' : 'Iniciando cámara...'}
               </p>
               <Button
                 onClick={stopLiveScan}
                 variant="outline"
-                className="w-full h-10 rounded-xl text-sm"
+                className="w-full h-9 sm:h-10 rounded-xl text-xs sm:text-sm"
               >
-                <X size={14} className="mr-1.5" />
+                <X size={13} className="sm:size-[14px] mr-1 sm:mr-1.5" />
                 Detener escáner
               </Button>
             </div>
@@ -260,26 +266,26 @@ export default function ScanPage() {
         </Card>
 
         {asset && !scanning && (
-          <Card className="p-5 rounded-2xl border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
-                <CheckCircle size={24} className="text-blue-600" />
+          <Card className="p-4 sm:p-5 rounded-xl sm:rounded-2xl border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-3 duration-300 w-full max-w-full overflow-x-hidden">
+            <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0">
+                <CheckCircle size={20} className="sm:size-6 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-bold text-slate-900">{asset.name}</h2>
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 break-words">{asset.name}</h2>
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${status?.bg} ${status?.color}`}
+                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${status?.bg} ${status?.color}`}
                   >
                     <span className={"w-1.5 h-1.5 rounded-full " + status?.dot} />
                     {status?.label}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">{asset.code}</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 font-mono mt-0.5 truncate">{asset.code}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
               {[
                 ['Categoría', asset.category?.name],
                 ['Ubicación', asset.location?.name],
@@ -294,7 +300,7 @@ export default function ScanPage() {
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         {label}
                       </p>
-                      <p className="text-sm font-medium text-slate-700">{value}</p>
+                      <p className="text-xs sm:text-sm font-medium text-slate-700 break-words">{value}</p>
                     </div>
                   ),
               )}
@@ -302,20 +308,20 @@ export default function ScanPage() {
 
             {/* QR Code */}
             {qrDataUrl && (
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 mb-4">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-100 mb-3 sm:mb-4">
                 <img
                   src={qrDataUrl}
                   alt="QR del activo"
-                  className="w-24 h-24 rounded-lg shrink-0"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg shrink-0"
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-700 mb-1">
+                <div className="flex-1 min-w-0 w-full sm:w-auto">
+                  <p className="text-xs font-semibold text-slate-700 mb-1 text-center sm:text-left">
                     Código QR del activo
                   </p>
-                  <p className="text-[10px] font-mono text-slate-400 truncate mb-2">
+                  <p className="text-[10px] font-mono text-slate-400 truncate mb-2 text-center sm:text-left">
                     {asset.qrCode}
                   </p>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 justify-center sm:justify-start">
                     <a
                       href={qrDataUrl}
                       download={`${asset.code || 'activo'}-qr.png`}
@@ -360,27 +366,27 @@ export default function ScanPage() {
               </div>
             )}
 
-            <div className="flex gap-2 flex-wrap">
+            <div className="grid grid-cols-2 sm:flex sm:flex-row gap-1.5 sm:gap-2">
               <Button
                 onClick={() => router.push(`/dashboard/assets/${asset.id}`)}
-                className="flex-1 h-9 rounded-xl bg-blue-600 text-white text-sm"
+                className="w-full sm:flex-1 h-8 sm:h-9 rounded-lg sm:rounded-xl bg-blue-600 text-white text-[10px] sm:text-sm font-semibold hover:bg-blue-700"
               >
-                <ExternalLink size={14} className="mr-1.5" />
-                Ver detalle
+                <ExternalLink size={12} className="sm:size-[14px] mr-1 sm:mr-1.5" />
+                <span className="truncate">Ver detalle</span>
               </Button>
               <Button
                 onClick={() => router.push(`/dashboard/tickets?assetCode=${encodeURIComponent(asset.code)}`)}
-                className="flex-1 h-9 rounded-xl bg-emerald-600 text-white text-sm"
+                className="w-full sm:flex-1 h-8 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-600 text-white text-[10px] sm:text-sm font-semibold hover:bg-emerald-700"
               >
-                <Ticket size={14} className="mr-1.5" />
-                Reportar
+                <Ticket size={12} className="sm:size-[14px] mr-1 sm:mr-1.5" />
+                <span className="truncate">Reportar</span>
               </Button>
               <Button
                 onClick={() => router.push(`/dashboard/maintenance?assetCode=${encodeURIComponent(asset.code)}`)}
-                className="flex-1 h-9 rounded-xl bg-amber-600 text-white text-sm"
+                className="w-full sm:flex-1 h-8 sm:h-9 rounded-lg sm:rounded-xl bg-amber-600 text-white text-[10px] sm:text-sm font-semibold hover:bg-amber-700"
               >
-                <Wrench size={14} className="mr-1.5" />
-                Mantenimiento
+                <Wrench size={12} className="sm:size-[14px] mr-1 sm:mr-1.5" />
+                <span className="truncate">Mantenimiento</span>
               </Button>
               <Button
                 variant="outline"
@@ -390,9 +396,9 @@ export default function ScanPage() {
                   setManualCode('');
                   setError(null);
                 }}
-                className="flex-1 h-9 rounded-xl text-sm"
+                className="w-full sm:flex-1 h-8 sm:h-9 rounded-lg sm:rounded-xl text-[10px] sm:text-sm"
               >
-                Nueva búsqueda
+                <span className="truncate">Nueva búsqueda</span>
               </Button>
             </div>
           </Card>
@@ -401,55 +407,55 @@ export default function ScanPage() {
         {!asset && (
           <>
           {/* Acciones rápidas */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Card
-              className="p-4 rounded-2xl border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => router.push('/dashboard/tickets')}
             >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Ticket size={18} />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Ticket size={16} className="sm:size-[18px]" />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Reportar problema</p>
-                  <p className="text-[10px] text-slate-400">Crear ticket de soporte</p>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">Reportar problema</p>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Crear ticket de soporte</p>
                 </div>
               </div>
             </Card>
             <Card
-              className="p-4 rounded-2xl border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => router.push('/dashboard/discovery')}
             >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <QrCode size={18} />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <QrCode size={16} className="sm:size-[18px]" />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Ver Discovery</p>
-                  <p className="text-[10px] text-slate-400">Dispositivos detectados</p>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">Ver Discovery</p>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Dispositivos detectados</p>
                 </div>
               </div>
             </Card>
           </div>
 
           {/* Guía rápida */}
-          <Card className="p-4 rounded-2xl border-slate-100 bg-blue-50/50">
-            <h3 className="text-xs font-semibold text-slate-700 mb-2">¿Cómo funciona?</h3>
-            <ol className="space-y-1.5 text-xs text-slate-600">
-              <li className="flex items-start gap-2">
-                <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+          <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border-slate-100 bg-blue-50/50">
+            <h3 className="text-[11px] sm:text-xs font-semibold text-slate-700 mb-1.5 sm:mb-2">¿Cómo funciona?</h3>
+            <ol className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs text-slate-600">
+              <li className="flex items-start gap-1.5 sm:gap-2">
+                <span className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[8px] sm:text-[10px] font-bold shrink-0 mt-0.5">
                   1
                 </span>
                 Escanea el código QR del equipo o ingresa su código
               </li>
-              <li className="flex items-start gap-2">
-                <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+              <li className="flex items-start gap-1.5 sm:gap-2">
+                <span className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[8px] sm:text-[10px] font-bold shrink-0 mt-0.5">
                   2
                 </span>
                 Revisa la ficha técnica del activo
               </li>
-              <li className="flex items-start gap-2">
-                <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+              <li className="flex items-start gap-1.5 sm:gap-2">
+                <span className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[8px] sm:text-[10px] font-bold shrink-0 mt-0.5">
                   3
                 </span>
                 Crea un ticket de soporte o solicita mantenimiento directamente

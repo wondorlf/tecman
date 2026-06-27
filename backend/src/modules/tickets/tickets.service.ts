@@ -36,10 +36,10 @@ export class TicketsService {
       this.prisma.ticket.findMany({
         where,
         include: {
-          creator: { select: { id: true, name: true, email: true, telegramChatId: true } },
-          assignee: { select: { id: true, name: true, email: true, telegramChatId: true } },
-          asset: { select: { id: true, name: true, code: true } },
-          _count: { select: { messages: true } },
+        creator: { select: { id: true, name: true, email: true, phone: true, username: true, telegramChatId: true } },
+        assignee: { select: { id: true, name: true, email: true, phone: true, telegramChatId: true } },
+        asset: { select: { id: true, name: true, code: true } },
+        _count: { select: { messages: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -55,8 +55,8 @@ export class TicketsService {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id },
       include: {
-        creator: { select: { id: true, name: true, email: true, telegramChatId: true } },
-        assignee: { select: { id: true, name: true, email: true, telegramChatId: true } },
+        creator: { select: { id: true, name: true, email: true, phone: true, username: true, telegramChatId: true } },
+        assignee: { select: { id: true, name: true, email: true, phone: true, telegramChatId: true } },
         asset: { select: { id: true, name: true, code: true } },
         messages: {
           include: { user: { select: { id: true, name: true } } },
@@ -151,8 +151,9 @@ export class TicketsService {
 
   async update(id: string, data: any) {
     const existing = await this.findOne(id);
-    if (existing.status === 'RESOLVED' || existing.status === 'CLOSED') {
-      throw new Error(`No se puede editar un ticket con estado ${existing.status}`);
+    // Bloqear edición solo si está CLOSED, permitir cambios en RESOLVED
+    if (existing.status === 'CLOSED') {
+      throw new Error('No se puede editar un ticket cerrado');
     }
     const updateData: any = { ...data };
     if (data.status === 'RESOLVED' && !data.resolvedAt) {
@@ -161,6 +162,20 @@ export class TicketsService {
     return this.prisma.ticket.update({
       where: { id },
       data: updateData,
+    });
+  }
+
+  async selfAssign(id: string, userId: string | undefined) {
+    if (!userId) {
+      throw new Error('Usuario no autenticado');
+    }
+    const existing = await this.findOne(id);
+    if (existing.status === 'CLOSED') {
+      throw new Error('No se puede asignar un ticket cerrado');
+    }
+    return this.prisma.ticket.update({
+      where: { id },
+      data: { assigneeId: userId },
     });
   }
 
