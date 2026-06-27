@@ -22,8 +22,6 @@
     .\tecman-discovery.ps1 -UninstallTask
 #>
 
-# API_KEY_PLACEHOLDER
-
 param(
     [string]$ServerUrl = "SERVER_PLACEHOLDER",
     [string]$ApiKey = "",
@@ -31,6 +29,8 @@ param(
     [switch]$InstallTask,
     [switch]$UninstallTask
 )
+
+# API_KEY_PLACEHOLDER
 
 $script:ConfigPath = Join-Path $PSScriptRoot "tecman-discovery-config.json"
 
