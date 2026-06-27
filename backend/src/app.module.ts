@@ -76,7 +76,7 @@ const frontendOutPath = isRootCwd
 
     ServeStaticModule.forRoot({
       rootPath: frontendOutPath,
-      exclude: ['/api/:path*', '/admin/:path*'],
+      exclude: ['/api/*path', '/admin/*path'],
     }),
 
     // Database
