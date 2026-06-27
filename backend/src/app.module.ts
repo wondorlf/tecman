@@ -45,6 +45,7 @@ import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { LdapModule } from './modules/ldap/ldap.module.js';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module.js';
 import { AgentsModule } from './modules/agents/agents.module.js';
+import { FixScriptsModule } from './modules/fix-scripts/fix-scripts.module.js';
 
 import { existsSync } from 'fs';
 
@@ -110,6 +111,7 @@ const frontendOutPath = isRootCwd
     LdapModule,
     KnowledgeModule,
     AgentsModule,
+    FixScriptsModule,
   ],
   providers: [
     // Global JWT guard — must be first

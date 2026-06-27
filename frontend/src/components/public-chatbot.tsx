@@ -18,6 +18,9 @@ import {
   BookOpen,
   ArrowRight,
   Phone,
+  Download,
+  HardDrive,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,6 +105,24 @@ export default function PublicChatbot({ onNavigate }: Props) {
             label="La impresora no imprime"
             color="amber"
             onClick={() => handleBotQuery('impresora no imprime')}
+          />
+          <QuickAction
+            icon={<HardDrive size={13} />}
+            label="Equipo lento"
+            color="red"
+            onClick={() => handleBotQuery('equipo lento')}
+          />
+          <QuickAction
+            icon={<Monitor size={13} />}
+            label="Soporte remoto"
+            color="indigo"
+            onClick={() => handleBotQuery('soporte remoto')}
+          />
+          <QuickAction
+            icon={<Globe size={13} />}
+            label="Outlook no funciona"
+            color="cyan"
+            onClick={() => handleBotQuery('outlook no funciona')}
           />
           <QuickAction
             icon={<Monitor size={13} />}
@@ -272,9 +293,19 @@ export default function PublicChatbot({ onNavigate }: Props) {
               <li>Libera la IP: <code className="bg-slate-100 px-1 rounded">ipconfig /release</code> y <code className="bg-slate-100 px-1 rounded">ipconfig /renew</code></li>
               <li>Limpia DNS: <code className="bg-slate-100 px-1 rounded">ipconfig /flushdns</code></li>
             </ol>
-            <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-              <Ticket size={12} className="mr-1" /> Crear ticket si no se resuelve
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <a href="/api/fix-scripts/fix-network-dns.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                <Download size={11} /> Descargar solución de red (.bat)
+              </a>
+              {lower.includes('wifi') && (
+                <a href="/api/fix-scripts/fix-wifi.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-100 transition-colors">
+                  <Download size={11} /> Descargar solución WiFi (.bat)
+                </a>
+              )}
+              <Button size="sm" className="h-8 rounded-lg bg-blue-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
+                <Ticket size={12} className="mr-1" /> Crear ticket si no se resuelve
+              </Button>
+            </div>
           </div>
         );
         setLoading(false);
@@ -291,9 +322,14 @@ export default function PublicChatbot({ onNavigate }: Props) {
               <li>Verifica que sea impresora predeterminada</li>
               <li>Reinicia el equipo</li>
             </ol>
-            <Button size="sm" className="h-8 rounded-lg bg-amber-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-              <Ticket size={12} className="mr-1" /> Crear ticket
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <a href="/api/fix-scripts/fix-printer.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-700 hover:bg-amber-100 transition-colors">
+                <Download size={11} /> Descargar solución (.bat)
+              </a>
+              <Button size="sm" className="h-8 rounded-lg bg-amber-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
+                <Ticket size={12} className="mr-1" /> Crear ticket
+              </Button>
+            </div>
           </div>
         );
         setLoading(false);
@@ -310,9 +346,14 @@ export default function PublicChatbot({ onNavigate }: Props) {
               <li>Reinicia el equipo si no lo has hecho hoy</li>
               <li>Verifica actualizaciones de Windows pendientes</li>
             </ol>
-            <Button size="sm" className="h-8 rounded-lg bg-red-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-              <Ticket size={12} className="mr-1" /> Crear ticket
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <a href="/api/fix-scripts/fix-slow-pc.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:bg-red-100 transition-colors">
+                <Download size={11} /> Descargar solución (.bat)
+              </a>
+              <Button size="sm" className="h-8 rounded-lg bg-red-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
+                <Ticket size={12} className="mr-1" /> Crear ticket
+              </Button>
+            </div>
           </div>
         );
         setLoading(false);
@@ -349,9 +390,35 @@ export default function PublicChatbot({ onNavigate }: Props) {
               <li>Si está en Web, prueba con otro navegador</li>
               <li>Verifica credenciales: Ctrl+Alt+Supr → Cerrar sesión → Reingresar</li>
             </ol>
-            <Button size="sm" className="h-8 rounded-lg bg-indigo-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
-              <Ticket size={12} className="mr-1" /> Crear ticket
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <a href="/api/fix-scripts/fix-outlook.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors">
+                <Download size={11} /> Descargar solución (.bat)
+              </a>
+              <Button size="sm" className="h-8 rounded-lg bg-indigo-600 text-white text-xs" onClick={() => handleQuickAction('crear ticket')}>
+                <Ticket size={12} className="mr-1" /> Crear ticket
+              </Button>
+            </div>
+          </div>
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ── Soporte remoto ──
+      if (lower.includes('soporte remoto') || lower.includes('anydesk') || lower.includes('rustdesk') || lower.includes('acceso remoto') || lower.includes('ayuda remota')) {
+        addBotMessage(
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-indigo-700">Soporte Remoto</p>
+            <p className="text-xs text-slate-600">Descarga e instala un programa de acceso remoto para recibir asistencia:</p>
+            <div className="flex flex-wrap gap-2">
+              <a href="/api/fix-scripts/install-anydesk.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors">
+                <Download size={11} /> Instalar AnyDesk (.bat)
+              </a>
+              <a href="/api/fix-scripts/install-rustdesk.bat" download className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-100 transition-colors">
+                <Download size={11} /> Instalar RustDesk (.bat)
+              </a>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">Descarga el .bat, haz clic derecho → Ejecutar como Administrador. Comparte el código de acceso con soporte.</p>
           </div>
         );
         setLoading(false);
