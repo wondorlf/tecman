@@ -258,7 +258,7 @@ function AssetViewContent() {
           </p>
         </div>        {/* Manual search + QR Scanner */}
         {!asset && !scanning && (
-          <form onSubmit={handleManualSearch} className="mb-6 sm:mb-8 space-y-2.5 sm:space-y-3">
+          <form onSubmit={handleManualSearch} className="mx-auto max-w-xl mb-6 sm:mb-8 space-y-2.5 sm:space-y-3">
             {/* Row 1: input + search button */}
             <div className="flex gap-2 sm:gap-3">
               <div className="relative flex-1">
@@ -383,7 +383,7 @@ function AssetViewContent() {
 
         {/* Asset card */}
         {asset && status && (
-          <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.07)] animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-full">
+          <div className="mx-auto max-w-xl bg-white border border-slate-200 rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.07)] animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
             {/* Card header */}
             <div className="px-5 sm:px-7 pt-5 sm:pt-7 pb-4 sm:pb-5 border-b border-slate-100">
               <div className="flex items-start justify-between gap-3 sm:gap-4">

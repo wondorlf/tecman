@@ -292,7 +292,7 @@ function SupportPortalContent() {
         </div>
 
         {/* Content card */}
-        <Card className="border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-full">
+        <Card className="mx-auto max-w-3xl border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl overflow-hidden w-full">
           <CardContent className="p-5 sm:p-8 md:p-12">
             {activeTab === 'new' ? (
               <form onSubmit={handleCreateTicket} className="space-y-5 sm:space-y-8">

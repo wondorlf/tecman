@@ -199,7 +199,7 @@ function LandingContent() {
         </p>
 
         {/* 3 Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
+        <div className="mx-auto max-w-3xl grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
           {/* Card 1: Login */}
           <button
             id="home-btn-login"
