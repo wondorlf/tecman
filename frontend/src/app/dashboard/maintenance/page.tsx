@@ -145,6 +145,26 @@ export default function MaintenancePage() {
     },
   });
 
+  // Get the selected asset's category to filter checklists
+  const selectedAsset = assets.find((a: any) => a.id === form.assetId);
+  const assetCategoryId = selectedAsset?.categoryId;
+
+  // Filter checklists by asset category
+  const filteredChecklists = useMemo(() => {
+    if (!assetCategoryId) return checklists;
+    return checklists.filter((c: any) => {
+      const categories = c.categories || [];
+      return categories.some((cat: any) => cat.id === assetCategoryId);
+    });
+  }, [checklists, assetCategoryId]);
+
+  // Auto-select first checklist when asset changes
+  useEffect(() => {
+    if (assetCategoryId && filteredChecklists.length > 0 && !form.checklistId) {
+      f('checklistId', filteredChecklists[0].id);
+    }
+  }, [assetCategoryId, filteredChecklists]);
+
   const filtered = useMemo(() => {
     return maintenances.filter((m) => {
       const q = search.toLowerCase();
@@ -769,19 +789,24 @@ export default function MaintenancePage() {
               </select>
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-600">Checklist</Label>
+              <Label className="text-xs font-semibold text-slate-600">
+                Checklist {assetCategoryId ? `(${filteredChecklists.length} disponibles)` : ''}
+              </Label>
               <select
                 value={form.checklistId}
                 onChange={(e) => f('checklistId', e.target.value)}
                 className="w-full h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">Sin checklist</option>
-                {checklists.map((c: any) => (
+                {filteredChecklists.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
                 ))}
               </select>
+              {assetCategoryId && filteredChecklists.length === 0 && (
+                <p className="text-[10px] text-slate-400">No hay checklists configurados para esta categoría</p>
+              )}
             </div>
             <div className="col-span-2 space-y-1.5">
               <Label className="text-xs font-semibold text-slate-600">Descripción</Label>
