@@ -197,38 +197,27 @@ export class AssetsController {
     sectionTitle('INFORMACIÓN GENERAL');
     const responsible = asset.custodies?.[0]?.user?.name || '—';
     const generalRows = [
-      ['Código', asset.code || '—'],
-      ['Nombre', asset.name || '—'],
-      ['Estado', asset.status || '—'],
-      ['Responsable', responsible],
-      ['Categoría', asset.category?.name || '—'],
-      ['Subcategoría', asset.subcategory?.name || '—'],
-      ['Marca', asset.brand || '—'],
-      ['Modelo', asset.model || '—'],
-      ['Serial', asset.serialNumber || '—'],
-      ['Ubicación', asset.location?.name || '—'],
-      ['Proveedor', asset.supplier?.name || '—'],
-      ['Costo', asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString('es-CO')}` : '—'],
-      ['Adquisición', asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString('es-CO') : '—'],
-      ['Garantía', asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString('es-CO') : '—'],
+      ['Código', asset.code || '—', 'Nombre', asset.name || '—'],
+      ['Estado', asset.status || '—', 'Responsable', responsible],
+      ['Categoría', asset.category?.name || '—', 'Subcategoría', asset.subcategory?.name || '—'],
+      ['Marca', asset.brand || '—', 'Modelo', asset.model || '—'],
+      ['Serial', asset.serialNumber || '—', 'Ubicación', asset.location?.name || '—'],
+      ['Proveedor', asset.supplier?.name || '—', 'Costo', asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString('es-CO')}` : '—'],
+      ['Adquisición', asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString('es-CO') : '—', 'Garantía', asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString('es-CO') : '—'],
     ];
-    drawTable(['Campo', 'Valor'], generalRows, [90, CONTENT_W - 95]);
+    drawTable(['Campo', 'Valor', 'Campo', 'Valor'], generalRows, [70, CONTENT_W / 2 - 75, 70, CONTENT_W / 2 - 75]);
 
     // ── ESPECIFICACIONES DEL EQUIPO ──
     const hw = asset.discoveredDevice;
     if (hw) {
       sectionTitle('ESPECIFICACIONES DEL EQUIPO');
       const hwRows = [
-        ['Hostname', hw.hostname || '—'],
-        ['IP', hw.ipAddress || '—'],
-        ['MAC', hw.macAddress || '—'],
-        ['OS', hw.os || '—'],
-        ['CPU', hw.cpuModel || '—'],
-        ['RAM', hw.ramTotalBytes ? `${(Number(hw.ramTotalBytes) / 1073741824).toFixed(1)} GB` : '—'],
-        ['Disco', hw.diskTotalBytes ? `${(Number(hw.diskTotalBytes) / 1073741824).toFixed(0)} GB` : '—'],
-        ['Tipo Disco', hw.diskType || '—'],
+        ['Hostname', hw.hostname || '—', 'IP', hw.ipAddress || '—'],
+        ['MAC', hw.macAddress || '—', 'OS', hw.os || '—'],
+        ['CPU', hw.cpuModel || '—', 'RAM', hw.ramTotalBytes ? `${(Number(hw.ramTotalBytes) / 1073741824).toFixed(1)} GB` : '—'],
+        ['Disco', hw.diskTotalBytes ? `${(Number(hw.diskTotalBytes) / 1073741824).toFixed(0)} GB` : '—', 'Tipo Disco', hw.diskType || '—'],
       ];
-      drawTable(['Campo', 'Valor'], hwRows, [90, CONTENT_W - 95]);
+      drawTable(['Campo', 'Valor', 'Campo', 'Valor'], hwRows, [70, CONTENT_W / 2 - 75, 70, CONTENT_W / 2 - 75]);
     }
 
     // ══════════════════════════════════════════════════════════════════
