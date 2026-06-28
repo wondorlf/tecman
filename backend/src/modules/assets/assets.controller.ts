@@ -114,51 +114,66 @@ export class AssetsController {
 
     const sectionTitle = (title: string) => {
       checkBreak(35);
-      doc.moveDown(0.2);
+      doc.moveDown(0.3);
       const y = doc.y;
-      doc.roundedRect(MARGIN, y, CONTENT_W, 16, 2).fill('#f1f5f9');
-      doc.fontSize(8).font('Helvetica-Bold').fillColor('#1e293b').text(title, MARGIN + 6, y + 4, { width: CONTENT_W - 12 });
+      // Gradient-like bar
+      doc.roundedRect(MARGIN, y, CONTENT_W, 16, 3).fill('#1e293b');
+      doc.roundedRect(MARGIN, y, 4, 16, 2).fill('#3b82f6');
+      doc.fontSize(7.5).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 10, y + 4, { width: CONTENT_W - 16 });
       doc.fillColor('#000000');
       doc.y = y + 20;
     };
 
-    const drawTable = (headers: string[], rows: string[][], colWidths: number[]) => {
+    const drawTable = (headers: string[], rows: string[][], colWidths: number[], opts?: { headerBg?: string; headerColor?: string; borderColor?: string }) => {
       if (rows.length === 0) return;
+      const hBg = opts?.headerBg || '#1e293b';
+      const hColor = opts?.headerColor || '#ffffff';
+      const bColor = opts?.borderColor || '#e2e8f0';
       checkBreak(18 + rows.length * 11);
 
+      // Header
       const headerY = doc.y;
-      doc.rect(MARGIN + 2, headerY - 1, CONTENT_W - 4, 12).fill('#e2e8f0');
-      let x = MARGIN + 5;
-      doc.fontSize(5.5).font('Helvetica-Bold').fillColor('#475569');
+      doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 14, 3).fill(hBg);
+      let x = MARGIN + 6;
+      doc.fontSize(5.5).font('Helvetica-Bold').fillColor(hColor);
       for (let i = 0; i < headers.length; i++) {
         doc.text(headers[i], x, headerY + 1, { width: colWidths[i], continued: false });
         x += colWidths[i];
       }
       doc.y = headerY + 14;
 
-      doc.font('Helvetica').fillColor('#334155');
-      for (const row of rows) {
+      // Rows
+      for (let r = 0; r < rows.length; r++) {
         checkBreak(11);
-        x = MARGIN + 5;
+        x = MARGIN + 6;
         const rowY = doc.y;
-        const bgColor = rows.indexOf(row) % 2 === 0 ? '#ffffff' : '#f8fafc';
+        const bgColor = r % 2 === 0 ? '#ffffff' : '#f8fafc';
         doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 10).fill(bgColor);
-        for (let i = 0; i < row.length; i++) {
-          doc.fontSize(5.5).fillColor('#334155').text(row[i] || '—', x, rowY, { width: colWidths[i], continued: false });
+        // Left border accent
+        doc.rect(MARGIN + 2, rowY - 1, 1.5, 10).fill(r % 2 === 0 ? '#3b82f6' : '#8b5cf6');
+        doc.font('Helvetica').fillColor('#334155');
+        for (let i = 0; i < rows[r].length; i++) {
+          doc.fontSize(5.5).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
           x += colWidths[i];
         }
         doc.y = rowY + 10;
       }
+      // Bottom border
+      doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 1).fill(bColor);
+      doc.y += 3;
       doc.fillColor('#000000');
     };
 
-    const detailCard = (bgColor: string, borderColor: string, lines: { text: string; font: string; color: string; size: number }[]) => {
+    const detailCard = (accentColor: string, lines: { text: string; font: string; color: string; size: number }[]) => {
       checkBreak(40);
       const startY = doc.y;
-      doc.roundedRect(MARGIN + 2, startY, CONTENT_W - 4, 4, 2).fill(bgColor);
+      // Card background
+      doc.roundedRect(MARGIN + 2, startY, CONTENT_W - 4, 4, 3).fill('#f8fafc');
+      // Left accent bar
+      doc.roundedRect(MARGIN + 2, startY, 3, 4, 2).fill(accentColor);
       doc.y = startY + 6;
       for (const line of lines) {
-        doc.fontSize(line.size).font(line.font).fillColor(line.color).text(line.text, MARGIN + 8, doc.y, { width: CONTENT_W - 20 });
+        doc.fontSize(line.size).font(line.font).fillColor(line.color).text(line.text, MARGIN + 10, doc.y, { width: CONTENT_W - 22 });
       }
       doc.y += 3;
       doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 0.5).fill('#e2e8f0');
@@ -304,7 +319,7 @@ export class AssetsController {
 
       for (const m of sortedMaintenances) {
         checkBreak(60);
-        detailCard('#f0fdf4', '#bbf7d0', [
+        detailCard('#22c55e', [
           { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 7 },
           { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 5.5 },
           ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 5.5 }] : []),
@@ -323,7 +338,7 @@ export class AssetsController {
 
       for (const t of sortedTickets) {
         checkBreak(50);
-        detailCard('#eff6ff', '#bfdbfe', [
+        detailCard('#3b82f6', [
           { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 7 },
           { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 5.5 },
           ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 5.5 }] : []),
