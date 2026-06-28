@@ -213,7 +213,7 @@ export class AssetsController {
     const responsible = asset.custodies?.[0]?.user?.name || '—';
     const generalRows = [
       ['Código', asset.code || '—', 'Nombre', asset.name || '—'],
-      ['Estado', asset.status || '—', 'Responsable', responsible],
+      ['Estado', asset.status || '—', 'Responsable/Asignado', responsible],
       ['Categoría', asset.category?.name || '—', 'Subcategoría', asset.subcategory?.name || '—'],
       ['Marca', asset.brand || '—', 'Modelo', asset.model || '—'],
       ['Serial', asset.serialNumber || '—', 'Ubicación', asset.location?.name || '—'],
@@ -247,10 +247,10 @@ export class AssetsController {
         m.code || '—',
         m.type || '—',
         m.status || '—',
-        m.responsibleName || m.technician?.name || '—',
+        m.technician?.name || '—',
         m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—',
       ]);
-      drawTable(['Código', 'Tipo', 'Estado', 'Responsable', 'Fecha'], mRows, [65, 75, 75, 130, 100]);
+      drawTable(['Código', 'Tipo', 'Estado', 'Técnico', 'Fecha'], mRows, [65, 75, 75, 130, 100]);
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -321,7 +321,7 @@ export class AssetsController {
         checkBreak(60);
         detailCard('#22c55e', [
           { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 7 },
-          { text: `Responsable: ${m.responsibleName || m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 5.5 },
+          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 5.5 },
           ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 5.5 }] : []),
           ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 5.5 }] : []),
         ]);

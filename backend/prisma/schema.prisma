@@ -211,7 +211,6 @@ model Maintenance {
   completedAt        DateTime?
   technicianId       String?
   createdById        String?
-  responsibleName    String?
   description        String?           @db.Text
   diagnosis          String?           @db.Text
   solution           String?           @db.Text
