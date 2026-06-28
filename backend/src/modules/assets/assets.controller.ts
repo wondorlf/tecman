@@ -26,7 +26,7 @@ export class AssetsController {
   @Get('qr/:code')
   @ApiOperation({ summary: 'Lookup asset by QR code (public)' })
   findByQr(@Param('code') code: string) {
-    return this.assetsService.findByQr(code);
+    return this.assetsService.findByQrCode(code);
   }
 
   @Get(':id')
