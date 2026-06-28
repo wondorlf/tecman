@@ -51,9 +51,13 @@ export class DocumentsService {
   }
 
   async update(id: string, data: { isPublic?: boolean; type?: string; name?: string }) {
+    const updateData: any = {};
+    if (data.isPublic !== undefined) updateData.isPublic = data.isPublic;
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.type !== undefined) updateData.type = data.type;
     return this.prisma.document.update({
       where: { id },
-      data,
+      data: updateData,
     });
   }
 }
