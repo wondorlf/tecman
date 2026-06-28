@@ -1,25 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Put,
-  Param,
-  Delete,
-  Query,
-  UploadedFile,
-  UseInterceptors,
-  Res,
-} from '@nestjs/common';
-import { Public } from '../../common/decorators/public.decorator.js';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Delete, Query, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AssetsService } from './assets.service.js';
-import { CreateAssetDto } from './dto/create-asset.dto.js';
-import { UpdateAssetDto } from './dto/update-asset.dto.js';
 import { TenantsService } from '../tenants/tenants.service.js';
-import * as XLSX from 'xlsx';
+import { Public } from '../../common/decorators/public.decorator.js';
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
 
@@ -32,119 +16,29 @@ export class AssetsController {
     private readonly tenantsService: TenantsService,
   ) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Crear nuevo activo' })
-  create(@Body() dto: CreateAssetDto) {
-    return this.assetsService.create(dto);
-  }
-
   @Get()
-  @ApiOperation({ summary: 'Listar activos con filtros, paginación y búsqueda' })
+  @ApiOperation({ summary: 'List assets with filters' })
   findAll(@Query() query: Record<string, string>) {
     return this.assetsService.findAll(query);
   }
 
-  @Get('export')
-  @ApiOperation({ summary: 'Exportar todos los activos a XLSX' })
-  async exportXlsx(@Res() res: Response) {
-    const rows = await this.assetsService.exportAll();
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Activos');
-    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    );
-    res.setHeader('Content-Disposition', `attachment; filename=activos_${Date.now()}.xlsx`);
-    res.send(buffer);
-  }
-
-  @Post('import')
-  @ApiOperation({ summary: 'Importar activos desde archivo XLSX' })
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('file'))
-  async importXlsx(@UploadedFile() file: Express.Multer.File) {
-    if (!file) throw new Error('Archivo requerido');
-    const wb = XLSX.read(file.buffer, { type: 'buffer' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws);
-    return this.assetsService.importFromRows(rows);
-  }
-
   @Public()
   @Get('qr/:code')
-  @ApiOperation({ summary: 'Buscar activo por código QR (público)' })
+  @ApiOperation({ summary: 'Lookup asset by QR code (public)' })
   findByQr(@Param('code') code: string) {
-    return this.assetsService.findByQrCode(code);
-  }
-
-  @Public()
-  @Get('check-code/:code')
-  @ApiOperation({ summary: 'Verificar disponibilidad de un código de activo (público)' })
-  async checkCode(@Param('code') code: string) {
-    return this.assetsService.checkCodeAvailability(code);
+    return this.assetsService.findByQr(code);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener activo por ID' })
+  @ApiOperation({ summary: 'Get asset by ID' })
   findOne(@Param('id') id: string) {
     return this.assetsService.findOne(id);
   }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Actualizar activo' })
-  update(@Param('id') id: string, @Body() dto: UpdateAssetDto) {
-    return this.assetsService.update(id, dto);
-  }
-
-  @Put(':id/attribute-values')
-  @ApiOperation({ summary: 'Actualizar valores de atributos del activo' })
-  updateAttributeValues(
-    @Param('id') id: string,
-    @Body() body: { values: { attributeId: string; value: string }[] },
-  ) {
-    return this.assetsService.updateAttributeValues(id, body.values);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar activo' })
-  remove(@Param('id') id: string) {
-    return this.assetsService.remove(id);
-  }
-
-  @Get(':id/dependencies')
-  @ApiOperation({ summary: 'Obtener dependencias del activo' })
-  getDependencies(@Param('id') id: string) {
-    return this.assetsService.getDependencies(id);
-  }
-
-  @Post(':id/dependencies')
-  @ApiOperation({ summary: 'Agregar dependencia a un activo' })
-  addDependency(
-    @Param('id') id: string,
-    @Body() body: { dependsOnId: string; type: string; description?: string },
-  ) {
-    return this.assetsService.addDependency(id, body);
-  }
-
-  @Delete(':id/dependencies/:depId')
-  @ApiOperation({ summary: 'Eliminar dependencia de un activo' })
-  removeDependency(@Param('id') id: string, @Param('depId') depId: string) {
-    return this.assetsService.removeDependency(id, depId);
-  }
-
-  @Put(':id/link-discovery/:discoveryId')
-  @ApiOperation({ summary: 'Vincular activo existente a un dispositivo discovery' })
-  linkToDiscovery(@Param('id') id: string, @Param('discoveryId') discoveryId: string) {
-    return this.assetsService.linkAssetToDiscovery(id, discoveryId);
-  }
-
-  @Get(':id/depreciation')
-  @ApiOperation({ summary: 'Calcular depreciación del activo' })
-  getDepreciation(@Param('id') id: string) {
-    return this.assetsService.calculateDepreciation(id);
+  @Post()
+  @ApiOperation({ summary: 'Create asset' })
+  create(@Body() data: any) {
+    return this.assetsService.create(data);
   }
 
   @Get(':id/history')
@@ -180,31 +74,64 @@ export class AssetsController {
     const companyDoc = tenant?.companyDocument || '';
     const companyAddr = tenant?.companyAddress || '';
     const companyPhone = tenant?.companyPhone || '';
-    const companyEmail = tenant?.companyEmail || '';
     const PAGE_W = 612;
     const MARGIN = 50;
     const CONTENT_W = PAGE_W - MARGIN * 2;
+    const PAGE_BOTTOM = 750;
+
+    // ── Helper: check page break ──
+    const checkPageBreak = (neededSpace: number = 60) => {
+      if (doc.y + neededSpace > PAGE_BOTTOM) {
+        doc.addPage();
+      }
+    };
 
     // ── Helper: section title with colored bar ──
-    const sectionTitle = (icon: string, title: string) => {
-      if (doc.y > 680) doc.addPage();
-      doc.moveDown(0.4);
-      doc.rect(MARGIN, doc.y, CONTENT_W, 22).fill('#f1f5f9');
-      doc.fontSize(12).font('Helvetica-Bold').fillColor('#1e293b').text(`${icon}  ${title}`, MARGIN + 8, doc.y - 16, { width: CONTENT_W - 16 });
+    const sectionTitle = (title: string) => {
+      checkPageBreak(40);
+      doc.moveDown(0.5);
+      const y = doc.y;
+      doc.rect(MARGIN, y, CONTENT_W, 20).fill('#f1f5f9');
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#1e293b').text(title, MARGIN + 8, y + 5, { width: CONTENT_W - 16 });
       doc.fillColor('#000000');
-      doc.moveDown(0.3);
+      doc.y = y + 24;
     };
 
     // ── Helper: key-value row ──
     const kvRow = (label: string, value: string) => {
-      doc.fontSize(8).font('Helvetica-Bold').fillColor('#64748b').text(label, MARGIN, doc.y, { continued: true, width: 120 });
-      doc.font('Helvetica').fillColor('#1e293b').text(`  ${value || '—'}`);
+      doc.fontSize(8).font('Helvetica-Bold').fillColor('#64748b').text(label + ':', MARGIN + 5, doc.y, { width: 100, continued: false });
+      doc.font('Helvetica').fillColor('#1e293b').text(` ${value || '—'}`, MARGIN + 105, doc.y - 10, { width: CONTENT_W - 110 });
     };
 
-    // ── Helper: colored badge ──
-    const statusColor = (s: string) => {
-      const map: Record<string, string> = { ACTIVE: '#16a34a', MAINTENANCE: '#f59e0b', INACTIVE: '#ef4444', DISPOSED: '#6b7280', RESERVED: '#8b5cf6' };
-      return map[s] || '#64748b';
+    // ── Helper: draw table ──
+    const drawTable = (headers: string[], rows: string[][], colWidths: number[]) => {
+      if (rows.length === 0) return;
+
+      // Header
+      checkPageBreak(30);
+      let x = MARGIN + 5;
+      const headerY = doc.y;
+      doc.fontSize(7).font('Helvetica-Bold').fillColor('#475569');
+      for (let i = 0; i < headers.length; i++) {
+        doc.text(headers[i], x, headerY, { width: colWidths[i], continued: false });
+        x += colWidths[i];
+      }
+      doc.y = headerY + 12;
+      doc.rect(MARGIN + 5, doc.y, CONTENT_W - 10, 0.5).fill('#cbd5e1');
+      doc.y += 4;
+
+      // Rows
+      doc.font('Helvetica').fillColor('#334155');
+      for (const row of rows) {
+        checkPageBreak(14);
+        x = MARGIN + 5;
+        const rowY = doc.y;
+        for (let i = 0; i < row.length; i++) {
+          doc.fontSize(7).text(row[i] || '—', x, rowY, { width: colWidths[i], continued: false });
+          x += colWidths[i];
+        }
+        doc.y = rowY + 11;
+      }
     };
 
     // ══════════════════════════════════════════════════════════════════
@@ -228,192 +155,133 @@ export class AssetsController {
       doc.fontSize(7).fillColor('#94a3b8').text(compInfo, MARGIN, 82, { width: CONTENT_W, align: 'center' });
     }
 
-    doc.moveDown(1);
+    doc.y = 100;
     doc.rect(MARGIN, doc.y, CONTENT_W, 1).fill('#e2e8f0');
-    doc.moveDown(0.5);
+    doc.y += 8;
 
     // ══════════════════════════════════════════════════════════════════
     // INFORMACIÓN GENERAL
     // ══════════════════════════════════════════════════════════════════
-    sectionTitle('📋', 'Información General');
-    const leftCol = MARGIN;
-    const rightCol = MARGIN + CONTENT_W / 2 + 10;
-    const startY = doc.y;
+    sectionTitle('INFORMACIÓN GENERAL');
 
-    doc.fontSize(8).font('Helvetica');
-    const generalInfo = [
-      ['Código', asset.code],
-      ['Nombre', asset.name],
+    const generalRows = [
+      ['Código', asset.code || '—'],
+      ['Nombre', asset.name || '—'],
+      ['Estado', asset.status || '—'],
       ['Categoría', asset.category?.name || '—'],
       ['Subcategoría', asset.subcategory?.name || '—'],
-      ['Proveedor', asset.supplier?.name || '—'],
-      ['Serial', asset.serialNumber || '—'],
-    ];
-    const generalInfo2 = [
-      ['Estado', asset.status],
       ['Marca', asset.brand || '—'],
       ['Modelo', asset.model || '—'],
+      ['Serial', asset.serialNumber || '—'],
       ['Ubicación', asset.location?.name || '—'],
+      ['Proveedor', asset.supplier?.name || '—'],
       ['Costo', asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString('es-CO')}` : '—'],
-    ];
-
-    doc.y = startY;
-    for (const [label, value] of generalInfo) {
-      kvRow(label, value);
-    }
-    const leftEndY = doc.y;
-    doc.y = startY;
-    for (const [label, value] of generalInfo2) {
-      kvRow(label, value);
-    }
-    doc.y = Math.max(leftEndY, doc.y) + 4;
-
-    // Dates row
-    doc.fontSize(8).font('Helvetica');
-    const dates = [
       ['Adquisición', asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString('es-CO') : '—'],
       ['Garantía', asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString('es-CO') : '—'],
-      ['Ciclos', String(asset.usageCycles || 0)],
-      ['Horas uso', String(asset.usageHours || 0)],
     ];
-    for (const [label, value] of dates) {
-      kvRow(label, value);
-    }
-    doc.moveDown(0.3);
+
+    drawTable(['Campo', 'Valor'], generalRows, [120, CONTENT_W - 125]);
+    doc.y += 5;
 
     // ══════════════════════════════════════════════════════════════════
     // HARDWARE (Discovery data)
     // ══════════════════════════════════════════════════════════════════
     const hw = asset.discoveredDevice;
     if (hw) {
-      sectionTitle('🖥️', 'Especificaciones del Equipo');
-      const hwInfo = [
-        ['Hostname', hw.hostname],
+      sectionTitle('ESPECIFICACIONES DEL EQUIPO');
+      const hwRows = [
+        ['Hostname', hw.hostname || '—'],
         ['IP', hw.ipAddress || '—'],
         ['MAC', hw.macAddress || '—'],
         ['OS', hw.os || '—'],
+        ['CPU', hw.cpuModel || '—'],
+        ['RAM', hw.ramTotalBytes ? `${(hw.ramTotalBytes / 1073741824).toFixed(1)} GB` : '—'],
+        ['Disco', hw.diskTotalBytes ? `${(hw.diskTotalBytes / 1073741824).toFixed(0)} GB` : '—'],
+        ['Tipo Disco', hw.diskType || '—'],
       ];
-      for (const [label, value] of hwInfo) {
-        kvRow(label, value || '—');
-      }
-      doc.moveDown(0.3);
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // CUSTOM FIELDS
-    // ══════════════════════════════════════════════════════════════════
-    const customFields = asset.customFields || [];
-    if (customFields.length > 0) {
-      sectionTitle('🏷️', 'Campos Personalizados');
-      for (const cf of customFields) {
-        kvRow(cf.name, cf.value);
-      }
-      doc.moveDown(0.3);
+      drawTable(['Campo', 'Valor'], hwRows, [120, CONTENT_W - 125]);
+      doc.y += 5;
     }
 
     // ══════════════════════════════════════════════════════════════════
     // MANTENIMIENTOS
     // ══════════════════════════════════════════════════════════════════
     const maintenances = asset.maintenances || [];
-    sectionTitle('🔧', `Mantenimientos (${maintenances.length})`);
+    sectionTitle(`MANTENIMIENTOS (${maintenances.length})`);
     if (maintenances.length === 0) {
       doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin registros de mantenimiento').fillColor('#000');
     } else {
-      // Table header
-      const tY = doc.y;
-      doc.fontSize(7).font('Helvetica-Bold').fillColor('#64748b');
-      doc.text('Código', MARGIN, tY, { width: 80, continued: true });
-      doc.text('Tipo', { width: 70, continued: true });
-      doc.text('Estado', { width: 80, continued: true });
-      doc.text('Técnico', { width: 120, continued: true });
-      doc.text('Fecha', { width: 100 });
-      doc.rect(MARGIN, doc.y, CONTENT_W, 0.5).fill('#cbd5e1');
-
-      for (const m of maintenances) {
-        if (doc.y > 720) doc.addPage();
-        doc.fontSize(7).font('Helvetica').fillColor('#334155');
-        const mY = doc.y + 2;
-        doc.text(m.code, MARGIN, mY, { width: 80, continued: true });
-        doc.text(m.type, { width: 70, continued: true });
-        doc.text(m.status, { width: 80, continued: true });
-        doc.text(m.technician?.name || '—', { width: 120, continued: true });
-        doc.text(m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—');
-        doc.moveDown(0.15);
-      }
+      const mRows = maintenances.map((m: any) => [
+        m.code || '—',
+        m.type || '—',
+        m.status || '—',
+        m.technician?.name || '—',
+        m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—',
+      ]);
+      drawTable(['Código', 'Tipo', 'Estado', 'Técnico', 'Fecha'], mRows, [70, 80, 80, 130, 100]);
     }
-    doc.moveDown(0.3);
+    doc.y += 5;
 
     // ══════════════════════════════════════════════════════════════════
     // TICKETS
     // ══════════════════════════════════════════════════════════════════
     const tickets = asset.tickets || [];
-    sectionTitle('🎫', `Tickets de Soporte (${tickets.length})`);
+    sectionTitle(`TICKETS DE SOPORTE (${tickets.length})`);
     if (tickets.length === 0) {
       doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin tickets asociados').fillColor('#000');
     } else {
-      const tY = doc.y;
-      doc.fontSize(7).font('Helvetica-Bold').fillColor('#64748b');
-      doc.text('Código', MARGIN, tY, { width: 70, continued: true });
-      doc.text('Título', { width: 180, continued: true });
-      doc.text('Estado', { width: 80, continued: true });
-      doc.text('Categoría', { width: 80, continued: true });
-      doc.text('Fecha', { width: 90 });
-      doc.rect(MARGIN, doc.y, CONTENT_W, 0.5).fill('#cbd5e1');
-
-      for (const t of tickets) {
-        if (doc.y > 720) doc.addPage();
-        doc.fontSize(7).font('Helvetica').fillColor('#334155');
-        const tY2 = doc.y + 2;
-        doc.text(t.code, MARGIN, tY2, { width: 70, continued: true });
-        doc.text(t.title?.substring(0, 40) || '—', { width: 180, continued: true });
-        doc.text(t.status, { width: 80, continued: true });
-        doc.text(t.category || '—', { width: 80, continued: true });
-        doc.text(new Date(t.createdAt).toLocaleDateString('es-CO'));
-        doc.moveDown(0.15);
-      }
+      const tRows = tickets.map((t: any) => [
+        t.code || '—',
+        (t.title || '—').substring(0, 35),
+        t.status || '—',
+        t.category || '—',
+        t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—',
+      ]);
+      drawTable(['Código', 'Título', 'Estado', 'Categoría', 'Fecha'], tRows, [65, 170, 80, 90, 100]);
     }
-    doc.moveDown(0.3);
+    doc.y += 5;
 
     // ══════════════════════════════════════════════════════════════════
     // DOCUMENTOS
     // ══════════════════════════════════════════════════════════════════
     const documents = asset.documents || [];
     if (documents.length > 0) {
-      sectionTitle('📁', `Documentos (${documents.length})`);
-      for (const d of documents) {
-        if (doc.y > 720) doc.addPage();
-        doc.fontSize(8).font('Helvetica').fillColor('#334155');
-        doc.text(`  ${d.name}  ·  ${d.type}  ·  v${d.version}  ·  ${new Date(d.createdAt).toLocaleDateString('es-CO')}`);
-        doc.moveDown(0.1);
-      }
-      doc.moveDown(0.3);
+      sectionTitle(`DOCUMENTOS (${documents.length})`);
+      const dRows = documents.map((d: any) => [
+        d.name || '—',
+        d.type || '—',
+        `v${d.version || 1}`,
+        d.createdAt ? new Date(d.createdAt).toLocaleDateString('es-CO') : '—',
+      ]);
+      drawTable(['Nombre', 'Tipo', 'Versión', 'Fecha'], dRows, [200, 120, 60, 120]);
+      doc.y += 5;
     }
 
     // ══════════════════════════════════════════════════════════════════
     // LÍNEA DE TIEMPO
     // ══════════════════════════════════════════════════════════════════
     const events = asset.hojaVida?.events || [];
-    sectionTitle('📅', `Línea de Tiempo (${events.length} eventos)`);
+    sectionTitle(`LÍNEA DE TIEMPO (${events.length} eventos)`);
 
     if (events.length === 0) {
       doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin eventos registrados').fillColor('#000');
     } else {
       for (const ev of events) {
-        if (doc.y > 700) doc.addPage();
+        checkPageBreak(30);
         const date = new Date(ev.createdAt);
         const dateStr = date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
         const timeStr = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
 
-        // Timeline dot and line
+        // Timeline dot
         const dotY = doc.y + 3;
         doc.circle(MARGIN + 4, dotY, 3).fill('#3b82f6');
         if (ev !== events[events.length - 1]) {
-          doc.rect(MARGIN + 3, dotY + 5, 1, 14).fill('#e2e8f0');
+          doc.rect(MARGIN + 3, dotY + 5, 1, 12).fill('#e2e8f0');
         }
 
         doc.fontSize(7).font('Helvetica-Bold').fillColor('#3b82f6').text(`${dateStr}  ${timeStr}`, MARGIN + 14, doc.y - 2);
-        doc.fontSize(8).font('Helvetica').fillColor('#334155').text(ev.description, MARGIN + 14, doc.y, { width: CONTENT_W - 30 });
-        doc.moveDown(0.4);
+        doc.fontSize(8).font('Helvetica').fillColor('#334155').text(ev.description || '—', MARGIN + 14, doc.y, { width: CONTENT_W - 30 });
+        doc.y += 4;
       }
     }
 
@@ -423,11 +291,11 @@ export class AssetsController {
     const pageCount = doc.bufferedPageRange();
     for (let i = 0; i < pageCount.count; i++) {
       doc.switchToPage(i);
-      const footerY = 780;
+      const footerY = 760;
       doc.rect(MARGIN, footerY, CONTENT_W, 0.5).fill('#e2e8f0');
       doc.fontSize(6).font('Helvetica').fillColor('#94a3b8');
-      doc.text(companyName, MARGIN, footerY + 4, { width: CONTENT_W, align: 'left' });
-      doc.text(`Hoja de Vida · ${asset.code} · Generado ${new Date().toLocaleDateString('es-CO')}`, MARGIN, footerY + 4, { width: CONTENT_W, align: 'right' });
+      doc.text(companyName, MARGIN, footerY + 4, { width: CONTENT_W / 2, align: 'left' });
+      doc.text(`Hoja de Vida · ${asset.code}`, MARGIN + CONTENT_W / 2, footerY + 4, { width: CONTENT_W / 2, align: 'right' });
       doc.text(`Página ${i + 1} de ${pageCount.count}`, MARGIN, footerY + 12, { width: CONTENT_W, align: 'center' });
     }
 
