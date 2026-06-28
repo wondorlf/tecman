@@ -145,10 +145,15 @@ export default function PublicChatbot({ onNavigate }: Props) {
   });
 
   const [messages, setMessages] = useState<Message[]>([buildWelcome()]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = typeof window !== 'undefined' ? window.location : null;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll al fondo del contenedor de mensajes para mostrar el contenido nuevo
+    const scrollContainer = messagesEndRef.current?.parentElement;
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
   }, [messages, open, expandedArticle]);
 
   const now = () => new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -695,7 +700,7 @@ export default function PublicChatbot({ onNavigate }: Props) {
                   </div>
                 </div>
               )}
-              <div ref={endRef} />
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}

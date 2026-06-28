@@ -1,0 +1,24 @@
+{
+  "name": "egan-tecman-tools",
+  "version": "1.0.0",
+  "description": "Herramientas de mantenimiento y despliegue - EGAN TECH",
+  "main": "index.js",
+  "bin": {
+    "egan-tools": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "build": "node build.js",
+    "build:win": "node build.js --platform win"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6"
+  },
+  "devDependencies": {
+    "nexe": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
