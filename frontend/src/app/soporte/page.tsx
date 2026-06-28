@@ -228,7 +228,7 @@ function SupportPortalContent() {
 
   // ── Main form ──────────────────────────────────────────────────────────────
   return (
-    <PublicLayout showBack backLabel="Inicio" maxWidth="max-w-4xl">
+    <PublicLayout showBack backLabel="Inicio" maxWidth="max-w-2xl">
       <div className="pt-6 sm:pt-12 pb-6 w-full max-w-full">
         {/* Page header */}
         <div className="flex flex-col items-center text-center mb-6 sm:mb-10 space-y-2 sm:space-y-3 px-2">

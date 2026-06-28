@@ -49,4 +49,11 @@ export class DocumentsService {
     }
     return this.prisma.document.delete({ where: { id } });
   }
+
+  async update(id: string, data: { isPublic?: boolean; type?: string; name?: string }) {
+    return this.prisma.document.update({
+      where: { id },
+      data,
+    });
+  }
 }

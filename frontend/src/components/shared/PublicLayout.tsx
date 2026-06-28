@@ -21,7 +21,7 @@ export function PublicLayout({
   showBack = false,
   backHref = '/',
   backLabel = 'Inicio',
-  maxWidth = 'max-w-4xl',
+  maxWidth = 'max-w-2xl',
 }: PublicLayoutProps) {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-white relative overflow-x-hidden font-sans">
@@ -86,7 +86,7 @@ export function PublicLayout({
       </div>
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="relative z-10 px-4 sm:px-6 pt-4 sm:pt-6 flex items-center justify-between max-w-4xl mx-auto w-full max-w-full">
+      <header className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 flex items-center justify-between max-w-2xl mx-auto w-full max-w-full">
         {showBack ? (
           <Link
             href={backHref}
@@ -112,7 +112,7 @@ export function PublicLayout({
       </header>
 
       {/* ── Page content ────────────────────────────────────────────────── */}
-      <main className={`relative z-10 ${maxWidth} mx-auto px-3 sm:px-4 pb-12 sm:pb-16 w-full max-w-full overflow-x-hidden`}>{children}</main>
+      <main className={`relative z-10 ${maxWidth} mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 w-full max-w-full overflow-x-hidden`}>{children}</main>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer className="relative z-10 pb-4 sm:pb-6 text-center text-slate-400 text-[10px] sm:text-xs font-medium px-4">

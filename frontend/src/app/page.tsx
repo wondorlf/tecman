@@ -178,7 +178,7 @@ function LandingContent() {
 
   // ── HOME VIEW ──────────────────────────────────────────────────────────────
   return (
-    <PublicLayout maxWidth="max-w-4xl">
+    <PublicLayout maxWidth="max-w-2xl">
       <div className="pt-14 pb-6 text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-4 py-1.5 text-xs font-bold text-emerald-700 uppercase tracking-widest mb-8">

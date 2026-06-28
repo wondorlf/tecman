@@ -273,6 +273,8 @@ export const documentsApi = {
   list: (assetId?: string) => api.get('/documents', { params: assetId ? { assetId } : undefined }),
   upload: (formData: FormData) =>
     api.post('/documents/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: string, data: { isPublic?: boolean; type?: string; name?: string }) =>
+    api.patch(`/documents/${id}`, data),
   remove: (id: string) => api.delete(`/documents/${id}`),
 };
 

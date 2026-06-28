@@ -27,6 +27,8 @@ import {
   MapPin,
   Building2,
   Truck,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { getAccessToken } from '@/lib/api';
 import { MAINTENANCE_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from '@/lib/types';
@@ -610,14 +612,48 @@ export default function AssetDetailClient() {
                           {d.isPublic && <span className="ml-2 text-emerald-500 font-semibold">Público</span>}
                         </p>
                       </div>
-                      <a
-                        href={`/api/storage/public/${d.filename}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
-                      >
-                        <Download size={14} />
-                      </a>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const { documentsApi } = await import('@/lib/api');
+                              await documentsApi.update(d.id, { isPublic: !d.isPublic });
+                              refetch();
+                            } catch (err: any) {
+                              alert('Error: ' + (err.response?.data?.message || err.message));
+                            }
+                          }}
+                          className={`p-1.5 rounded-lg transition-colors ${d.isPublic ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                          title={d.isPublic ? 'Hacer privado' : 'Hacer público'}
+                        >
+                          {d.isPublic ? <Eye size={14} /> : <EyeOff size={14} />}
+                        </button>
+                        <select
+                          value={d.type}
+                          onChange={async (e) => {
+                            try {
+                              const { documentsApi } = await import('@/lib/api');
+                              await documentsApi.update(d.id, { type: e.target.value });
+                              refetch();
+                            } catch (err: any) {
+                              alert('Error: ' + (err.response?.data?.message || err.message));
+                            }
+                          }}
+                          className="text-[10px] border border-slate-200 rounded-lg px-1.5 py-1 bg-white text-slate-600 max-w-[100px]"
+                        >
+                          {Object.entries(DOCUMENT_TYPE_LABELS).map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                          ))}
+                        </select>
+                        <a
+                          href={`/api/storage/public/${d.filename}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                        >
+                          <Download size={14} />
+                        </a>
+                      </div>
                     </div>
                   ))}
                 </div>

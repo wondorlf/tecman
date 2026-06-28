@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Delete, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { DocumentsService } from './documents.service.js';
@@ -30,6 +30,12 @@ export class DocumentsController {
   @ApiOperation({ summary: 'List documents with optional filters' })
   findAll(@Query() query: Record<string, string>) {
     return this.documentsService.findAll(query);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update document metadata (public/private, category)' })
+  update(@Param('id') id: string, @Body() updateDto: { isPublic?: boolean; type?: string; name?: string }) {
+    return this.documentsService.update(id, updateDto);
   }
 
   @Roles('Administrador', 'Superadministrador Egan')
