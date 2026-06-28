@@ -15,6 +15,7 @@ export type DocumentType =
   | 'TUTORIAL'
   | 'IMAGE'
   | 'VIDEO'
+  | 'MAINTENANCE'
   | 'OTHER';
 export type EventType =
   | 'CREATED'
@@ -240,6 +241,7 @@ export interface Document {
   size: number;
   version: number;
   assetId?: string;
+  isPublic?: boolean;
   createdAt: string;
 }
 
@@ -430,12 +432,13 @@ export const TICKET_CATEGORY_LABELS: Record<TicketCategory, string> = {
 export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   MANUAL: 'Manual',
   CERTIFICATE: 'Certificado',
-  WARRANTY: 'Garantia',
+  WARRANTY: 'Garantía',
   INVOICE: 'Factura',
-  TECHNICAL_SHEET: 'Ficha tecnica',
+  TECHNICAL_SHEET: 'Ficha técnica',
   TUTORIAL: 'Tutorial',
   IMAGE: 'Imagen',
   VIDEO: 'Video',
+  MAINTENANCE: 'Mantenimiento',
   OTHER: 'Otro',
 };
 

@@ -34,6 +34,7 @@ export class DocumentsService {
       mimeType: file.mimetype,
       size: file.size,
       assetId: body.assetId || null,
+      isPublic: body.isPublic === 'true' || body.isPublic === true,
     };
 
     return this.prisma.document.create({ data: docData });

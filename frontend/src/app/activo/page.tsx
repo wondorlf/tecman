@@ -28,6 +28,7 @@ import {
   Image,
   Search,
   X,
+  Download,
 } from 'lucide-react';
 import { PublicLayout } from '@/components/shared/PublicLayout';
 import { useToast } from '@/components/ui/use-toast';
@@ -87,6 +88,7 @@ function AssetViewContent() {
   const [scanning, setScanning] = useState(false);
   const [scannerReady, setScannerReady] = useState(false);
   const [processingPhoto, setProcessingPhoto] = useState(false);
+  const [viewerDoc, setViewerDoc] = useState<any>(null);
   const scannerRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -232,9 +234,13 @@ function AssetViewContent() {
   const DOC_CATEGORIES: Record<string, { label: string; icon: any; color: string; bg: string }> = {
     MANUAL: { label: 'Manuales', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
     TECHNICAL_SHEET: { label: 'Fichas Técnicas', icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    WARRANTY: { label: 'Garantía', icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
+    MAINTENANCE: { label: 'Mantenimiento', icon: Wrench, color: 'text-orange-600', bg: 'bg-orange-50' },
     TUTORIAL: { label: 'Tutoriales', icon: Monitor, color: 'text-violet-600', bg: 'bg-violet-50' },
-    IMAGE: { label: 'Imágenes', icon: QrCode, color: 'text-amber-600', bg: 'bg-amber-50' },
+    IMAGE: { label: 'Imágenes', icon: Image, color: 'text-amber-600', bg: 'bg-amber-50' },
     VIDEO: { label: 'Videos', icon: Video, color: 'text-red-600', bg: 'bg-red-50' },
+    CERTIFICATE: { label: 'Certificados', icon: FileText, color: 'text-green-600', bg: 'bg-green-50' },
+    OTHER: { label: 'Otros', icon: FileText, color: 'text-slate-600', bg: 'bg-slate-50' },
   };
   const groupedDocs = asset?.documents?.reduce((acc: Record<string, any[]>, doc: any) => {
     const cat = doc.type || 'OTHER';
@@ -490,12 +496,10 @@ function AssetViewContent() {
                       </p>
                       <div className="space-y-1.5">
                         {groupedDocs[catKey].map((doc: any) => (
-                          <a
+                          <button
                             key={doc.id}
-                            href={`/api/storage/public/${doc.filename}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 transition-all group`}
+                            onClick={() => setViewerDoc(doc)}
+                            className={`w-full text-left flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group`}
                           >
                             <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${cat.bg} flex items-center justify-center shrink-0`}>
                               <Icon size={12} className={cat.color} />
@@ -509,7 +513,7 @@ function AssetViewContent() {
                                 {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
                               </p>
                             </div>
-                          </a>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -643,6 +647,100 @@ function AssetViewContent() {
               >
                 Buscar otro activo →
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Document Viewer Modal */}
+        {viewerDoc && (
+          <div
+            className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-6"
+            onClick={() => setViewerDoc(null)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Viewer header */}
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 shrink-0">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">{viewerDoc.name}</h3>
+                  <p className="text-[11px] sm:text-xs text-slate-400">
+                    {(viewerDoc.size / 1024).toFixed(0)} KB · {viewerDoc.mimeType}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={`/api/storage/public/${viewerDoc.filename}`}
+                    download={viewerDoc.name}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                    onClick={(e) => {
+                      // Verificar si hay sesión activa — si no, redirigir al login
+                      const token = localStorage.getItem('user');
+                      if (!token) {
+                        e.preventDefault();
+                        window.location.href = '/?login=required';
+                      }
+                    }}
+                  >
+                    <Download size={12} />
+                    Descargar
+                  </a>
+                  <button
+                    onClick={() => setViewerDoc(null)}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+              {/* Viewer body */}
+              <div className="flex-1 overflow-auto p-2 sm:p-4 bg-slate-100/50 min-h-[200px] max-h-[70vh]">
+                {viewerDoc.mimeType?.startsWith('image/') ? (
+                  <img
+                    src={`/api/storage/public/${viewerDoc.filename}`}
+                    alt={viewerDoc.name}
+                    className="max-w-full max-h-full mx-auto object-contain rounded-xl"
+                  />
+                ) : viewerDoc.mimeType?.startsWith('video/') ? (
+                  <video
+                    controls
+                    className="max-w-full max-h-full mx-auto rounded-xl"
+                  >
+                    <source
+                      src={`/api/storage/public/${viewerDoc.filename}`}
+                      type={viewerDoc.mimeType}
+                    />
+                  </video>
+                ) : viewerDoc.mimeType === 'application/pdf' ? (
+                  <iframe
+                    src={`/api/storage/public/${viewerDoc.filename}#view=FitH`}
+                    className="w-full h-[70vh] rounded-xl bg-white"
+                    title={viewerDoc.name}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                    <FileText size={48} className="mb-3 text-slate-300" />
+                    <p className="text-sm font-medium">Vista previa no disponible</p>
+                    <p className="text-xs mt-1">Este tipo de archivo no se puede previsualizar en línea</p>
+                    <a
+                      href={`/api/storage/public/${viewerDoc.filename}`}
+                      download={viewerDoc.name}
+                      className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+                      onClick={(e) => {
+                        const token = localStorage.getItem('user');
+                        if (!token) {
+                          e.preventDefault();
+                          window.location.href = '/?login=required';
+                        }
+                      }}
+                    >
+                      <Download size={14} />
+                      Descargar archivo
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

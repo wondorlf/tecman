@@ -63,6 +63,11 @@ export default function AssetDetailClient() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadType, setUploadType] = useState<string>('OTHER');
+  const [uploadPublic, setUploadPublic] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const { data: asset, isLoading, refetch } = useQuery({
     queryKey: ['asset', id],
@@ -576,37 +581,13 @@ export default function AssetDetailClient() {
                 <p className="text-xs font-semibold text-slate-500 uppercase">
                   Documentos ({documents.length})
                 </p>
-                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold cursor-pointer hover:bg-blue-700 transition-colors">
+                <button
+                  onClick={() => setShowUploadDialog(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                >
                   <Plus size={12} />
                   Adjuntar documento
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.zip,.rar"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const type = file.type.startsWith('image/') ? 'IMAGE'
-                        : file.type.startsWith('video/') ? 'VIDEO'
-                        : file.type === 'application/pdf' && file.name.toLowerCase().includes('manual') ? 'MANUAL'
-                        : file.type === 'application/pdf' && (file.name.toLowerCase().includes('ficha') || file.name.toLowerCase().includes('tecnica')) ? 'TECHNICAL_SHEET'
-                        : file.type === 'application/pdf' && file.name.toLowerCase().includes('tutorial') ? 'TUTORIAL'
-                        : 'OTHER';
-                      const formData = new FormData();
-                      formData.append('file', file);
-                      formData.append('assetId', id!);
-                      formData.append('name', file.name);
-                      formData.append('type', type);
-                      try {
-                        const { documentsApi } = await import('@/lib/api');
-                        await documentsApi.upload(formData);
-                        window.location.reload();
-                      } catch (err: any) {
-                        alert('Error al subir: ' + (err.response?.data?.message || err.message));
-                      }
-                    }}
-                  />
-                </label>
+                </button>
               </div>
               {documents.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-sm">
@@ -626,6 +607,7 @@ export default function AssetDetailClient() {
                         <p className="text-sm font-medium text-slate-800 truncate">{d.name}</p>
                         <p className="text-xs text-slate-400">
                           {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS]} · v{d.version} · {(d.size / 1024).toFixed(0)} KB
+                          {d.isPublic && <span className="ml-2 text-emerald-500 font-semibold">Público</span>}
                         </p>
                       </div>
                       <a
@@ -644,6 +626,130 @@ export default function AssetDetailClient() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Upload Dialog */}
+      {showUploadDialog && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setShowUploadDialog(false)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">Adjuntar Documento</h2>
+              <button onClick={() => setShowUploadDialog(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* File selector */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">Archivo</label>
+                <label className="flex items-center justify-center gap-2 w-full h-24 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+                  {uploadFile ? (
+                    <div className="text-center">
+                      <FileText size={24} className="mx-auto text-blue-400 mb-1" />
+                      <p className="text-xs font-medium text-slate-600">{uploadFile.name}</p>
+                      <p className="text-[10px] text-slate-400">{(uploadFile.size / 1024).toFixed(0)} KB</p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <Plus size={24} className="mx-auto text-slate-300" />
+                      <p className="text-xs font-medium text-slate-500">Seleccionar archivo</p>
+                      <p className="text-[10px] text-slate-400">PDF, JPG, PNG, MP4, etc.</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.doc,.docx"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      setUploadFile(f);
+                      // Auto-detect type from MIME
+                      if (f) {
+                        if (f.type.startsWith('image/')) setUploadType('IMAGE');
+                        else if (f.type.startsWith('video/')) setUploadType('VIDEO');
+                        else if (f.type === 'application/pdf') setUploadType('MANUAL');
+                        else setUploadType('OTHER');
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {/* Category selector */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">Categoría</label>
+                <select
+                  value={uploadType}
+                  onChange={(e) => setUploadType(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-slate-200 text-sm px-3 bg-white"
+                >
+                  <option value="MANUAL">Manual</option>
+                  <option value="TECHNICAL_SHEET">Ficha técnica</option>
+                  <option value="WARRANTY">Garantía</option>
+                  <option value="MAINTENANCE">Mantenimiento</option>
+                  <option value="TUTORIAL">Tutorial</option>
+                  <option value="IMAGE">Imagen del activo</option>
+                  <option value="VIDEO">Video / Tutorial</option>
+                  <option value="CERTIFICATE">Certificado</option>
+                  <option value="INVOICE">Factura</option>
+                  <option value="OTHER">Otro</option>
+                </select>
+              </div>
+
+              {/* Public/Private toggle */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">Visible en portal público</p>
+                  <p className="text-xs text-slate-400">Los usuarios podrán ver este documento sin iniciar sesión</p>
+                </div>
+                <button
+                  onClick={() => setUploadPublic(!uploadPublic)}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${uploadPublic ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${uploadPublic ? 'translate-x-6' : ''}`} />
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setShowUploadDialog(false);
+                  setUploadFile(null);
+                }}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={!uploadFile || uploading}
+                onClick={async () => {
+                  if (!uploadFile) return;
+                  setUploading(true);
+                  try {
+                    const formData = new FormData();
+                    formData.append('file', uploadFile);
+                    formData.append('assetId', id!);
+                    formData.append('name', uploadFile.name);
+                    formData.append('type', uploadType);
+                    formData.append('isPublic', String(uploadPublic));
+                    const { documentsApi } = await import('@/lib/api');
+                    await documentsApi.upload(formData);
+                    setShowUploadDialog(false);
+                    setUploadFile(null);
+                    refetch();
+                  } catch (err: any) {
+                    alert('Error al subir: ' + (err.response?.data?.message || err.message));
+                  } finally {
+                    setUploading(false);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+              >
+                {uploading ? 'Subiendo...' : 'Subir documento'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Dialog */}
       {editing && (
@@ -806,7 +912,11 @@ export default function AssetDetailClient() {
                 onClick={async () => {
                   setSaving(true);
                   try {
-                    const { attributeValues, ...assetData } = editForm;
+                    // Limpiar strings vacíos para evitar errores de validación en el backend
+                    const cleanForm: Record<string, any> = Object.fromEntries(
+                      Object.entries(editForm).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+                    );
+                    const { attributeValues, ...assetData } = cleanForm;
                     await assetsApi.update(id!, assetData);
                     if (attributeValues && attributeValues.length > 0) {
                       await assetsApi.updateAttributeValues(id!, attributeValues);

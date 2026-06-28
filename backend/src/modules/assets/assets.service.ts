@@ -133,6 +133,7 @@ export class AssetsService {
           include: { attribute: { select: { name: true, unit: true, type: true } } },
         },
         documents: {
+          where: { isPublic: true },
           select: { id: true, name: true, type: true, filename: true, mimeType: true, size: true, description: true, path: true },
           orderBy: { createdAt: 'desc' },
         },

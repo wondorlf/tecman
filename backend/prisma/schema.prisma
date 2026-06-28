@@ -345,6 +345,7 @@ model Document {
   size              Int
   version           Int          @default(1)
   assetId           String?
+  isPublic          Boolean      @default(false)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   previousVersionId String?
@@ -489,6 +490,7 @@ enum DocumentType {
   TUTORIAL
   IMAGE
   VIDEO
+  MAINTENANCE
   OTHER
 }
 
