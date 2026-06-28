@@ -50,6 +50,7 @@ export class AnalyticsController {
     return { ok: true };
   }
 
+  @Public()
   @Get('stats')
   @ApiOperation({ summary: 'Obtener estadísticas de chatbot' })
   async getStats() {

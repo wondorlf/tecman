@@ -1265,7 +1265,7 @@ export default function AssetsPage() {
                   size="sm"
                   onClick={() => {
                     setQrSearchDialog(false);
-                    router.push('/activo/scanner-enhanced');
+                    router.push('/activo');
                   }}
                   className="w-full rounded-xl h-8 text-xs gap-1.5 text-slate-500"
                 >
