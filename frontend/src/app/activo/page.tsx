@@ -89,6 +89,7 @@ function AssetViewContent() {
   const [scannerReady, setScannerReady] = useState(false);
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [viewerDoc, setViewerDoc] = useState<any>(null);
+  const [showAnexosModal, setShowAnexosModal] = useState(false);
   const scannerRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -485,7 +486,7 @@ function AssetViewContent() {
             {/* Documentos categorizados */}
             {activeDocCats.length > 0 && (
               <div className="px-5 sm:px-7 pb-3 sm:pb-4 space-y-3 sm:space-y-4">
-                {/* Primary categories: Manual and Ficha Técnica */}
+                {/* Primary categories: Manual and Ficha Técnica - as independent buttons */}
                 {['MANUAL', 'TECHNICAL_SHEET'].filter(k => activeDocCats.includes(k)).map((catKey) => {
                   const cat = DOC_CATEGORIES[catKey];
                   const Icon = cat.icon;
@@ -521,25 +522,69 @@ function AssetViewContent() {
                   );
                 })}
 
-                {/* Other categories */}
-                {activeDocCats.filter(k => !['MANUAL', 'TECHNICAL_SHEET'].includes(k)).length > 0 && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Otros documentos</p>
-                    <div className="flex flex-wrap gap-2">
-                      {activeDocCats.filter(k => !['MANUAL', 'TECHNICAL_SHEET'].includes(k)).map((catKey) => {
-                        const cat = DOC_CATEGORIES[catKey];
-                        const Icon = cat.icon;
-                        return (
-                          <div key={catKey} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
-                            <Icon size={11} className={cat.color} />
-                            <span className="text-[10px] font-semibold text-slate-600">{cat.label}</span>
-                            <span className="text-[10px] text-slate-400">({groupedDocs[catKey].length})</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                {/* Anexos button - opens modal with all categories */}
+                {activeDocCats.length > 0 && (
+                  <button
+                    onClick={() => setShowAnexosModal(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 hover:border-slate-300 transition-all"
+                  >
+                    <FileText size={14} className="text-slate-500" />
+                    <span className="text-xs font-semibold text-slate-600">Anexos ({asset.documents?.length || 0})</span>
+                  </button>
                 )}
+              </div>
+            )}
+
+            {/* Anexos Modal */}
+            {showAnexosModal && (
+              <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowAnexosModal(false)}>
+                <div className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                    <h3 className="text-base font-bold text-slate-900">Anexos del Activo</h3>
+                    <button onClick={() => setShowAnexosModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4 space-y-4">
+                    {activeDocCats.map((catKey) => {
+                      const cat = DOC_CATEGORIES[catKey];
+                      const Icon = cat.icon;
+                      return (
+                        <div key={catKey}>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <Icon size={11} className={cat.color} />
+                            {cat.label} ({groupedDocs[catKey].length})
+                          </p>
+                          <div className="space-y-1.5">
+                            {groupedDocs[catKey].map((doc: any) => (
+                              <button
+                                key={doc.id}
+                                onClick={() => {
+                                  setViewerDoc(doc);
+                                  setShowAnexosModal(false);
+                                }}
+                                className={`w-full text-left flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group`}
+                              >
+                                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${cat.bg} flex items-center justify-center shrink-0`}>
+                                  <Icon size={12} className={cat.color} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs sm:text-sm font-medium text-slate-800 truncate group-hover:text-blue-700 transition-colors">
+                                    {doc.name}
+                                  </p>
+                                  <p className="text-[10px] sm:text-xs text-slate-400">
+                                    {doc.mimeType?.split('/')[1]?.toUpperCase() || doc.type}
+                                    {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
+                                  </p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
