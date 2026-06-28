@@ -95,7 +95,7 @@ export function SolutionBlock({
             className={`flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl ${c.btn} text-white text-sm font-bold hover:${c.btnHover} transition-all shadow-md active:scale-[0.98]`}
           >
             <Download size={16} />
-            {downloadLabel || 'Descargar solución (.bat)'}
+            {downloadLabel || 'Descargar solución'}
           </a>
           <p className="text-[10px] text-slate-500 text-center">
             <strong>Paso 2:</strong> Haz clic derecho → <strong>Ejecutar como Administrador</strong>

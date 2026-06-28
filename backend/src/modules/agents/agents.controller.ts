@@ -16,6 +16,7 @@ function sanitizeHost(host: string): string {
 @Controller('agents')
 export class AgentsController {
   private readonly agentsDir = join(process.cwd(), '..', 'agent');
+  private readonly nodeAgentDir = join(process.cwd(), '..', 'agent', 'node-agent');
 
   constructor(private readonly discoveryService: DiscoveryService) {}
 
@@ -270,6 +271,88 @@ export class AgentsController {
   }
 
   @Public()
+  @Get('node')
+  async getNodeAgent(@Req() req: Request, @Query('apiKey') apiKey: string, @Res() res: Response) {
+    const jsPath = join(this.nodeAgentDir, 'index.js');
+    if (!existsSync(jsPath)) {
+      throw new NotFoundException('Agente Node.js no disponible');
+    }
+
+    let content = readFileSync(jsPath, 'utf-8');
+
+    const serverUrl = this.getServerUrl(req);
+    const key = apiKey || (await this.discoveryService.getApiKey()) || '';
+
+    // Generar script de instalación
+    const installScript = `
+# TecMan Discovery Agent - Instalador Node.js
+# Ejecutar como administrador en PowerShell
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "TecMan Discovery Agent - Instalador Node.js" -ForegroundColor Cyan
+Write-Host ""
+
+# Verificar Node.js
+try {
+    $nodeVersion = node --version
+    Write-Host "[OK] Node.js detectado: $nodeVersion" -ForegroundColor Green
+} catch {
+    Write-Host "[ERROR] Node.js no esta instalado" -ForegroundColor Red
+    Write-Host "Instalar desde: https://nodejs.org/" -ForegroundColor Yellow
+    exit 1
+}
+
+# Crear directorio de instalación
+$installDir = "$env:ProgramFiles\\TecMan\\Agent"
+if (-not (Test-Path $installDir)) {
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+}
+
+# Descargar agente
+Write-Host "Descargando agente..." -ForegroundColor Gray
+$agentUrl = "${serverUrl}/api/agents/node/download"
+$agentPath = Join-Path $installDir "tecman-discovery.js"
+Invoke-WebRequest -Uri $agentUrl -OutFile $agentPath
+
+# Guardar configuración
+$config = @{
+    serverUrl = "${serverUrl}"
+    apiKey = "${key}"
+} | ConvertTo-Json
+$config | Set-Content -Path (Join-Path $installDir "config.json")
+
+# Instalar como servicio con PM2
+Write-Host "Instalando servicio..." -ForegroundColor Gray
+npm install -g pm2
+pm2 start $agentPath --name tecman-discovery
+pm2 save
+pm2 startup
+
+Write-Host ""
+Write-Host "[OK] Instalacion completada" -ForegroundColor Green
+Write-Host "Servidor: ${serverUrl}" -ForegroundColor Gray
+`;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="install-tekman-node.ps1"');
+    return res.send(installScript);
+  }
+
+  @Public()
+  @Get('node/download')
+  getNodeAgentDownload(@Res() res: Response) {
+    const jsPath = join(this.nodeAgentDir, 'index.js');
+    if (!existsSync(jsPath)) {
+      throw new NotFoundException('Agente Node.js no disponible');
+    }
+
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Content-Disposition', 'attachment; filename="tecman-discovery.js"');
+    return res.sendFile(jsPath);
+  }
+
+  @Public()
   @Get('info')
   async info(@Req() req: Request) {
     const apiKey = await this.discoveryService.getApiKey();
@@ -310,6 +393,19 @@ export class AgentsController {
           'Inventario detallado de RAM/Discos',
           'Ejecución remota sin descargar archivo',
           'Autenticación por API Key',
+        ],
+      },
+      nodejs: {
+        name: 'TecMan Discovery Agent (Node.js)',
+        description: 'Agente alternativo con menor detección antivirus',
+        os: ['Windows'],
+        install: 'Ejecutar instalador PowerShell:',
+        usage: `irm "${serverUrl}/api/agents/node?apiKey=${apiKey || '<api-key>'}" | iex`,
+        features: [
+          'Menor detección antivirus que .bat/.ps1',
+          'Ejecutable standalone sin dependencias',
+          'Compatible con PM2 para gestión de servicios',
+          'Misma funcionalidad que versiones anteriores',
         ],
       },
     };

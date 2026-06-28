@@ -295,8 +295,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               'El script ejecutará: liberar IP, renovar IP, limpiar DNS, resetear Winsock',
               'Si persiste, reinicia el equipo y el router/módem',
             ]}
-            downloadUrl="/api/fix-scripts/fix-network-dns.bat"
-            downloadLabel="Descargar solución de red (.bat)"
+            downloadUrl="/api/fix-scripts/fix-network-dns"
+            downloadLabel="Descargar solución de red"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -317,8 +317,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               'Verifica que sea impresora predeterminada',
               'Reinicia el equipo si persiste',
             ]}
-            downloadUrl="/api/fix-scripts/fix-printer.bat"
-            downloadLabel="Descargar solución de impresora (.bat)"
+            downloadUrl="/api/fix-scripts/fix-printer"
+            downloadLabel="Descargar solución de impresora"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -339,8 +339,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               'Reinicia el equipo si no lo has hecho hoy',
               'Verifica actualizaciones de Windows pendientes',
             ]}
-            downloadUrl="/api/fix-scripts/fix-slow-pc.bat"
-            downloadLabel="Descargar solución de rendimiento (.bat)"
+            downloadUrl="/api/fix-scripts/fix-slow-pc"
+            downloadLabel="Descargar solución de rendimiento"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -381,8 +381,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               'Si está en Web, prueba con otro navegador',
               'Verifica credenciales: Ctrl+Alt+Supr → Cerrar sesión → Reingresar',
             ]}
-            downloadUrl="/api/fix-scripts/fix-outlook.bat"
-            downloadLabel="Descargar solución de Outlook (.bat)"
+            downloadUrl="/api/fix-scripts/fix-outlook"
+            downloadLabel="Descargar solución de Outlook"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -404,8 +404,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               'En AnyDesk: comparte el "Código de acceso" con el equipo de soporte',
               'En RustDesk: comparte el "ID" y "Contraseña" con soporte',
             ]}
-            downloadUrl="/api/fix-scripts/install-anydesk.bat"
-            downloadLabel="Descargar AnyDesk (.bat)"
+            downloadUrl="/api/fix-scripts/install-anydesk"
+            downloadLabel="Descargar AnyDesk"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -427,8 +427,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               '<strong>Paso 3:</strong> Se genera un archivo <code>reporte-bsod.txt</code> en tu Escritorio',
               '<strong>Paso 4:</strong> Envía ese archivo al equipo de soporte junto con el código de error',
             ]}
-            downloadUrl="/api/fix-scripts/fix-bsod-diag.bat"
-            downloadLabel="Descargar diagnóstico BSOD (.bat)"
+            downloadUrl="/api/fix-scripts/fix-bsod-diag"
+            downloadLabel="Descargar diagnóstico BSOD"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -450,8 +450,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               '<strong>Paso 3:</strong> Espera a que termine (cada herramienta tarda 10-30 seg)',
               'Se instalan: Chrome, Firefox, LibreOffice, 7-Zip, Notepad++, VLC, AnyDesk, RustDesk, Everything, CrystalDiskInfo',
             ]}
-            downloadUrl="/api/fix-scripts/install-tools-winget.bat"
-            downloadLabel="Descargar instalador de herramientas (.bat)"
+            downloadUrl="/api/fix-scripts/install-tools-winget"
+            downloadLabel="Descargar instalador de herramientas"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -473,8 +473,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               '<strong>Paso 3:</strong> Espera a que termine (1-2 minutos)',
               '<strong>Paso 4:</strong> Reconecta tu VPN y prueba',
             ]}
-            downloadUrl="/api/fix-scripts/fix-vpn.bat"
-            downloadLabel="Descargar solución VPN (.bat)"
+            downloadUrl="/api/fix-scripts/fix-vpn"
+            downloadLabel="Descargar solución VPN"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
@@ -496,8 +496,8 @@ export default function PublicChatbot({ onNavigate }: Props) {
               '<strong>Paso 3:</strong> Espera 15-45 minutos (SFC + DISM + verificación de disco)',
               '<strong>Paso 4:</strong> <strong>Reinicia el equipo</strong> para completar la reparación',
             ]}
-            downloadUrl="/api/fix-scripts/fix-repair-windows.bat"
-            downloadLabel="Descargar reparación completa (.bat)"
+            downloadUrl="/api/fix-scripts/fix-repair-windows"
+            downloadLabel="Descargar reparación completa"
             onTicket={() => handleQuickAction('crear ticket')}
             onMenu={() => handleQuickAction('menu')}
           />
