@@ -90,6 +90,9 @@ function AssetViewContent() {
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [viewerDoc, setViewerDoc] = useState<any>(null);
   const [showAnexosModal, setShowAnexosModal] = useState(false);
+  const [showCatDocsModal, setShowCatDocsModal] = useState(false);
+  const [selectedCatDocs, setSelectedCatDocs] = useState<any[]>([]);
+  const [selectedCatLabel, setSelectedCatLabel] = useState('');
   const scannerRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -409,6 +412,34 @@ function AssetViewContent() {
                   </h2>
                   <p className="text-slate-400 text-xs sm:text-sm mt-0.5 font-mono truncate">{asset.code}</p>
                 </div>
+                {/* Manual and Ficha Técnica buttons */}
+                {['MANUAL', 'TECHNICAL_SHEET'].filter(k => activeDocCats.includes(k)).length > 0 && (
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    {['MANUAL', 'TECHNICAL_SHEET'].filter(k => activeDocCats.includes(k)).map((catKey) => {
+                      const cat = DOC_CATEGORIES[catKey];
+                      const Icon = cat.icon;
+                      const docs = groupedDocs[catKey] || [];
+                      return (
+                        <button
+                          key={catKey}
+                          onClick={() => {
+                            if (docs.length === 1) {
+                              setViewerDoc(docs[0]);
+                            } else {
+                              setSelectedCatDocs(docs);
+                              setSelectedCatLabel(cat.label);
+                              setShowCatDocsModal(true);
+                            }
+                          }}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${cat.bg} border border-slate-200 hover:shadow-sm transition-all`}
+                        >
+                          <Icon size={11} className={cat.color} />
+                          <span className="text-[10px] font-bold text-slate-700">{cat.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               {asset.description && (
                 <p className="text-slate-500 text-xs sm:text-sm mt-3 sm:mt-4 leading-relaxed">{asset.description}</p>
@@ -486,52 +517,57 @@ function AssetViewContent() {
             {/* Documentos categorizados */}
             {activeDocCats.length > 0 && (
               <div className="px-5 sm:px-7 pb-3 sm:pb-4 space-y-3 sm:space-y-4">
-                {/* Primary categories: Manual and Ficha Técnica - as independent buttons */}
-                {['MANUAL', 'TECHNICAL_SHEET'].filter(k => activeDocCats.includes(k)).map((catKey) => {
-                  const cat = DOC_CATEGORIES[catKey];
-                  const Icon = cat.icon;
-                  return (
-                    <div key={catKey}>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                        <Icon size={11} className={cat.color} />
-                        {cat.label} ({groupedDocs[catKey].length})
-                      </p>
-                      <div className="space-y-1.5">
-                        {groupedDocs[catKey].map((doc: any) => (
-                          <button
-                            key={doc.id}
-                            onClick={() => setViewerDoc(doc)}
-                            className={`w-full text-left flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group`}
-                          >
-                            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${cat.bg} flex items-center justify-center shrink-0`}>
-                              <Icon size={12} className={cat.color} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-slate-800 truncate group-hover:text-blue-700 transition-colors">
-                                {doc.name}
-                              </p>
-                              <p className="text-[10px] sm:text-xs text-slate-400">
-                                {doc.mimeType?.split('/')[1]?.toUpperCase() || doc.type}
-                                {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-
                 {/* Anexos button - opens modal with all categories */}
-                {activeDocCats.length > 0 && (
-                  <button
-                    onClick={() => setShowAnexosModal(true)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 hover:border-slate-300 transition-all"
-                  >
-                    <FileText size={14} className="text-slate-500" />
-                    <span className="text-xs font-semibold text-slate-600">Anexos ({asset.documents?.length || 0})</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowAnexosModal(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 hover:border-slate-300 transition-all"
+                >
+                  <FileText size={14} className="text-slate-500" />
+                  <span className="text-xs font-semibold text-slate-600">Anexos ({asset.documents?.length || 0})</span>
+                </button>
+              </div>
+            )}
+
+            {/* Category Docs Modal */}
+            {showCatDocsModal && (
+              <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowCatDocsModal(false)}>
+                <div className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                    <h3 className="text-base font-bold text-slate-900">{selectedCatLabel}</h3>
+                    <button onClick={() => setShowCatDocsModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4 space-y-2">
+                    {selectedCatDocs.map((doc: any) => {
+                      const cat = DOC_CATEGORIES[doc.type] || DOC_CATEGORIES.OTHER;
+                      const Icon = cat.icon;
+                      return (
+                        <button
+                          key={doc.id}
+                          onClick={() => {
+                            setViewerDoc(doc);
+                            setShowCatDocsModal(false);
+                          }}
+                          className={`w-full text-left flex items-center gap-3 p-3 rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg ${cat.bg} flex items-center justify-center shrink-0`}>
+                            <Icon size={12} className={cat.color} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-800 truncate group-hover:text-blue-700 transition-colors">
+                              {doc.name}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {doc.mimeType?.split('/')[1]?.toUpperCase() || doc.type}
+                              {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -546,7 +582,8 @@ function AssetViewContent() {
                     </button>
                   </div>
                   <div className="flex-1 overflow-auto p-4 space-y-4">
-                    {activeDocCats.map((catKey) => {
+                    {/* All categories except OTHER */}
+                    {activeDocCats.filter(k => k !== 'OTHER').map((catKey) => {
                       const cat = DOC_CATEGORIES[catKey];
                       const Icon = cat.icon;
                       return (
@@ -563,7 +600,7 @@ function AssetViewContent() {
                                   setViewerDoc(doc);
                                   setShowAnexosModal(false);
                                 }}
-                                className={`w-full text-left flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group`}
+                                className={`w-full text-left flex items-center gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl ${cat.bg}/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group`}
                               >
                                 <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${cat.bg} flex items-center justify-center shrink-0`}>
                                   <Icon size={12} className={cat.color} />
@@ -583,6 +620,41 @@ function AssetViewContent() {
                         </div>
                       );
                     })}
+
+                    {/* OTHER category always at bottom */}
+                    {activeDocCats.includes('OTHER') && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                          <FileText size={11} className="text-slate-600" />
+                          Otros ({groupedDocs.OTHER?.length || 0})
+                        </p>
+                        <div className="space-y-1.5">
+                          {(groupedDocs.OTHER || []).map((doc: any) => (
+                            <button
+                              key={doc.id}
+                              onClick={() => {
+                                setViewerDoc(doc);
+                                setShowAnexosModal(false);
+                              }}
+                              className="w-full text-left flex items-center gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all group"
+                            >
+                              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                                <FileText size={12} className="text-slate-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm font-medium text-slate-800 truncate group-hover:text-blue-700 transition-colors">
+                                  {doc.name}
+                                </p>
+                                <p className="text-[10px] sm:text-xs text-slate-400">
+                                  {doc.mimeType?.split('/')[1]?.toUpperCase() || doc.type}
+                                  {doc.size ? ` · ${(doc.size / 1024).toFixed(0)} KB` : ''}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
