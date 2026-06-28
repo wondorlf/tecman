@@ -485,7 +485,8 @@ function AssetViewContent() {
             {/* Documentos categorizados */}
             {activeDocCats.length > 0 && (
               <div className="px-5 sm:px-7 pb-3 sm:pb-4 space-y-3 sm:space-y-4">
-                {activeDocCats.map((catKey) => {
+                {/* Primary categories: Manual and Ficha Técnica */}
+                {['MANUAL', 'TECHNICAL_SHEET'].filter(k => activeDocCats.includes(k)).map((catKey) => {
                   const cat = DOC_CATEGORIES[catKey];
                   const Icon = cat.icon;
                   return (
@@ -519,6 +520,26 @@ function AssetViewContent() {
                     </div>
                   );
                 })}
+
+                {/* Other categories */}
+                {activeDocCats.filter(k => !['MANUAL', 'TECHNICAL_SHEET'].includes(k)).length > 0 && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Otros documentos</p>
+                    <div className="flex flex-wrap gap-2">
+                      {activeDocCats.filter(k => !['MANUAL', 'TECHNICAL_SHEET'].includes(k)).map((catKey) => {
+                        const cat = DOC_CATEGORIES[catKey];
+                        const Icon = cat.icon;
+                        return (
+                          <div key={catKey} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                            <Icon size={11} className={cat.color} />
+                            <span className="text-[10px] font-semibold text-slate-600">{cat.label}</span>
+                            <span className="text-[10px] text-slate-400">({groupedDocs[catKey].length})</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -669,30 +690,12 @@ function AssetViewContent() {
                     {(viewerDoc.size / 1024).toFixed(0)} KB · {viewerDoc.mimeType}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <a
-                    href={`/api/storage/public/${viewerDoc.filename}`}
-                    download={viewerDoc.name}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
-                    onClick={(e) => {
-                      // Verificar si hay sesión activa — si no, redirigir al login
-                      const token = localStorage.getItem('user');
-                      if (!token) {
-                        e.preventDefault();
-                        window.location.href = '/?login=required';
-                      }
-                    }}
-                  >
-                    <Download size={12} />
-                    Descargar
-                  </a>
-                  <button
-                    onClick={() => setViewerDoc(null)}
-                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
+                <button
+                  onClick={() => setViewerDoc(null)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                >
+                  <X size={16} />
+                </button>
               </div>
               {/* Viewer body */}
               <div className="flex-1 overflow-auto p-2 sm:p-4 bg-slate-100/50 min-h-[200px] max-h-[70vh]">
@@ -723,21 +726,6 @@ function AssetViewContent() {
                     <FileText size={48} className="mb-3 text-slate-300" />
                     <p className="text-sm font-medium">Vista previa no disponible</p>
                     <p className="text-xs mt-1">Este tipo de archivo no se puede previsualizar en línea</p>
-                    <a
-                      href={`/api/storage/public/${viewerDoc.filename}`}
-                      download={viewerDoc.name}
-                      className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
-                      onClick={(e) => {
-                        const token = localStorage.getItem('user');
-                        if (!token) {
-                          e.preventDefault();
-                          window.location.href = '/?login=required';
-                        }
-                      }}
-                    >
-                      <Download size={14} />
-                      Descargar archivo
-                    </a>
                   </div>
                 )}
               </div>

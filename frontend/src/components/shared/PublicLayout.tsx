@@ -24,10 +24,10 @@ export function PublicLayout({
   maxWidth = 'max-w-2xl',
 }: PublicLayoutProps) {
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-white relative overflow-x-hidden font-sans">
-      {/* ── Dot grid background (same as soporte) ──────────────────────── */}
+    <div className="min-h-screen min-h-[100dvh] bg-white relative font-sans">
+      {/* ── Dot grid background ── */}
       <div
-        className="absolute inset-0 z-0 opacity-[0.045] pointer-events-none"
+        className="fixed inset-0 z-0 opacity-[0.045] pointer-events-none"
         style={{
           backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)',
           backgroundSize: '24px 24px',
@@ -111,8 +111,8 @@ export function PublicLayout({
         </div>
       </header>
 
-      {/* ── Page content ────────────────────────────────────────────────── */}
-      <main className={`relative z-10 ${maxWidth} mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 w-full max-w-full overflow-x-hidden`}>{children}</main>
+      {/* ── Page content ── */}
+      <main className={`relative z-10 ${maxWidth} mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 w-full`}>{children}</main>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer className="relative z-10 pb-4 sm:pb-6 text-center text-slate-400 text-[10px] sm:text-xs font-medium px-4">
