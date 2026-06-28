@@ -97,21 +97,6 @@ export class AssetsController {
       if (doc.y + needed > PAGE_BOTTOM) newPage();
     };
 
-    const drawPageHeader = () => {
-      doc.y = PAGE_TOP;
-      let logoX = MARGIN;
-      if (eganLogoBuffer) {
-        try { doc.image(eganLogoBuffer, logoX, PAGE_TOP, { width: 24, height: 24 }); logoX += 30; } catch {}
-      }
-      if (companyLogo) {
-        try { doc.image(companyLogo, logoX, PAGE_TOP, { width: 24, height: 24 }); logoX += 30; } catch {}
-      }
-      doc.fontSize(7).font('Helvetica').fillColor('#94a3b8').text(`HOJA DE VIDA · ${asset.code}`, logoX, PAGE_TOP + 5, { width: CONTENT_W - (logoX - MARGIN) });
-      doc.y = PAGE_TOP + 20;
-      doc.rect(MARGIN, doc.y, CONTENT_W, 0.5).fill('#e2e8f0');
-      doc.y += 6;
-    };
-
     const sectionTitle = (title: string) => {
       checkBreak(35);
       doc.moveDown(0.3);
@@ -119,7 +104,7 @@ export class AssetsController {
       // Gradient-like bar
       doc.roundedRect(MARGIN, y, CONTENT_W, 16, 3).fill('#1e293b');
       doc.roundedRect(MARGIN, y, 4, 16, 2).fill('#3b82f6');
-      doc.fontSize(7.5).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 10, y + 4, { width: CONTENT_W - 16 });
+      doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 10, y + 4, { width: CONTENT_W - 16 });
       doc.fillColor('#000000');
       doc.y = y + 20;
     };
@@ -135,7 +120,7 @@ export class AssetsController {
       const headerY = doc.y;
       doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 14, 3).fill(hBg);
       let x = MARGIN + 6;
-      doc.fontSize(5.5).font('Helvetica-Bold').fillColor(hColor);
+      doc.fontSize(6).font('Helvetica-Bold').fillColor(hColor);
       for (let i = 0; i < headers.length; i++) {
         doc.text(headers[i], x, headerY + 1, { width: colWidths[i], continued: false });
         x += colWidths[i];
@@ -147,13 +132,13 @@ export class AssetsController {
         checkBreak(11);
         x = MARGIN + 6;
         const rowY = doc.y;
-        const bgColor = r % 2 === 0 ? '#ffffff' : '#f8fafc';
+        const bgColor = r % 2 === 0 ? '#ffffff' : '#f1f5f9';
         doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 10).fill(bgColor);
         // Left border accent
-        doc.rect(MARGIN + 2, rowY - 1, 1.5, 10).fill(r % 2 === 0 ? '#3b82f6' : '#8b5cf6');
+        doc.rect(MARGIN + 2, rowY - 1, 1.5, 10).fill('#3b82f6');
         doc.font('Helvetica').fillColor('#334155');
         for (let i = 0; i < rows[r].length; i++) {
-          doc.fontSize(5.5).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
+          doc.fontSize(6).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
           x += colWidths[i];
         }
         doc.y = rowY + 10;
@@ -185,28 +170,24 @@ export class AssetsController {
     // ══════════════════════════════════════════════════════════════════
     newPage();
 
-    // Title
-    if (eganLogoBuffer) {
-      try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 40, height: 40 }); } catch {}
-    }
-    if (companyLogo) {
-      try { doc.image(companyLogo, MARGIN + (eganLogoBuffer ? 48 : 0), PAGE_TOP, { width: 40, height: 40 }); } catch {}
-    }
+    // QR Code top right
     if (qrImageBuffer) {
-      doc.image(qrImageBuffer, PAGE_W - MARGIN - 45, PAGE_TOP, { width: 45, height: 45 });
+      doc.image(qrImageBuffer, PAGE_W - MARGIN - 50, PAGE_TOP, { width: 50, height: 50 });
     }
 
-    doc.fontSize(20).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 48, { width: CONTENT_W });
-    doc.fontSize(10).font('Helvetica').fillColor('#64748b').text(`${asset.name}  ·  ${asset.code}`, MARGIN, PAGE_TOP + 70, { width: CONTENT_W });
-
-    const compInfo = [companyName, tenant?.companyDocument && `NIT: ${tenant.companyDocument}`, tenant?.companyAddress, tenant?.companyPhone && `Tel: ${tenant.companyPhone}`].filter(Boolean).join('  |  ');
-    if (compInfo) {
-      doc.fontSize(6).fillColor('#94a3b8').text(compInfo, MARGIN, PAGE_TOP + 85, { width: CONTENT_W, align: 'center' });
+    // Company logo top left
+    if (companyLogo) {
+      try { doc.image(companyLogo, MARGIN, PAGE_TOP, { width: 40, height: 40 }); } catch {}
     }
 
-    doc.y = PAGE_TOP + 100;
+    // Centered title
+    doc.fontSize(24).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 60, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, MARGIN, PAGE_TOP + 85, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, MARGIN, PAGE_TOP + 100, { width: CONTENT_W, align: 'center' });
+
+    doc.y = PAGE_TOP + 120;
     doc.rect(MARGIN, doc.y, CONTENT_W, 1).fill('#e2e8f0');
-    doc.y += 8;
+    doc.y += 10;
 
     // ── INFORMACIÓN GENERAL ──
     sectionTitle('INFORMACIÓN GENERAL');
@@ -293,18 +274,18 @@ export class AssetsController {
     if (events.length > 0) {
       sectionTitle(`LÍNEA DE TIEMPO (${events.length} eventos)`);
       for (const ev of events) {
-        checkBreak(20);
+        checkBreak(22);
         const date = new Date(ev.createdAt);
         const dateStr = date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
         const timeStr = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
         const dotY = doc.y + 2;
-        doc.circle(MARGIN + 5, dotY, 2).fill('#3b82f6');
+        doc.circle(MARGIN + 5, dotY, 2.5).fill('#3b82f6');
         if (ev !== events[events.length - 1]) {
-          doc.rect(MARGIN + 4, dotY + 3, 1, 8).fill('#e2e8f0');
+          doc.rect(MARGIN + 4, dotY + 4, 1, 10).fill('#e2e8f0');
         }
-        doc.fontSize(5.5).font('Helvetica-Bold').fillColor('#3b82f6').text(`${dateStr} ${timeStr}`, MARGIN + 12, doc.y);
-        doc.fontSize(5.5).font('Helvetica').fillColor('#334155').text(ev.description || '—', MARGIN + 12, doc.y, { width: CONTENT_W - 16 });
-        doc.y += 3;
+        doc.fontSize(6).font('Helvetica-Bold').fillColor('#3b82f6').text(`${dateStr} ${timeStr}`, MARGIN + 12, doc.y);
+        doc.fontSize(6).font('Helvetica').fillColor('#334155').text(ev.description || '—', MARGIN + 12, doc.y, { width: CONTENT_W - 16 });
+        doc.y += 4;
       }
     }
 
@@ -320,10 +301,10 @@ export class AssetsController {
       for (const m of sortedMaintenances) {
         checkBreak(60);
         detailCard('#22c55e', [
-          { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 7 },
-          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 5.5 },
-          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 5.5 }] : []),
-          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 5.5 }] : []),
+          { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 8 },
+          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 6 },
+          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 6 }] : []),
+          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 6 }] : []),
         ]);
       }
     }
@@ -339,9 +320,9 @@ export class AssetsController {
       for (const t of sortedTickets) {
         checkBreak(50);
         detailCard('#3b82f6', [
-          { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 7 },
-          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 5.5 },
-          ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 5.5 }] : []),
+          { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 8 },
+          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 6 },
+          ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 6 }] : []),
         ]);
       }
     }
@@ -355,9 +336,9 @@ export class AssetsController {
       const footerY = 765;
       doc.rect(MARGIN, footerY, CONTENT_W, 0.5).fill('#e2e8f0');
       doc.fontSize(5).font('Helvetica').fillColor('#94a3b8');
-      doc.text(companyName, MARGIN, footerY + 3, { width: CONTENT_W / 2, align: 'left' });
+      doc.text('E-GAN TECH', MARGIN, footerY + 3, { width: CONTENT_W / 2, align: 'left' });
       doc.text(`Hoja de Vida · ${asset.code} · ${new Date().toLocaleDateString('es-CO')}`, MARGIN + CONTENT_W / 2, footerY + 3, { width: CONTENT_W / 2, align: 'right' });
-      doc.text(`${i + 1} / ${pageCount.count}`, MARGIN, footerY + 9, { width: CONTENT_W, align: 'center' });
+      doc.text(`Página ${i + 1} de ${pageCount.count}`, MARGIN, footerY + 9, { width: CONTENT_W, align: 'center' });
     }
 
     doc.end();
