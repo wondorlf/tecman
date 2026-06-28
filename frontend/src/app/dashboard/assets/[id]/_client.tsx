@@ -952,6 +952,13 @@ export default function AssetDetailClient() {
                     const cleanForm: Record<string, any> = Object.fromEntries(
                       Object.entries(editForm).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
                     );
+                    // Convertir fechas de YYYY-MM-DD a ISO 8601
+                    if (cleanForm.acquisitionDate && !cleanForm.acquisitionDate.includes('T')) {
+                      cleanForm.acquisitionDate = new Date(cleanForm.acquisitionDate + 'T00:00:00.000Z').toISOString();
+                    }
+                    if (cleanForm.warrantyExpiry && !cleanForm.warrantyExpiry.includes('T')) {
+                      cleanForm.warrantyExpiry = new Date(cleanForm.warrantyExpiry + 'T00:00:00.000Z').toISOString();
+                    }
                     const { attributeValues, ...assetData } = cleanForm;
                     await assetsApi.update(id!, assetData);
                     if (attributeValues && attributeValues.length > 0) {
