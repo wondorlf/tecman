@@ -57,6 +57,13 @@ const nextConfig = {
         destination: `${backendUrl}/admin/:path*`,
       },
       // WebSockets (socket.io polling)
+      // Next.js normaliza trailing slashes: /socket.io/ → /socket.io, pero socket.io
+      // (Engine.IO) requiere el trailing slash para procesar el handshake.
+      // Usamos grupo opcional (/)? para capturar ambos casos y forzar / en destino.
+      {
+        source: "/socket.io(/)?",
+        destination: `${backendUrl}/socket.io/`,
+      },
       {
         source: "/socket.io/:path*",
         destination: `${backendUrl}/socket.io/:path*`,

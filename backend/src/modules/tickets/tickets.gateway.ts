@@ -25,6 +25,9 @@ interface AuthenticatedSocket extends Socket {
     credentials: true,
   },
   namespace: '/ws/tickets',
+  // Sin trailing slash para que Engine.IO acepte /socket.io y /socket.io/
+  // Next.js elimina el trailing slash al hacer rewrite del proxy.
+  path: '/socket.io',
 })
 export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(TicketsGateway.name);
