@@ -2,10 +2,10 @@
 
 /**
  * EGAN TECH - Herramientas de Mantenimiento y Despliegue
- * Migrado de .bat/.ps1 a Node.js + child-shell
+ * Migrado de .bat/.ps1 a Node.js (sin dependencias externas para PowerShell)
  */
 
-const { PowerShell } = require('child-shell');
+const { execSync, spawn } = require('child_process');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const path = require('path');
@@ -13,35 +13,37 @@ const fs = require('fs');
 
 class EganTools {
   constructor() {
-    this.ps = new PowerShell();
     this.projectRoot = path.resolve(__dirname, '..');
     this.version = '1.0.0';
   }
 
-  async run(command) {
+  runPowerShell(command) {
     try {
-      const result = await this.ps.invoke(command);
-      return result;
+      const result = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -Command "${command}"`, {
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+      return result.trim();
     } catch (error) {
-      console.error(chalk.red(`Error: ${error.message}`));
+      console.error(chalk.red(`Error PowerShell: ${error.message}`));
       return null;
     }
   }
 
   async checkAdmin() {
-    const result = await this.run(`
+    const result = this.runPowerShell(`
       $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
       $principal = New-Object Security.Principal.WindowsPrincipal($identity)
       $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     `);
-    return result && result.trim() === 'True';
+    return result === 'True';
   }
 
   async ensureAdmin() {
     const isAdmin = await this.checkAdmin();
     if (!isAdmin) {
       console.log(chalk.yellow('Se necesitan permisos de Administrador. Re-elevando...'));
-      await this.run(`Start-Process -FilePath 'node' -ArgumentList '${process.argv[1]}' -Verb RunAs`);
+      this.runPowerShell(`Start-Process -FilePath 'node' -ArgumentList '${process.argv[1]}' -Verb RunAs`);
       process.exit(0);
     }
   }
@@ -87,16 +89,16 @@ class EganTools {
     const commitMsg = message || `Actualización ${new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '')}`;
 
     console.log(chalk.gray('Agregando cambios...'));
-    await this.run(`cd '${this.projectRoot}'; git add -A`);
+    execSync('git add -A', { cwd: this.projectRoot, stdio: 'inherit' });
 
     console.log(chalk.gray('Creando commit...'));
-    await this.run(`cd '${this.projectRoot}'; git commit -m "${commitMsg}"`);
+    execSync(`git commit -m "${commitMsg}"`, { cwd: this.projectRoot, stdio: 'inherit' });
 
     console.log(chalk.gray('Obteniendo cambios remotos...'));
-    await this.run(`cd '${this.projectRoot}'; git pull --autostash origin master`);
+    execSync('git pull --autostash origin master', { cwd: this.projectRoot, stdio: 'inherit' });
 
     console.log(chalk.gray('Subiendo cambios...'));
-    await this.run(`cd '${this.projectRoot}'; git push origin master`);
+    execSync('git push origin master', { cwd: this.projectRoot, stdio: 'inherit' });
 
     console.log(chalk.green('\n✓ Sincronización completada\n'));
   }
@@ -117,12 +119,12 @@ class EganTools {
 
     if (fs.existsSync(gitDir)) {
       console.log(chalk.gray('Repositorio existente. Actualizando...'));
-      await this.run(`cd '${dest}'; git fetch origin`);
-      await this.run(`cd '${dest}'; git pull --autostash origin master`);
+      execSync('git fetch origin', { cwd: dest, stdio: 'inherit' });
+      execSync('git pull --autostash origin master', { cwd: dest, stdio: 'inherit' });
       console.log(chalk.green('\n✓ Repositorio actualizado\n'));
     } else {
       console.log(chalk.gray('Clonando repositorio...'));
-      await this.run(`git clone https://github.com/wondorlf/tecman.git "${dest}"`);
+      execSync(`git clone https://github.com/wondorlf/tecman.git "${dest}"`, { stdio: 'inherit' });
       console.log(chalk.green('\n✓ Repositorio clonado\n'));
     }
   }
@@ -142,19 +144,23 @@ class EganTools {
     if (!confirm) return;
 
     const steps = [
-      { name: 'Git Pull', cmd: `cd '${this.projectRoot}'; git pull origin master` },
-      { name: 'Install Root', cmd: `cd '${this.projectRoot}'; npm install` },
-      { name: 'Install Backend', cmd: `cd '${this.projectRoot}/backend'; npm install --legacy-peer-deps` },
-      { name: 'Install Frontend', cmd: `cd '${this.projectRoot}/frontend'; npm install` },
-      { name: 'Prisma Generate', cmd: `cd '${this.projectRoot}/backend'; npx prisma generate` },
-      { name: 'Prisma DB Push', cmd: `cd '${this.projectRoot}/backend'; npx prisma db push --accept-data-loss` },
-      { name: 'Build', cmd: `cd '${this.projectRoot}'; npm run build` },
-      { name: 'PM2 Reload', cmd: `cd '${this.projectRoot}'; pm2 reload ecosystem.config.js --update-env` }
+      { name: 'Git Pull', cmd: 'git pull origin master', cwd: this.projectRoot },
+      { name: 'Install Root', cmd: 'npm install', cwd: this.projectRoot },
+      { name: 'Install Backend', cmd: 'npm install --legacy-peer-deps', cwd: path.join(this.projectRoot, 'backend') },
+      { name: 'Install Frontend', cmd: 'npm install', cwd: path.join(this.projectRoot, 'frontend') },
+      { name: 'Prisma Generate', cmd: 'npx prisma generate', cwd: path.join(this.projectRoot, 'backend') },
+      { name: 'Prisma DB Push', cmd: 'npx prisma db push --accept-data-loss', cwd: path.join(this.projectRoot, 'backend') },
+      { name: 'Build', cmd: 'npm run build', cwd: this.projectRoot },
+      { name: 'PM2 Reload', cmd: 'pm2 reload ecosystem.config.js --update-env', cwd: this.projectRoot }
     ];
 
     for (const step of steps) {
       console.log(chalk.gray(`→ ${step.name}...`));
-      await this.run(step.cmd);
+      try {
+        execSync(step.cmd, { cwd: step.cwd, stdio: 'inherit' });
+      } catch (error) {
+        console.log(chalk.yellow(`  ⚠ ${step.name} falló (continuando...)`));
+      }
     }
 
     console.log(chalk.green('\n✓ Despliegue completado\n'));
@@ -185,7 +191,7 @@ class EganTools {
     switch (option) {
       case 'temp':
         console.log(chalk.gray('Limpiando temporales...'));
-        await this.run(`
+        this.runPowerShell(`
           Remove-Item -Path "$env:TEMP\\*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "$env:SystemRoot\\Temp\\*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "$env:SystemRoot\\Prefetch\\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -195,19 +201,19 @@ class EganTools {
 
       case 'recycle':
         console.log(chalk.gray('Vaciando papelera...'));
-        await this.run('Clear-RecycleBin -Force');
+        this.runPowerShell('Clear-RecycleBin -Force');
         console.log(chalk.green('✓ Papelera vaciada'));
         break;
 
       case 'dns':
         console.log(chalk.gray('Limpiando cache DNS...'));
-        await this.run('ipconfig /flushdns');
+        execSync('ipconfig /flushdns', { stdio: 'inherit' });
         console.log(chalk.green('✓ DNS limpiado'));
         break;
 
       case 'full':
         console.log(chalk.gray('Ejecutando limpieza completa...'));
-        await this.run(`
+        this.runPowerShell(`
           Remove-Item -Path "$env:TEMP\\*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "$env:SystemRoot\\Temp\\*" -Recurse -Force -ErrorAction SilentlyContinue
           Clear-RecycleBin -Force -ErrorAction SilentlyContinue
@@ -241,21 +247,21 @@ class EganTools {
     switch (option) {
       case 'sysinfo':
         console.log(chalk.gray('Obteniendo información del sistema...\n'));
-        await this.run(`
-          Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsHardwareAbstractionLayer, OsArchitecture, CsProcessors, CsPhyicallyInstalledMemory | Format-List
+        this.runPowerShell(`
+          Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture, CsProcessors, CsPhyicallyInstalledMemory | Format-List
         `);
         break;
 
       case 'services':
         console.log(chalk.gray('Servicios críticos:\n'));
-        await this.run(`
+        this.runPowerShell(`
           Get-Service | Where-Object {$_.Status -eq 'Running' -and $_.DisplayName -like '*Windows*'} | Select-Object DisplayName, Status | Format-Table -AutoSize
         `);
         break;
 
       case 'network':
         console.log(chalk.gray('Estado de red:\n'));
-        await this.run('ipconfig /all');
+        execSync('ipconfig /all', { stdio: 'inherit' });
         break;
     }
   }

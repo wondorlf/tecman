@@ -1,0 +1,26 @@
+{
+  "name": "tecman-discovery-agent",
+  "version": "1.0.0",
+  "description": "TecMan Discovery Agent - Reporte automático de hardware (Node.js)",
+  "main": "index.js",
+  "bin": {
+    "tecman-discovery": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "build": "node build.js",
+    "build:win": "node build.js --platform win",
+    "build:fix": "node build-fix.js"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6",
+    "systeminformation": "^5.21.0"
+  },
+  "devDependencies": {
+    "nexe": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
