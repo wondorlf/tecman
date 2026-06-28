@@ -195,8 +195,8 @@ export class AssetsController {
         ['MAC', hw.macAddress || '—'],
         ['OS', hw.os || '—'],
         ['CPU', hw.cpuModel || '—'],
-        ['RAM', hw.ramTotalBytes ? `${(hw.ramTotalBytes / 1073741824).toFixed(1)} GB` : '—'],
-        ['Disco', hw.diskTotalBytes ? `${(hw.diskTotalBytes / 1073741824).toFixed(0)} GB` : '—'],
+        ['RAM', hw.ramTotalBytes ? `${(Number(hw.ramTotalBytes) / 1073741824).toFixed(1)} GB` : '—'],
+        ['Disco', hw.diskTotalBytes ? `${(Number(hw.diskTotalBytes) / 1073741824).toFixed(0)} GB` : '—'],
         ['Tipo Disco', hw.diskType || '—'],
       ];
       drawTable(['Campo', 'Valor'], hwRows, [120, CONTENT_W - 125]);
