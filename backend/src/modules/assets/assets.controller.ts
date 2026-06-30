@@ -97,6 +97,18 @@ export class AssetsController {
       if (doc.y + needed > PAGE_BOTTOM) newPage();
     };
 
+    const drawPageHeader = () => {
+      doc.y = PAGE_TOP;
+      if (eganLogoBuffer) {
+        try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 30, height: 30 }); } catch {}
+      }
+      doc.fontSize(7).font('Helvetica-Bold').fillColor('#334155').text(`Hoja de Vida — ${asset.code || ''}  ${asset.name || ''}`, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 8, { width: CONTENT_W - (eganLogoBuffer ? 35 : 0) });
+      doc.fontSize(5).font('Helvetica').fillColor('#94a3b8').text(companyName, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 18);
+      doc.rect(MARGIN, PAGE_TOP + 28, CONTENT_W, 0.5).fill('#e2e8f0');
+      doc.y = PAGE_TOP + 35;
+      doc.fillColor('#000000');
+    };
+
     const sectionTitle = (title: string) => {
       checkBreak(35);
       doc.moveDown(0.3);
