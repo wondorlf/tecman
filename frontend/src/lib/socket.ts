@@ -81,15 +81,6 @@ function getSocket(): Socket | null {
 
   globalSocket.on('connect_error', (err) => {
     console.warn('[TecMan WS] Error de conexión:', err.message);
-    // Backoff exponencial en errores
-    if (globalSocket) {
-      const delay = Math.min(globalSocket.retriesDelay || 1000, 10000);
-      setTimeout(() => {
-        if (globalSocket && !globalSocket.connected) {
-          globalSocket.connect();
-        }
-      }, delay);
-    }
   });
 
   globalSocket.on('error', (data) => {
