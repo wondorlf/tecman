@@ -186,6 +186,13 @@ export class AssetsController {
       doc.y += 5;
     };
 
+    // ── Spanish labels ──
+    const TYPE_LABELS: Record<string, string> = { PREVENTIVE: 'Preventivo', CORRECTIVE: 'Correctivo', PREDICTIVE: 'Predictivo' };
+    const STATUS_LABELS: Record<string, string> = { PENDING: 'Pendiente', SCHEDULED: 'Programado', IN_PROGRESS: 'En proceso', COMPLETED: 'Completado', CANCELLED: 'Cancelado', ACTIVE: 'Activo', MAINTENANCE: 'En mantenimiento', INACTIVE: 'Inactivo', DISPOSED: 'Desechado', RESERVED: 'Reservado' };
+    const TICKET_STATUS_LABELS: Record<string, string> = { OPEN: 'Abierto', IN_PROGRESS: 'En proceso', WAITING_ON_USER: 'En espera', RESOLVED: 'Resuelto', CLOSED: 'Cerrado' };
+    const TICKET_CATEGORY_LABELS: Record<string, string> = { HARDWARE: 'Hardware', SOFTWARE: 'Software', NETWORK: 'Red', ACCESS: 'Acceso', OTHER: 'Otro' };
+    const label = (map: Record<string, string>, val?: string) => map[val || ''] || val || '—';
+
     // ══════════════════════════════════════════════════════════════════
     // PAGE 1: PORTADA + INFO GENERAL
     // ══════════════════════════════════════════════════════════════════
@@ -216,7 +223,7 @@ export class AssetsController {
     const responsible = asset.custodies?.[0]?.user?.name || '—';
     const generalRows = [
       ['Código', asset.code || '—', 'Nombre', asset.name || '—'],
-      ['Estado', asset.status || '—', 'Responsable/Asignado', responsible],
+      ['Estado', label(STATUS_LABELS, asset.status), 'Responsable/Asignado', responsible],
       ['Categoría', asset.category?.name || '—', 'Subcategoría', asset.subcategory?.name || '—'],
       ['Marca', asset.brand || '—', 'Modelo', asset.model || '—'],
       ['Serial', asset.serialNumber || '—', 'Ubicación', asset.location?.name || '—'],
@@ -248,8 +255,8 @@ export class AssetsController {
     } else {
       const mRows = maintenances.map((m: any) => [
         m.code || '—',
-        m.type || '—',
-        m.status || '—',
+        label(TYPE_LABELS, m.type),
+        label(STATUS_LABELS, m.status),
         m.technician?.name || '—',
         m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—',
       ]);
@@ -267,8 +274,8 @@ export class AssetsController {
       const tRows = tickets.map((t: any) => [
         t.code || '—',
         (t.title || '—').substring(0, 30),
-        t.status || '—',
-        t.category || '—',
+        label(TICKET_STATUS_LABELS, t.status),
+        label(TICKET_CATEGORY_LABELS, t.category),
         t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—',
       ]);
       drawTable(['Código', 'Título', 'Estado', 'Categoría', 'Fecha'], tRows, [60, 160, 75, 90, 100]);
@@ -322,7 +329,7 @@ export class AssetsController {
       for (const m of sortedMaintenances) {
         checkBreak(55);
         detailCard('#22c55e', [
-          { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 10 },
+          { text: `${m.code || '—'}  ·  ${label(TYPE_LABELS, m.type)}  ·  ${label(STATUS_LABELS, m.status)}`, font: 'Helvetica-Bold', color: '#166534', size: 10 },
           { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 9 },
           ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 9 }] : []),
           ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 9 }] : []),
@@ -341,8 +348,8 @@ export class AssetsController {
       for (const t of sortedTickets) {
         checkBreak(50);
         detailCard('#3b82f6', [
-          { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 10 },
-          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 9 },
+          { text: `${t.code || '—'}  ·  ${label(TICKET_STATUS_LABELS, t.status)}`, font: 'Helvetica-Bold', color: '#1e40af', size: 10 },
+          { text: `${t.title || '—'}  |  Categoría: ${label(TICKET_CATEGORY_LABELS, t.category)}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 9 },
           ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 9 }] : []),
         ]);
       }
