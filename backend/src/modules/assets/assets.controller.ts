@@ -120,9 +120,8 @@ export class AssetsController {
     let totalPages = 1;
     const newPage = () => {
       doc.addPage();
-      doc.y = PAGE_TOP;
-      doc.x = MARGIN;
       totalPages++;
+      drawPageHeader();
     };
 
     const checkBreak = (needed: number = 50) => {
@@ -240,7 +239,9 @@ export class AssetsController {
     // ══════════════════════════════════════════════════════════════════
     // PAGE 1: PORTADA + INFO GENERAL
     // ══════════════════════════════════════════════════════════════════
-    newPage();
+    // Posicionar cursor en la primera página
+    doc.y = PAGE_TOP;
+    doc.x = MARGIN;
 
     // E-GAN logo top left
     if (eganLogoBuffer) {

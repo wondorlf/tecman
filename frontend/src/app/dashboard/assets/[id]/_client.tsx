@@ -70,6 +70,8 @@ export default function AssetDetailClient() {
   const [uploadType, setUploadType] = useState<string>('OTHER');
   const [uploadPublic, setUploadPublic] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [docTypeOverrides, setDocTypeOverrides] = useState<Record<string, string>>({});
+  const [updatingDocId, setUpdatingDocId] = useState<string | null>(null);
 
   const { data: asset, isLoading, refetch } = useQuery({
     queryKey: ['asset', id],
@@ -112,6 +114,25 @@ export default function AssetDetailClient() {
         .catch(() => {});
     }
   }, [asset]);
+
+  // Limpiar overrides cuando los documentos se actualizan desde el servidor
+  useEffect(() => {
+    if (asset?.documents) {
+      setDocTypeOverrides((prev) => {
+        const next: Record<string, string> = {};
+        // Solo mantener overrides para documentos que ya no existen
+        for (const [docId, override] of Object.entries(prev)) {
+          const serverDoc = asset.documents.find((d: any) => d.id === docId);
+          if (serverDoc && serverDoc.type !== override) {
+            // El servidor tiene un valor diferente, limpiar override
+          } else if (!serverDoc) {
+            next[docId] = override;
+          }
+        }
+        return next;
+      });
+    }
+  }, [asset?.documents]);
 
   if (isLoading) return <LoadingSpinner />;
   if (!asset)
@@ -608,7 +629,7 @@ export default function AssetDetailClient() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 truncate">{d.name}</p>
                         <p className="text-xs text-slate-400">
-                          {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS]} · v{d.version} · {(d.size / 1024).toFixed(0)} KB
+                          {DOCUMENT_TYPE_LABELS[(docTypeOverrides[d.id] ?? d.type) as keyof typeof DOCUMENT_TYPE_LABELS]} · v{d.version} · {(d.size / 1024).toFixed(0)} KB
                           {d.isPublic && <span className="ml-2 text-emerald-500 font-semibold">Público</span>}
                         </p>
                       </div>
@@ -629,15 +650,28 @@ export default function AssetDetailClient() {
                           {d.isPublic ? <Eye size={14} /> : <EyeOff size={14} />}
                         </button>
                         <select
-                          value={d.type}
+                          value={docTypeOverrides[d.id] ?? d.type}
+                          disabled={updatingDocId === d.id}
                           onChange={async (e) => {
+                            const newType = e.target.value;
+                            // Actualizar inmediatamente el UI
+                            setDocTypeOverrides((prev) => ({ ...prev, [d.id]: newType }));
+                            setUpdatingDocId(d.id);
                             try {
                               const { documentsApi } = await import('@/lib/api');
-                              await documentsApi.update(d.id, { type: e.target.value });
+                              await documentsApi.update(d.id, { type: newType });
                               refetch();
                             } catch (err: any) {
+                              // Revertir en caso de error
+                              setDocTypeOverrides((prev) => {
+                                const next = { ...prev };
+                                delete next[d.id];
+                                return next;
+                              });
                               console.error('Error cambiando categoría:', err);
                               alert('No se pudo cambiar la categoría: ' + (err.response?.data?.message || err.message));
+                            } finally {
+                              setUpdatingDocId(null);
                             }
                           }}
                           className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 min-w-[130px]"
