@@ -197,7 +197,7 @@ export class AssetsController {
     }
 
     // Centered title
-    doc.fontSize(24).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 55, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(20).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 55, { width: CONTENT_W, align: 'center' });
     doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, MARGIN, PAGE_TOP + 82, { width: CONTENT_W, align: 'center' });
     doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, MARGIN, PAGE_TOP + 100, { width: CONTENT_W, align: 'center' });
 
