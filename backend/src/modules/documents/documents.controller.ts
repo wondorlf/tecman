@@ -32,7 +32,6 @@ export class DocumentsController {
     return this.documentsService.findAll(query);
   }
 
-  @Roles('Administrador', 'Superadministrador Egan')
   @Patch(':id')
   @ApiOperation({ summary: 'Update document metadata (public/private, category)' })
   update(@Param('id') id: string, @Body() updateDto: { isPublic?: boolean; type?: string; name?: string }) {
