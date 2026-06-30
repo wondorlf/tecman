@@ -116,6 +116,7 @@ export default function MaintenancePage() {
   const [saving, setSaving] = useState(false);
   const [completeDialog, setCompleteDialog] = useState<Maintenance | null>(null);
   const [completeForm, setCompleteForm] = useState({ diagnosis: '', solution: '', cost: '' });
+  const [checklistResponses, setChecklistResponses] = useState<Record<string, any>>({});
 
   const searchParams = useSearchParams();
   const assetCodeParam = searchParams.get('assetCode');
@@ -126,6 +127,7 @@ export default function MaintenancePage() {
       const r = await maintenanceApi.list();
       return (r.data as any).data as Maintenance[];
     },
+    refetchInterval: 30000,
   });
   const { data: assets = [] } = useQuery({
     queryKey: ['assets-simple'],
@@ -168,6 +170,120 @@ export default function MaintenancePage() {
       f('checklistId', filteredChecklists[0].id);
     }
   }, [assetCategoryId, filteredChecklists]);
+
+  const renderChecklistItem = (item: any) => {
+    const value = checklistResponses[item.id] ?? '';
+    const onChange = (val: any) => setChecklistResponses((prev) => ({ ...prev, [item.id]: val }));
+    const parsedOptions = item.options ? (typeof item.options === 'string' ? JSON.parse(item.options) : item.options) : [];
+
+    switch (item.type) {
+      case 'TEXT':
+        return (
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={item.description || 'Ingrese texto...'}
+            className="h-8 rounded-lg text-sm"
+          />
+        );
+      case 'TEXTAREA':
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={item.description || 'Ingrese detalle...'}
+            rows={2}
+            className="text-sm rounded-lg"
+          />
+        );
+      case 'NUMBER':
+        return (
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="0"
+            className="h-8 rounded-lg text-sm"
+          />
+        );
+      case 'CHECKBOX':
+        return (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!value}
+              onChange={(e) => onChange(e.target.checked)}
+              className="rounded border-slate-300"
+            />
+            <span className="text-xs text-slate-600">Sí / Completado</span>
+          </label>
+        );
+      case 'SELECT':
+        return (
+          <select
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full h-8 rounded-lg border border-slate-200 text-sm px-2 bg-white"
+          >
+            <option value="">Seleccionar...</option>
+            {parsedOptions.map((opt: string, i: number) => (
+              <option key={i} value={opt}>{opt}</option>
+            ))}
+          </select>
+        );
+      case 'RADIO':
+        return (
+          <div className="flex flex-wrap gap-3">
+            {parsedOptions.map((opt: string, i: number) => (
+              <label key={i} className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name={`checklist-${item.id}`}
+                  checked={value === opt}
+                  onChange={() => onChange(opt)}
+                  className="border-slate-300"
+                />
+                <span className="text-xs text-slate-600">{opt}</span>
+              </label>
+            ))}
+          </div>
+        );
+      case 'DATE':
+        return (
+          <Input
+            type="date"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="h-8 rounded-lg text-sm"
+          />
+        );
+      case 'PHOTO':
+        return (
+          <div className="flex items-center gap-2">
+            <Input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onChange(file.name);
+              }}
+              className="h-8 rounded-lg text-xs"
+            />
+            {value && <span className="text-xs text-emerald-600">{String(value)}</span>}
+          </div>
+        );
+      default:
+        return (
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Ingrese valor..."
+            className="h-8 rounded-lg text-sm"
+          />
+        );
+    }
+  };
 
   const filtered = useMemo(() => {
     return maintenances.filter((m) => {
@@ -288,15 +404,21 @@ export default function MaintenancePage() {
   const handleComplete = async () => {
     if (!completeDialog) return;
     try {
-      await maintenanceApi.complete(completeDialog.id, {
+      const payload: any = {
         diagnosis: completeForm.diagnosis,
         solution: completeForm.solution,
         cost: completeForm.cost ? parseFloat(completeForm.cost) : undefined,
-      });
+      };
+      // Incluir respuestas del checklist si existen
+      if (Object.keys(checklistResponses).length > 0) {
+        payload.checklistData = checklistResponses;
+      }
+      await maintenanceApi.complete(completeDialog.id, payload);
       toast({ title: 'Mantenimiento completado' });
       qc.invalidateQueries({ queryKey: ['maintenances'] });
       setCompleteDialog(null);
       setCompleteForm({ diagnosis: '', solution: '', cost: '' });
+      setChecklistResponses({});
     } catch (e: any) {
       toast({ title: 'Error', description: e.response?.data?.message, variant: 'destructive' });
     }
@@ -625,6 +747,7 @@ export default function MaintenancePage() {
                                     e.stopPropagation();
                                     setCompleteDialog(m);
                                     setCompleteForm({ diagnosis: '', solution: '', cost: '' });
+                                    setChecklistResponses({});
                                   }}
                                   className="p-1.5 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors"
                                   title="Completar"
@@ -857,7 +980,7 @@ export default function MaintenancePage() {
 
       {/* Complete Dialog */}
       <Dialog open={!!completeDialog} onOpenChange={() => setCompleteDialog(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Completar mantenimiento</DialogTitle>
           </DialogHeader>
@@ -895,6 +1018,34 @@ export default function MaintenancePage() {
                 className="h-9 rounded-xl text-sm"
               />
             </div>
+
+            {/* Checklist dinámico */}
+            {completeDialog?.checklist && completeDialog.checklist.items && completeDialog.checklist.items.length > 0 && (
+              <div className="border-t border-slate-200 pt-4 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bookmark size={14} className="text-blue-500" />
+                  <Label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    Checklist: {completeDialog.checklist.name}
+                  </Label>
+                </div>
+                <div className="space-y-3">
+                  {completeDialog.checklist.items
+                    .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                    .map((item: any) => (
+                      <div key={item.id} className="space-y-1">
+                        <Label className="text-xs font-medium text-slate-600">
+                          {item.label}
+                          {item.required && <span className="text-red-500 ml-0.5">*</span>}
+                        </Label>
+                        {item.description && (
+                          <p className="text-[10px] text-slate-400">{item.description}</p>
+                        )}
+                        {renderChecklistItem(item)}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter className="gap-2">
             <Button

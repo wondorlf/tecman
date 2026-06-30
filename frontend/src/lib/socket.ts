@@ -14,6 +14,7 @@ function getSocketUrl(): string {
 }
 
 let globalSocket: Socket | null = null;
+let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
 /**
  * Event listener references for cleanup on disconnect.
@@ -32,28 +33,63 @@ function getSocket(): Socket | null {
 
   if (globalSocket?.connected) return globalSocket;
 
+  // Si hay un socket desconectado, limpiarlo
+  if (globalSocket) {
+    globalSocket.removeAllListeners();
+    globalSocket = null;
+  }
+
   const url = getSocketUrl();
   globalSocket = io(`${url}/ws/tickets`, {
     auth: { token },
-    // Solo polling — Next.js rewrites no soportan upgrades WebSocket.
-    // El proxy HTTP de /socket.io/* al backend maneja el polling correctamente.
     transports: ['polling'],
     reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 2000,
-    timeout: 15000,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 10000,
+    timeout: 20000,
+    autoConnect: true,
+    forceNew: false,
   });
 
   globalSocket.on('connect', () => {
     console.log('[TecMan WS] Conectado al servidor WebSocket');
+    // Heartbeat cada 25s para mantener la conexión activa
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(() => {
+      if (globalSocket?.connected) {
+        globalSocket.emit('ping');
+      }
+    }, 25000);
   });
 
   globalSocket.on('disconnect', (reason) => {
     console.log('[TecMan WS] Desconectado:', reason);
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
+    // Auto-reconectar si no fue un disconnect intencional
+    if (reason !== 'io client disconnect') {
+      setTimeout(() => {
+        if (globalSocket && !globalSocket.connected) {
+          globalSocket.connect();
+        }
+      }, 2000);
+    }
   });
 
   globalSocket.on('connect_error', (err) => {
     console.warn('[TecMan WS] Error de conexión:', err.message);
+    // Backoff exponencial en errores
+    if (globalSocket) {
+      const delay = Math.min(globalSocket.retriesDelay || 1000, 10000);
+      setTimeout(() => {
+        if (globalSocket && !globalSocket.connected) {
+          globalSocket.connect();
+        }
+      }, delay);
+    }
   });
 
   globalSocket.on('error', (data) => {
@@ -136,7 +172,12 @@ export function useTicketSocket(
  * Disconnect the global socket (e.g., on logout).
  */
 export function disconnectSocket() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
   if (globalSocket) {
+    globalSocket.removeAllListeners();
     globalSocket.disconnect();
     globalSocket = null;
   }

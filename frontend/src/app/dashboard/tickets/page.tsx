@@ -85,6 +85,7 @@ export default function TicketsPage() {
       const r = await ticketsApi.list();
       return (r.data as any).data as Ticket[];
     },
+    refetchInterval: 30000,
   });
   const { data: assets = [] } = useQuery({
     queryKey: ['assets-simple'],

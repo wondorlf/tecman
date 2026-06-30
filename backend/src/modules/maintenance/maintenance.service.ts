@@ -39,7 +39,13 @@ export class MaintenanceService {
         include: {
           asset: { select: { id: true, name: true, code: true } },
           technician: { select: { id: true, name: true } },
-          checklist: { select: { id: true, name: true } },
+          checklist: {
+            select: {
+              id: true,
+              name: true,
+              items: { orderBy: { order: 'asc' } },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,
