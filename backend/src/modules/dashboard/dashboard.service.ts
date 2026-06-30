@@ -10,75 +10,35 @@ export class DashboardService {
     const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const [
-      assetsCount,
-      pendingMaint,
-      activeAlerts,
-      usersCount,
-      assetsByStatus,
-      maintenanceByType,
-      // ── Comparativas mes actual vs anterior ──
-      ticketsCurrentMonth,
-      ticketsPreviousMonth,
-      maintCompletedCurrentMonth,
-      maintCompletedPreviousMonth,
-      assetsCreatedCurrentMonth,
-      assetsCreatedPreviousMonth,
-      resolvedTicketsCurrentMonth,
-      resolvedTicketsPreviousMonth,
-    ] = await Promise.all([
+    let ticketsCurrentMonth = 0;
+    let ticketsPreviousMonth = 0;
+    let maintCompletedCurrentMonth = 0;
+    let maintCompletedPreviousMonth = 0;
+    let assetsCreatedCurrentMonth = 0;
+    let assetsCreatedPreviousMonth = 0;
+    let resolvedTicketsCurrentMonth = 0;
+    let resolvedTicketsPreviousMonth = 0;
+
+    try {
+      [ticketsCurrentMonth, ticketsPreviousMonth, maintCompletedCurrentMonth, maintCompletedPreviousMonth, assetsCreatedCurrentMonth, assetsCreatedPreviousMonth, resolvedTicketsCurrentMonth, resolvedTicketsPreviousMonth] = await Promise.all([
+        this.prisma.ticket.count({ where: { createdAt: { gte: startOfCurrentMonth } } }),
+        this.prisma.ticket.count({ where: { createdAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth } } }),
+        this.prisma.maintenance.count({ where: { status: 'COMPLETED', completedAt: { gte: startOfCurrentMonth } } }),
+        this.prisma.maintenance.count({ where: { status: 'COMPLETED', completedAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth } } }),
+        this.prisma.asset.count({ where: { createdAt: { gte: startOfCurrentMonth } } }),
+        this.prisma.asset.count({ where: { createdAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth } } }),
+        this.prisma.ticket.count({ where: { resolvedAt: { gte: startOfCurrentMonth } } }).catch(() => 0),
+        this.prisma.ticket.count({ where: { resolvedAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth } } }).catch(() => 0),
+      ]);
+    } catch {}
+
+    const [assetsCount, pendingMaint, activeAlerts, usersCount, assetsByStatus, maintenanceByType] = await Promise.all([
       this.prisma.asset.count(),
-      this.prisma.maintenance.count({
-        where: { status: { in: ['PENDING', 'SCHEDULED', 'IN_PROGRESS'] } },
-      }),
+      this.prisma.maintenance.count({ where: { status: { in: ['PENDING', 'SCHEDULED', 'IN_PROGRESS'] } } }),
       this.prisma.alert.count({ where: { resolved: false } }),
       this.prisma.user.count({ where: { active: true } }),
       this.prisma.asset.groupBy({ by: ['status'], _count: { status: true } }),
       this.prisma.maintenance.groupBy({ by: ['type'], _count: { type: true } }),
-      // Tickets creados este mes
-      this.prisma.ticket.count({
-        where: { createdAt: { gte: startOfCurrentMonth } },
-      }),
-      // Tickets creados el mes anterior
-      this.prisma.ticket.count({
-        where: {
-          createdAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth },
-        },
-      }),
-      // Mantenimientos completados este mes
-      this.prisma.maintenance.count({
-        where: {
-          status: 'COMPLETED',
-          completedAt: { gte: startOfCurrentMonth },
-        },
-      }),
-      // Mantenimientos completados el mes anterior
-      this.prisma.maintenance.count({
-        where: {
-          status: 'COMPLETED',
-          completedAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth },
-        },
-      }),
-      // Activos creados este mes
-      this.prisma.asset.count({
-        where: { createdAt: { gte: startOfCurrentMonth } },
-      }),
-      // Activos creados el mes anterior
-      this.prisma.asset.count({
-        where: { createdAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth } },
-      }),
-      // Tickets resueltos este mes
-      this.prisma.ticket.count({
-        where: {
-          resolvedAt: { gte: startOfCurrentMonth },
-        },
-      }),
-      // Tickets resueltos el mes anterior
-      this.prisma.ticket.count({
-        where: {
-          resolvedAt: { gte: startOfPreviousMonth, lt: startOfCurrentMonth },
-        },
-      }),
     ]);
 
     return {
@@ -90,15 +50,9 @@ export class DashboardService {
       maintenanceByType,
       comparison: {
         ticketsCreated: { current: ticketsCurrentMonth, previous: ticketsPreviousMonth },
-        maintCompleted: {
-          current: maintCompletedCurrentMonth,
-          previous: maintCompletedPreviousMonth,
-        },
+        maintCompleted: { current: maintCompletedCurrentMonth, previous: maintCompletedPreviousMonth },
         assetsCreated: { current: assetsCreatedCurrentMonth, previous: assetsCreatedPreviousMonth },
-        ticketsResolved: {
-          current: resolvedTicketsCurrentMonth,
-          previous: resolvedTicketsPreviousMonth,
-        },
+        ticketsResolved: { current: resolvedTicketsCurrentMonth, previous: resolvedTicketsPreviousMonth },
       },
     };
   }

@@ -41,6 +41,27 @@ export class AssetsController {
     return this.assetsService.create(data);
   }
 
+  @Get(':id/depreciation')
+  @ApiOperation({ summary: 'Obtener datos de depreciación del activo' })
+  async getDepreciation(@Param('id') id: string) {
+    const asset = await this.assetsService.getDeviceHistory(id);
+    const cost = Number(asset.acquisitionCost) || 0;
+    const years = 5;
+    const annualRate = cost / years;
+    const now = new Date();
+    const acquired = asset.acquisitionDate ? new Date(asset.acquisitionDate) : now;
+    const elapsedYears = Math.min((now.getTime() - acquired.getTime()) / (365.25 * 24 * 60 * 60 * 1000), years);
+    const currentDepreciation = annualRate * elapsedYears;
+    return {
+      acquisitionCost: cost,
+      depreciationYears: years,
+      annualDepreciation: annualRate,
+      currentDepreciation: Math.min(currentDepreciation, cost),
+      residualValue: Math.max(cost - currentDepreciation, 0),
+      percentDepreciated: Math.min((elapsedYears / years) * 100, 100),
+    };
+  }
+
   @Get(':id/history')
   @ApiOperation({ summary: 'Obtener historial completo del activo (hoja de vida)' })
   getDeviceHistory(@Param('id') id: string) {
