@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
 import { maintenanceApi, assetsApi, usersApi, checklistsApi } from '@/lib/api';
 import {
   Maintenance,
@@ -116,6 +117,9 @@ export default function MaintenancePage() {
   const [completeDialog, setCompleteDialog] = useState<Maintenance | null>(null);
   const [completeForm, setCompleteForm] = useState({ diagnosis: '', solution: '', cost: '' });
 
+  const searchParams = useSearchParams();
+  const assetCodeParam = searchParams.get('assetCode');
+
   const { data: maintenances = [], isLoading } = useQuery({
     queryKey: ['maintenances'],
     queryFn: async () => {
@@ -141,7 +145,7 @@ export default function MaintenancePage() {
     queryKey: ['checklists'],
     queryFn: async () => {
       const r = await checklistsApi.list();
-      return (r.data as any).data as any[];
+      return r.data as any[];
     },
   });
 
@@ -221,6 +225,17 @@ export default function MaintenancePage() {
     setForm({ ...EMPTY });
     setDialogOpen(true);
   };
+
+  useEffect(() => {
+    if (assetCodeParam && assets.length > 0) {
+      const match = assets.find((a: any) => a.code === assetCodeParam);
+      if (match) {
+        setEditing(null);
+        setForm({ ...EMPTY, assetId: match.id });
+        setDialogOpen(true);
+      }
+    }
+  }, [assetCodeParam, assets]);
   const openEdit = (m: Maintenance) => {
     setEditing(m);
     setForm({
