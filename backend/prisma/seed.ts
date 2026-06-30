@@ -56,7 +56,7 @@ async function main() {
                 maintenance: { create: true, read: true, update: true, delete: false },
                 tickets: { create: true, read: true, update: true },
                 checklists: { read: true, update: true },
-                documents: { read: true, create: true },
+                documents: { read: true, create: true, update: true },
                 alerts: { read: true, update: true },
             }),
         },

@@ -280,7 +280,10 @@ export const documentsApi = {
 
 // ── ROLES ──
 export const rolesApi = {
-  list: () => api.get('/users/roles'),
+  list: () => api.get('/roles'),
+  get: (id: string) => api.get(`/roles/${id}`),
+  update: (id: string, data: { name?: string; description?: string; permissions?: string }) =>
+    api.put(`/roles/${id}`, data),
 };
 
 // ── FASE 2 ──

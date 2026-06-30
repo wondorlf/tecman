@@ -499,3 +499,13 @@ export interface DiscoveryStats {
   matched: number;
   unmatched: number;
 }
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  permissions: string;
+  _count?: { users: number };
+  createdAt?: string;
+  updatedAt?: string;
+}

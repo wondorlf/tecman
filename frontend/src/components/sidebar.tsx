@@ -31,6 +31,7 @@ import {
   Download,
   BarChart3,
   Printer,
+  Shield,
 } from 'lucide-react';
 
 const menuGroups = [
@@ -82,6 +83,7 @@ const menuGroups = [
     label: 'Admin',
     items: [
       { name: 'Usuarios', icon: Users, href: '/dashboard/users' },
+      { name: 'Roles', icon: Shield, href: '/dashboard/roles' },
       { name: 'Config. Sistema', icon: Settings, href: '/dashboard/tenant' },
       { name: 'Categorías', icon: ClipboardList, href: '/dashboard/settings' },
     ],

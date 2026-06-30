@@ -47,6 +47,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module.js';
 import { AgentsModule } from './modules/agents/agents.module.js';
 import { FixScriptsModule } from './modules/fix-scripts/fix-scripts.module.js';
 import { AnalyticsModule } from './modules/analytics/analytics.module.js';
+import { RolesModule } from './modules/roles/roles.module.js';
 
 import { existsSync } from 'fs';
 
@@ -114,6 +115,7 @@ const frontendOutPath = isRootCwd
     AgentsModule,
     FixScriptsModule,
     AnalyticsModule,
+    RolesModule,
   ],
   providers: [
     // Global JWT guard — must be first

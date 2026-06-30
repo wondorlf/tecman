@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator.js';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
+import { PERMISSIONS_KEY, PermissionRequirement } from '../decorators/permissions.decorator.js';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -14,6 +15,25 @@ export class RolesGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
+    const { user } = context.switchToHttp().getRequest();
+    if (!user || !user.role) {
+      throw new ForbiddenException('You do not have the necessary roles to access this resource');
+    }
+
+    // Administrador / Superadministrador Egan always pass
+    if (user.role.name === 'Administrador' || user.role.name === 'Superadministrador Egan') {
+      return true;
+    }
+
+    const permissionReq = this.reflector.getAllAndOverride<PermissionRequirement>(PERMISSIONS_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (permissionReq) {
+      return this.checkGranularPermission(user.role, permissionReq.module, permissionReq.action);
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -23,42 +43,29 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
-
-    if (!user || !user.role) {
-      throw new ForbiddenException('You do not have the necessary roles to access this resource');
-    }
-
-    const hasRole = () => requiredRoles.some((role) => user.role.name === role);
-
-    if (
-      hasRole() ||
-      user.role.name === 'Administrador' ||
-      user.role.name === 'Superadministrador Egan'
-    ) {
-      return true;
-    }
-
-    let permissions: string[] = [];
-    try {
-      permissions = JSON.parse(user.role.permissions || '[]');
-    } catch {
-      permissions = [];
-    }
-
-    if (permissions.includes('*')) {
-      return true;
-    }
-
-    const matched = requiredRoles.some((role) => {
-      const base = role.toLowerCase().replace(/[^a-z0-9]+/g, ':');
-      return permissions.includes(base) || permissions.includes(`*`);
-    });
-
-    if (matched) {
+    if (requiredRoles.some((role) => user.role.name === role)) {
       return true;
     }
 
     throw new ForbiddenException('Forbidden Resource: Role insufficient');
+  }
+
+  private checkGranularPermission(role: any, module: string, action: string): boolean {
+    let perms: Record<string, any> = {};
+    try {
+      perms = JSON.parse(role.permissions || '{}');
+    } catch {
+      return false;
+    }
+
+    if (perms.admin === true) return true;
+
+    const modPerms = perms[module];
+    if (!modPerms) return false;
+
+    if (modPerms[action] === true) return true;
+    if (modPerms['*'] === true) return true;
+
+    return false;
   }
 }
