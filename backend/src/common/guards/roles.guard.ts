@@ -25,6 +25,15 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    // Also check admin permission flag
+    let perms: Record<string, any> = {};
+    try {
+      perms = JSON.parse(user.role.permissions || '{}');
+    } catch {}
+    if (perms.admin === true) {
+      return true;
+    }
+
     const permissionReq = this.reflector.getAllAndOverride<PermissionRequirement>(PERMISSIONS_KEY, [
       context.getHandler(),
       context.getClass(),
