@@ -102,23 +102,22 @@ export class AssetsController {
       if (eganLogoBuffer) {
         try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 30, height: 30 }); } catch {}
       }
-      doc.fontSize(7).font('Helvetica-Bold').fillColor('#334155').text(`Hoja de Vida — ${asset.code || ''}  ${asset.name || ''}`, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 8, { width: CONTENT_W - (eganLogoBuffer ? 35 : 0) });
-      doc.fontSize(5).font('Helvetica').fillColor('#94a3b8').text(companyName, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 18);
-      doc.rect(MARGIN, PAGE_TOP + 28, CONTENT_W, 0.5).fill('#e2e8f0');
-      doc.y = PAGE_TOP + 35;
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('#334155').text(`Hoja de Vida — ${asset.code || ''}  ${asset.name || ''}`, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 8, { width: CONTENT_W - (eganLogoBuffer ? 35 : 0) });
+      doc.fontSize(7).font('Helvetica').fillColor('#94a3b8').text(companyName, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 20);
+      doc.rect(MARGIN, PAGE_TOP + 30, CONTENT_W, 0.5).fill('#e2e8f0');
+      doc.y = PAGE_TOP + 37;
       doc.fillColor('#000000');
     };
 
     const sectionTitle = (title: string) => {
-      checkBreak(35);
-      doc.moveDown(0.3);
+      checkBreak(40);
+      doc.moveDown(0.4);
       const y = doc.y;
-      // Gradient-like bar
-      doc.roundedRect(MARGIN, y, CONTENT_W, 16, 3).fill('#1e293b');
-      doc.roundedRect(MARGIN, y, 4, 16, 2).fill('#3b82f6');
-      doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 10, y + 4, { width: CONTENT_W - 16 });
+      doc.roundedRect(MARGIN, y, CONTENT_W, 20, 3).fill('#1e293b');
+      doc.roundedRect(MARGIN, y, 5, 20, 2).fill('#3b82f6');
+      doc.fontSize(10).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 12, y + 5, { width: CONTENT_W - 20 });
       doc.fillColor('#000000');
-      doc.y = y + 20;
+      doc.y = y + 25;
     };
 
     const drawTable = (headers: string[], rows: string[][], colWidths: number[], opts?: { headerBg?: string; headerColor?: string; borderColor?: string }) => {
@@ -126,55 +125,55 @@ export class AssetsController {
       const hBg = opts?.headerBg || '#1e293b';
       const hColor = opts?.headerColor || '#ffffff';
       const bColor = opts?.borderColor || '#e2e8f0';
-      checkBreak(18 + rows.length * 11);
+      checkBreak(22 + rows.length * 14);
 
-      // Header
       const headerY = doc.y;
-      doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 14, 3).fill(hBg);
+      doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 16, 3).fill(hBg);
       let x = MARGIN + 6;
-      doc.fontSize(6).font('Helvetica-Bold').fillColor(hColor);
+      doc.fontSize(7).font('Helvetica-Bold').fillColor(hColor);
       for (let i = 0; i < headers.length; i++) {
         doc.text(headers[i], x, headerY + 1, { width: colWidths[i], continued: false });
         x += colWidths[i];
       }
-      doc.y = headerY + 14;
+      doc.y = headerY + 16;
 
-      // Rows
       for (let r = 0; r < rows.length; r++) {
-        checkBreak(11);
+        checkBreak(14);
         x = MARGIN + 6;
         const rowY = doc.y;
         const bgColor = r % 2 === 0 ? '#ffffff' : '#f1f5f9';
-        doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 10).fill(bgColor);
-        // Left border accent
-        doc.rect(MARGIN + 2, rowY - 1, 1.5, 10).fill('#3b82f6');
+        doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 12).fill(bgColor);
+        doc.rect(MARGIN + 2, rowY - 1, 2, 12).fill('#3b82f6');
         doc.font('Helvetica').fillColor('#334155');
         for (let i = 0; i < rows[r].length; i++) {
-          doc.fontSize(6).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
+          doc.fontSize(7).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
           x += colWidths[i];
         }
-        doc.y = rowY + 10;
+        doc.y = rowY + 12;
       }
-      // Bottom border
       doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 1).fill(bColor);
-      doc.y += 3;
+      doc.y += 4;
       doc.fillColor('#000000');
     };
 
     const detailCard = (accentColor: string, lines: { text: string; font: string; color: string; size: number }[]) => {
-      checkBreak(40);
+      checkBreak(45);
       const startY = doc.y;
-      // Card background
-      doc.roundedRect(MARGIN + 2, startY, CONTENT_W - 4, 4, 3).fill('#f8fafc');
-      // Left accent bar
-      doc.roundedRect(MARGIN + 2, startY, 3, 4, 2).fill(accentColor);
+      const cardX = MARGIN + 2;
+      const cardW = CONTENT_W - 4;
+      let cardH = 8;
+      for (const line of lines) {
+        cardH += line.size + 4;
+      }
+      doc.roundedRect(cardX, startY, cardW, cardH, 3).fill('#f8fafc');
+      doc.roundedRect(cardX, startY, 3, cardH, 2).fill(accentColor);
       doc.y = startY + 6;
       for (const line of lines) {
         doc.fontSize(line.size).font(line.font).fillColor(line.color).text(line.text, MARGIN + 10, doc.y, { width: CONTENT_W - 22 });
       }
-      doc.y += 3;
+      doc.y = startY + cardH + 4;
       doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 0.5).fill('#e2e8f0');
-      doc.y += 4;
+      doc.y += 5;
     };
 
     // ══════════════════════════════════════════════════════════════════
@@ -182,20 +181,25 @@ export class AssetsController {
     // ══════════════════════════════════════════════════════════════════
     newPage();
 
+    // E-GAN logo top left
+    if (eganLogoBuffer) {
+      try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 35, height: 35 }); } catch {}
+    }
+
     // QR Code top right
     if (qrImageBuffer) {
       doc.image(qrImageBuffer, PAGE_W - MARGIN - 50, PAGE_TOP, { width: 50, height: 50 });
     }
 
-    // Company logo top left
-    if (companyLogo) {
-      try { doc.image(companyLogo, MARGIN, PAGE_TOP, { width: 40, height: 40 }); } catch {}
+    // Company logo (if different from E-GAN)
+    if (companyLogo && companyLogo !== eganLogoBuffer) {
+      try { doc.image(companyLogo, MARGIN + 40, PAGE_TOP, { width: 30, height: 30 }); } catch {}
     }
 
     // Centered title
-    doc.fontSize(24).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 60, { width: CONTENT_W, align: 'center' });
-    doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, MARGIN, PAGE_TOP + 85, { width: CONTENT_W, align: 'center' });
-    doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, MARGIN, PAGE_TOP + 100, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(28).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 55, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(16).font('Helvetica').fillColor('#334155').text(`${asset.name}`, MARGIN, PAGE_TOP + 82, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(13).fillColor('#64748b').text(`${asset.code}`, MARGIN, PAGE_TOP + 102, { width: CONTENT_W, align: 'center' });
 
     doc.y = PAGE_TOP + 120;
     doc.rect(MARGIN, doc.y, CONTENT_W, 1).fill('#e2e8f0');
@@ -234,7 +238,7 @@ export class AssetsController {
     const maintenances = asset.maintenances || [];
     sectionTitle(`RESUMEN MANTENIMIENTOS (${maintenances.length})`);
     if (maintenances.length === 0) {
-      doc.fontSize(6).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin registros de mantenimiento').fillColor('#000');
+      doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin registros de mantenimiento').fillColor('#000');
     } else {
       const mRows = maintenances.map((m: any) => [
         m.code || '—',
@@ -252,7 +256,7 @@ export class AssetsController {
     const tickets = asset.tickets || [];
     sectionTitle(`RESUMEN TICKETS DE SOPORTE (${tickets.length})`);
     if (tickets.length === 0) {
-      doc.fontSize(6).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin tickets asociados').fillColor('#000');
+      doc.fontSize(8).font('Helvetica-Oblique').fillColor('#94a3b8').text('  Sin tickets asociados').fillColor('#000');
     } else {
       const tRows = tickets.map((t: any) => [
         t.code || '—',
@@ -295,8 +299,8 @@ export class AssetsController {
         if (ev !== events[events.length - 1]) {
           doc.rect(MARGIN + 4, dotY + 4, 1, 10).fill('#e2e8f0');
         }
-        doc.fontSize(6).font('Helvetica-Bold').fillColor('#3b82f6').text(`${dateStr} ${timeStr}`, MARGIN + 12, doc.y);
-        doc.fontSize(6).font('Helvetica').fillColor('#334155').text(ev.description || '—', MARGIN + 12, doc.y, { width: CONTENT_W - 16 });
+        doc.fontSize(8).font('Helvetica-Bold').fillColor('#3b82f6').text(`${dateStr} ${timeStr}`, MARGIN + 12, doc.y);
+        doc.fontSize(8).font('Helvetica').fillColor('#334155').text(ev.description || '—', MARGIN + 12, doc.y, { width: CONTENT_W - 16 });
         doc.y += 4;
       }
     }
@@ -313,10 +317,10 @@ export class AssetsController {
       for (const m of sortedMaintenances) {
         checkBreak(60);
         detailCard('#22c55e', [
-          { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 8 },
-          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 6 },
-          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 6 }] : []),
-          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 6 }] : []),
+          { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 10 },
+          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 8 },
+          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 8 }] : []),
+          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 8 }] : []),
         ]);
       }
     }
@@ -332,9 +336,9 @@ export class AssetsController {
       for (const t of sortedTickets) {
         checkBreak(50);
         detailCard('#3b82f6', [
-          { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 8 },
-          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 6 },
-          ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 6 }] : []),
+          { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 10 },
+          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 8 },
+          ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 8 }] : []),
         ]);
       }
     }
@@ -347,10 +351,10 @@ export class AssetsController {
       doc.switchToPage(i);
       const footerY = 765;
       doc.rect(MARGIN, footerY, CONTENT_W, 0.5).fill('#e2e8f0');
-      doc.fontSize(5).font('Helvetica').fillColor('#94a3b8');
+      doc.fontSize(7).font('Helvetica').fillColor('#94a3b8');
       doc.text('E-GAN TECH', MARGIN, footerY + 3, { width: CONTENT_W / 2, align: 'left' });
       doc.text(`Hoja de Vida · ${asset.code} · ${new Date().toLocaleDateString('es-CO')}`, MARGIN + CONTENT_W / 2, footerY + 3, { width: CONTENT_W / 2, align: 'right' });
-      doc.text(`Página ${i + 1} de ${pageCount.count}`, MARGIN, footerY + 9, { width: CONTENT_W, align: 'center' });
+      doc.text(`Página ${i + 1} de ${pageCount.count}`, MARGIN, footerY + 10, { width: CONTENT_W, align: 'center' });
     }
 
     doc.end();
