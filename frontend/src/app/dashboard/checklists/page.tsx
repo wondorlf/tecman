@@ -78,7 +78,7 @@ export default function ChecklistsPage() {
     queryKey: ['checklists'],
     queryFn: async () => {
       const r = await checklistsApi.list();
-      return r.data as Checklist[];
+      return (r.data as any).data as Checklist[];
     },
   });
 

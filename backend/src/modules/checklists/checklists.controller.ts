@@ -17,8 +17,9 @@ export class ChecklistsController {
 
   @Get()
   @ApiOperation({ summary: 'Listar checklists con ítems' })
-  findAll() {
-    return this.checklistsService.findAll();
+  async findAll() {
+    const data = await this.checklistsService.findAll();
+    return { data };
   }
 
   @Get(':id')
