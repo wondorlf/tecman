@@ -158,31 +158,43 @@ export class AssetsController {
       const hBg = opts?.headerBg || '#1e293b';
       const hColor = opts?.headerColor || '#ffffff';
       const bColor = opts?.borderColor || '#e2e8f0';
-      checkBreak(26 + rows.length * 16);
+      const padY = 4;
 
       const headerY = doc.y;
       doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 18, 3).fill(hBg);
       let x = MARGIN + 6;
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(hColor);
+      doc.fontSize(7).font('Helvetica-Bold').fillColor(hColor);
       for (let i = 0; i < headers.length; i++) {
-        doc.text(headers[i], x, headerY + 2, { width: colWidths[i], continued: false });
+        doc.text(headers[i], x, headerY + 2, { width: colWidths[i] - 4, continued: false });
         x += colWidths[i];
       }
       doc.y = headerY + 18;
 
       for (let r = 0; r < rows.length; r++) {
-        checkBreak(16);
         x = MARGIN + 6;
         const rowY = doc.y;
-        const bgColor = r % 2 === 0 ? '#ffffff' : '#f1f5f9';
-        doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 14).fill(bgColor);
-        doc.rect(MARGIN + 2, rowY - 1, 2, 14).fill('#3b82f6');
-        doc.font('Helvetica').fillColor('#334155');
+
+        // Measure max text height for this row
+        let maxH = 12;
+        doc.font('Helvetica').fontSize(7);
         for (let i = 0; i < rows[r].length; i++) {
-          doc.fontSize(8).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
-          x += colWidths[i];
+          const cellH = doc.heightOfString(rows[r][i] || '—', { width: colWidths[i] - 4 });
+          if (cellH > maxH) maxH = cellH;
         }
-        doc.y = rowY + 14;
+        const rowH = maxH + padY * 2;
+        checkBreak(rowH + 4);
+
+        const bgColor = r % 2 === 0 ? '#ffffff' : '#f1f5f9';
+        doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, rowH).fill(bgColor);
+        doc.rect(MARGIN + 2, rowY - 1, 2, rowH).fill('#3b82f6');
+        doc.font('Helvetica').fillColor('#334155');
+
+        let cx = MARGIN + 6;
+        for (let i = 0; i < rows[r].length; i++) {
+          doc.fontSize(7).text(rows[r][i] || '—', cx, rowY + padY, { width: colWidths[i] - 4, continued: false });
+          cx += colWidths[i];
+        }
+        doc.y = rowY + rowH;
       }
       doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 1).fill(bColor);
       doc.y += 5;
@@ -190,19 +202,27 @@ export class AssetsController {
     };
 
     const detailCard = (accentColor: string, lines: { text: string; font: string; color: string; size: number }[]) => {
-      checkBreak(45);
+      checkBreak(30);
       const startY = doc.y;
       const cardX = MARGIN + 2;
       const cardW = CONTENT_W - 4;
-      let cardH = 8;
+      const padY = 4;
+      const textW = CONTENT_W - 22;
+
+      let cardH = 0;
+      // Measure total text height
       for (const line of lines) {
-        cardH += line.size + 4;
+        doc.fontSize(line.size).font(line.font);
+        const h = doc.heightOfString(line.text, { width: textW });
+        cardH += h + 2;
       }
+      cardH += padY * 2 + 4;
+
       doc.roundedRect(cardX, startY, cardW, cardH, 3).fill('#f8fafc');
       doc.roundedRect(cardX, startY, 3, cardH, 2).fill(accentColor);
-      doc.y = startY + 6;
+      doc.y = startY + padY;
       for (const line of lines) {
-        doc.fontSize(line.size).font(line.font).fillColor(line.color).text(line.text, MARGIN + 10, doc.y, { width: CONTENT_W - 22 });
+        doc.fontSize(line.size).font(line.font).fillColor(line.color).text(line.text, MARGIN + 10, doc.y, { width: textW });
       }
       doc.y = startY + cardH + 4;
       doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 0.5).fill('#e2e8f0');
