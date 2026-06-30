@@ -363,7 +363,340 @@ async function main() {
         },
     });
 
-    console.log('✅ Sample checklist created');
+    // ── CHECKLISTS POR CATEGORÍA ────────────────────────────────────────
+    // Tecnológico
+    const techPreventivo = await prisma.checklist.upsert({
+        where: { id: 'cl-tech-prev' },
+        update: {},
+        create: {
+            id: 'cl-tech-prev', name: 'MP Preventivo - Equipo Tecnológico',
+            description: 'Mantenimiento preventivo para computadores, laptops, servidores e impresoras',
+            maintenanceType: MaintenanceType.PREVENTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Inspección visual externa (daños, suciedad)', type: FieldType.CHECKBOX, required: true },
+                    { order: 1, label: 'Limpieza de polvo en ventilaciones y puertos', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Limpieza de pantalla y teclado', type: FieldType.CHECKBOX, required: true },
+                    { order: 3, label: 'Verificación de cables y conexiones', type: FieldType.CHECKBOX, required: true },
+                    { order: 4, label: 'Actualización de sistema operativo', type: FieldType.CHECKBOX, required: false },
+                    { order: 5, label: 'Verificación de antimalware activo', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Revisión de espacio en disco', type: FieldType.NUMBER, required: false },
+                    { order: 7, label: 'Prueba de rendimiento (velocidad, temperatura)', type: FieldType.TEXT, required: false },
+                    { order: 8, label: 'Backup de datos críticos', type: FieldType.CHECKBOX, required: true },
+                    { order: 9, label: 'Observaciones adicionales', type: FieldType.TEXT, required: false },
+                    { order: 10, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const techCorrectivo = await prisma.checklist.upsert({
+        where: { id: 'cl-tech-corr' },
+        update: {},
+        create: {
+            id: 'cl-tech-corr', name: 'MC Correctivo - Equipo Tecnológico',
+            description: 'Diagnóstico y reparación de fallas en equipos de cómputo y red',
+            maintenanceType: MaintenanceType.CORRECTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Descripción del problema reportado', type: FieldType.TEXT, required: true },
+                    { order: 1, label: 'Diagnóstico del componente dañado', type: FieldType.TEXT, required: true },
+                    { order: 2, label: 'Reemplazo de componente (si aplica)', type: FieldType.CHECKBOX, required: false },
+                    { order: 3, label: 'Componente reemplazado (modelo/número)', type: FieldType.TEXT, required: false },
+                    { order: 4, label: 'Prueba funcional post-reparación', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Costo de repuesto', type: FieldType.NUMBER, required: false },
+                    { order: 6, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 7, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const techPredictivo = await prisma.checklist.upsert({
+        where: { id: 'cl-tech-pred' },
+        update: {},
+        create: {
+            id: 'cl-tech-pred', name: 'MP Predictivo - Equipo Tecnológico',
+            description: 'Análisis predictivo basado en métricas de rendimiento y uso',
+            maintenanceType: MaintenanceType.PREDICTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Temperatura máxima registrada (°C)', type: FieldType.NUMBER, required: true },
+                    { order: 1, label: 'Uso promedio de CPU (%)', type: FieldType.NUMBER, required: true },
+                    { order: 2, label: 'Uso promedio de RAM (%)', type: FieldType.NUMBER, required: true },
+                    { order: 3, label: 'Espacio en disco restante (%)', type: FieldType.NUMBER, required: true },
+                    { order: 4, label: 'Horas de uso del equipo', type: FieldType.NUMBER, required: false },
+                    { order: 5, label: 'Ruido anormal en ventiladores', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Errores en registro de eventos', type: FieldType.CHECKBOX, required: true },
+                    { order: 7, label: 'Vida útil estimada restante (meses)', type: FieldType.NUMBER, required: false },
+                    { order: 8, label: 'Recomendación de reemplazo', type: FieldType.TEXT, required: false },
+                    { order: 9, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    // Biomédico
+    const bioPreventivo = await prisma.checklist.upsert({
+        where: { id: 'cl-bio-prev' },
+        update: {},
+        create: {
+            id: 'cl-bio-prev', name: 'MP Preventivo - Equipo Biomédico',
+            description: 'Mantenimiento preventivo para equipos médicos (ISO 55001, FDA MDR)',
+            maintenanceType: MaintenanceType.PREVENTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Inspección visual y limpieza externa', type: FieldType.CHECKBOX, required: true },
+                    { order: 1, label: 'Calibración de instrumentos de medición', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Prueba de seguridad eléctrica (tierra, fuga)', type: FieldType.CHECKBOX, required: true },
+                    { order: 3, label: 'Verificación de alarmas y alertas', type: FieldType.CHECKBOX, required: true },
+                    { order: 4, label: 'Revisión de cables y conexiones', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Prueba funcional completa', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Revisión de documentación y protocolos', type: FieldType.CHECKBOX, required: false },
+                    { order: 7, label: 'Estado de baterías internas', type: FieldType.TEXT, required: false },
+                    { order: 8, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 9, label: 'Firma del técnico biomédico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const bioCorrectivo = await prisma.checklist.upsert({
+        where: { id: 'cl-bio-corr' },
+        update: {},
+        create: {
+            id: 'cl-bio-corr', name: 'MC Correctivo - Equipo Biomédico',
+            description: 'Reparación de equipos médicos con protocolo de seguridad',
+            maintenanceType: MaintenanceType.CORRECTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Reporte del incidente / falla', type: FieldType.TEXT, required: true },
+                    { order: 1, label: 'Verificar que el equipo esté desenergizado', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Diagnóstico del componente fallido', type: FieldType.TEXT, required: true },
+                    { order: 3, label: 'Pieza de repuesto utilizada', type: FieldType.TEXT, required: false },
+                    { order: 4, label: 'Prueba post-reparación', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Calibración post-reparación', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Reporte FDA MDR (si aplica)', type: FieldType.CHECKBOX, required: false },
+                    { order: 7, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 8, label: 'Firma del técnico biomédico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    // Infraestructura
+    const infraPreventivo = await prisma.checklist.upsert({
+        where: { id: 'cl-infra-prev' },
+        update: {},
+        create: {
+            id: 'cl-infra-prev', name: 'MP Preventivo - Infraestructura',
+            description: 'Mantenimiento preventivo para aires acondicionados, plantas eléctricas, CCTV, tableros eléctricos',
+            maintenanceType: MaintenanceType.PREVENTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Inspección visual general', type: FieldType.CHECKBOX, required: true },
+                    { order: 1, label: 'Limpieza de filtros y componentes', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Verificación de niveles de fluidos/aceite', type: FieldType.CHECKBOX, required: false },
+                    { order: 3, label: 'Prueba de funcionamiento a carga completa', type: FieldType.CHECKBOX, required: true },
+                    { order: 4, label: 'Medición de voltaje y amperaje', type: FieldType.NUMBER, required: false },
+                    { order: 5, label: 'Verificación de protecciones eléctricas', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Revisión de fugas (agua/gas)', type: FieldType.CHECKBOX, required: true },
+                    { order: 7, label: 'Estado de bombas y válvulas', type: FieldType.TEXT, required: false },
+                    { order: 8, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 9, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const infraCorrectivo = await prisma.checklist.upsert({
+        where: { id: 'cl-infra-corr' },
+        update: {},
+        create: {
+            id: 'cl-infra-corr', name: 'MC Correctivo - Infraestructura',
+            description: 'Reparación de equipos de infraestructura y planta',
+            maintenanceType: MaintenanceType.CORRECTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Descripción de la falla', type: FieldType.TEXT, required: true },
+                    { order: 1, label: 'Verificar aislamiento energético', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Diagnóstico del componente', type: FieldType.TEXT, required: true },
+                    { order: 3, label: 'Pieza/reemplazo utilizado', type: FieldType.TEXT, required: false },
+                    { order: 4, label: 'Prueba de funcionamiento post-reparación', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Medición post-reparación (voltaje/amperaje)', type: FieldType.NUMBER, required: false },
+                    { order: 6, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 7, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    // Vehículos
+    const vehPreventivo = await prisma.checklist.upsert({
+        where: { id: 'cl-veh-prev' },
+        update: {},
+        create: {
+            id: 'cl-veh-prev', name: 'MP Preventivo - Vehículos',
+            description: 'Mantenimiento preventivo para automóviles y camionetas',
+            maintenanceType: MaintenanceType.PREVENTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Cambio de aceite y filtro', type: FieldType.CHECKBOX, required: true },
+                    { order: 1, label: 'Revisión de frenos (pastillas, discos)', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Inspección de neumáticos (desgaste, presión)', type: FieldType.CHECKBOX, required: true },
+                    { order: 3, label: 'Revisión de luces y señales', type: FieldType.CHECKBOX, required: true },
+                    { order: 4, label: 'Nivel de líquidos (freno, dirección, limpiaparabrisas)', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Revisión de correa del alternador', type: FieldType.CHECKBOX, required: false },
+                    { order: 6, label: 'Filtro de aire y aire acondicionado', type: FieldType.CHECKBOX, required: false },
+                    { order: 7, label: 'Prueba de batería', type: FieldType.NUMBER, required: false },
+                    { order: 8, label: 'Kilometraje actual', type: FieldType.NUMBER, required: true },
+                    { order: 9, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 10, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const vehCorrectivo = await prisma.checklist.upsert({
+        where: { id: 'cl-veh-corr' },
+        update: {},
+        create: {
+            id: 'cl-veh-corr', name: 'MC Correctivo - Vehículos',
+            description: 'Reparación correctiva de vehículos',
+            maintenanceType: MaintenanceType.CORRECTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Descripción de la falla', type: FieldType.TEXT, required: true },
+                    { order: 1, label: 'Diagnóstico del componente', type: FieldType.TEXT, required: true },
+                    { order: 2, label: 'Pieza de repuesto utilizada', type: FieldType.TEXT, required: false },
+                    { order: 3, label: 'Prueba de manejo post-reparación', type: FieldType.CHECKBOX, required: true },
+                    { order: 4, label: 'Costo del repuesto', type: FieldType.NUMBER, required: false },
+                    { order: 5, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 6, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    // Maquinaria y Equipo
+    const maqPreventivo = await prisma.checklist.upsert({
+        where: { id: 'cl-maq-prev' },
+        update: {},
+        create: {
+            id: 'cl-maq-prev', name: 'MP Preventivo - Maquinaria',
+            description: 'Mantenimiento preventivo para maquinaria industrial y herramientas',
+            maintenanceType: MaintenanceType.PREVENTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Inspección visual general', type: FieldType.CHECKBOX, required: true },
+                    { order: 1, label: 'Limpieza de virutas y residuos', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Lubricación de partes móviles', type: FieldType.CHECKBOX, required: true },
+                    { order: 3, label: 'Ajuste de tornillos y fijaciones', type: FieldType.CHECKBOX, required: true },
+                    { order: 4, label: 'Verificación de alineación', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Prueba de funcionamiento sin carga', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Inspección de protecciones de seguridad', type: FieldType.CHECKBOX, required: true },
+                    { order: 7, label: 'Estado de cintas/correas/herramientas', type: FieldType.TEXT, required: false },
+                    { order: 8, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 9, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const maqCorrectivo = await prisma.checklist.upsert({
+        where: { id: 'cl-maq-corr' },
+        update: {},
+        create: {
+            id: 'cl-maq-corr', name: 'MC Correctivo - Maquinaria',
+            description: 'Reparación de maquinaria industrial',
+            maintenanceType: MaintenanceType.CORRECTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Descripción de la falla', type: FieldType.TEXT, required: true },
+                    { order: 1, label: 'Verificar que la máquina esté desenergizada y bloqueada', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Diagnóstico del componente', type: FieldType.TEXT, required: true },
+                    { order: 3, label: 'Herramientas utilizadas', type: FieldType.TEXT, required: false },
+                    { order: 4, label: 'Pieza de repuesto', type: FieldType.TEXT, required: false },
+                    { order: 5, label: 'Prueba de funcionamiento', type: FieldType.CHECKBOX, required: true },
+                    { order: 6, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 7, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    // Mobiliario y Enseres
+    const mobPreventivo = await prisma.checklist.upsert({
+        where: { id: 'cl-mob-prev' },
+        update: {},
+        create: {
+            id: 'cl-mob-prev', name: 'MP Preventivo - Mobiliario',
+            description: 'Mantenimiento preventivo para muebles de oficina y bodega',
+            maintenanceType: MaintenanceType.PREVENTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Inspección visual (rayones, golpes, óxido)', type: FieldType.CHECKBOX, required: true },
+                    { order: 1, label: 'Limpieza general', type: FieldType.CHECKBOX, required: true },
+                    { order: 2, label: 'Ajuste de tornillos y herrajes', type: FieldType.CHECKBOX, required: true },
+                    { order: 3, label: 'Lubricación de cierres y rieles', type: FieldType.CHECKBOX, required: false },
+                    { order: 4, label: 'Revisión de estabilidad y firmeza', type: FieldType.CHECKBOX, required: true },
+                    { order: 5, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 6, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    const mobCorrectivo = await prisma.checklist.upsert({
+        where: { id: 'cl-mob-corr' },
+        update: {},
+        create: {
+            id: 'cl-mob-corr', name: 'MC Correctivo - Mobiliario',
+            description: 'Reparación de muebles y enseres',
+            maintenanceType: MaintenanceType.CORRECTIVE,
+            items: {
+                create: [
+                    { order: 0, label: 'Descripción del daño', type: FieldType.TEXT, required: true },
+                    { order: 1, label: 'Repuesto o material utilizado', type: FieldType.TEXT, required: false },
+                    { order: 2, label: 'Reparación completada', type: FieldType.CHECKBOX, required: true },
+                    { order: 3, label: 'Observaciones', type: FieldType.TEXT, required: false },
+                    { order: 4, label: 'Firma del técnico', type: FieldType.SIGNATURE, required: true },
+                ],
+            },
+        },
+    });
+
+    console.log('✅ Checklists por categoría creados');
+
+    // ── ASIGNAR CHECKLISTS A CATEGORÍAS ─────────────────────────────────
+    const catTec = await prisma.category.findFirst({ where: { name: 'Tecnológico' } });
+    const catBio = await prisma.category.findFirst({ where: { name: 'Biomédico' } });
+    const catInfra = await prisma.category.findFirst({ where: { name: 'Infraestructura' } });
+    const catVeh = await prisma.category.findFirst({ where: { name: 'Vehículos' } });
+    const catMaq = await prisma.category.findFirst({ where: { name: 'Maquinaria y Equipo' } });
+    const catMob = await prisma.category.findFirst({ where: { name: 'Mobiliario y Enseres' } });
+
+    const checklistCategoryMap: Record<string, string> = {
+        'cl-tech-prev': 'Tecnológico', 'cl-tech-corr': 'Tecnológico', 'cl-tech-pred': 'Tecnológico',
+        'checklist-preventivo-pc': 'Tecnológico',
+        'cl-bio-prev': 'Biomédico', 'cl-bio-corr': 'Biomédico',
+        'cl-infra-prev': 'Infraestructura', 'cl-infra-corr': 'Infraestructura',
+        'cl-veh-prev': 'Vehículos', 'cl-veh-corr': 'Vehículos',
+        'cl-maq-prev': 'Maquinaria y Equipo', 'cl-maq-corr': 'Maquinaria y Equipo',
+        'cl-mob-prev': 'Mobiliario y Enseres', 'cl-mob-corr': 'Mobiliario y Enseres',
+    };
+
+    for (const [clId, catName] of Object.entries(checklistCategoryMap)) {
+        const cat = await prisma.category.findFirst({ where: { name: catName } });
+        if (cat) {
+            await prisma.checklist.update({
+                where: { id: clId },
+                data: { categories: { connect: { id: cat.id } } },
+            });
+        }
+    }
+
+    console.log('✅ Checklists asignados a categorías');
 
     // ── SAMPLE ASSETS ─────────────────────────────────────────────────────
     const techCat = await prisma.category.findFirst({ where: { name: 'Tecnologico' } });
