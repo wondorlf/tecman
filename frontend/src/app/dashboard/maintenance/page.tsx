@@ -617,15 +617,17 @@ export default function MaintenancePage() {
                                   <CheckCircle size={15} />
                                 </button>
                               )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEdit(m);
-                                }}
-                                className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                              >
-                                <Pencil size={15} />
-                              </button>
+                              {!['COMPLETED', 'CANCELLED'].includes(m.status) && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEdit(m);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                                >
+                                  <Pencil size={15} />
+                                </button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

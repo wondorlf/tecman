@@ -605,7 +605,7 @@ export default function TicketsPage() {
                 )}
 
                 {/* ── Action Bar ── */}
-                {ticketDetail && ticketDetail.status !== 'CLOSED' && (
+                {ticketDetail && !['CLOSED', 'RESOLVED'].includes(ticketDetail.status) && (
                   <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
                     {/* Status actions */}
                     <div className="flex flex-wrap gap-2">

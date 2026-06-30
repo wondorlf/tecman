@@ -9,6 +9,7 @@ export class ChecklistsService {
     return this.prisma.checklist.findMany({
       include: {
         items: { orderBy: { order: 'asc' } },
+        categories: true,
         _count: { select: { maintenances: true } },
       },
       orderBy: { name: 'asc' },

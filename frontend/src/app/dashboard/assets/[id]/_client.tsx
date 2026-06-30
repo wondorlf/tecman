@@ -639,7 +639,7 @@ export default function AssetDetailClient() {
                               alert('Error: ' + (err.response?.data?.message || err.message));
                             }
                           }}
-                          className="text-[10px] border border-slate-200 rounded-lg px-1.5 py-1 bg-white text-slate-600 max-w-[100px]"
+                          className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 min-w-[130px]"
                         >
                           {Object.entries(DOCUMENT_TYPE_LABELS).map(([key, label]) => (
                             <option key={key} value={key}>{label}</option>
