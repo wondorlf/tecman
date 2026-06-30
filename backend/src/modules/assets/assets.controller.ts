@@ -192,7 +192,7 @@ export class AssetsController {
     }
 
     // Company logo (if different from E-GAN)
-    if (companyLogo && companyLogo !== eganLogoBuffer) {
+    if (companyLogo) {
       try { doc.image(companyLogo, MARGIN + 40, PAGE_TOP, { width: 30, height: 30 }); } catch {}
     }
 
