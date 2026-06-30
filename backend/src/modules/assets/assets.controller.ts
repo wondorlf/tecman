@@ -117,10 +117,12 @@ export class AssetsController {
     } catch {}
 
     // ── Helpers ──
+    let totalPages = 1;
     const newPage = () => {
       doc.addPage();
       doc.y = PAGE_TOP;
       doc.x = MARGIN;
+      totalPages++;
     };
 
     const checkBreak = (needed: number = 50) => {
@@ -397,9 +399,8 @@ export class AssetsController {
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // FOOTER (solo en páginas con contenido)
+    // FOOTER
     // ══════════════════════════════════════════════════════════════════
-    const totalPages = doc.bufferedPageRange().count;
     for (let i = 0; i < totalPages; i++) {
       doc.switchToPage(i);
       const footerY = 765;
