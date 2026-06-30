@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Body, Param, Delete, Query, UploadedFile,
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { DocumentsService } from './documents.service.js';
+import { UpdateDocumentDto } from './dto/update-document.dto.js';
 
 @ApiTags('documents')
 @ApiBearerAuth()
@@ -33,7 +34,7 @@ export class DocumentsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update document metadata (public/private, category)' })
-  update(@Param('id') id: string, @Body() updateDto: { isPublic?: boolean; type?: string; name?: string }) {
+  update(@Param('id') id: string, @Body() updateDto: UpdateDocumentDto) {
     return this.documentsService.update(id, updateDto);
   }
 
