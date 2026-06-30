@@ -117,9 +117,11 @@ export class AssetsController {
     } catch {}
 
     // ── Helpers ──
+    let currentPageIndex = 0;
     const newPage = () => {
       doc.addPage();
       doc.y = PAGE_TOP;
+      currentPageIndex++;
     };
 
     const checkBreak = (needed: number = 50) => {
@@ -224,11 +226,10 @@ export class AssetsController {
       try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 35, height: 35 }); } catch {}
     }
 
-    // Title + name + code in header (center)
-    const headerTextX = MARGIN + (eganLogoBuffer ? 42 : 0);
-    doc.fontSize(14).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', headerTextX, PAGE_TOP + 2, { width: CONTENT_W - (eganLogoBuffer ? 42 : 0) });
-    doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, headerTextX, PAGE_TOP + 20, { width: CONTENT_W - (eganLogoBuffer ? 42 : 0) });
-    doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, headerTextX, PAGE_TOP + 36, { width: CONTENT_W - (eganLogoBuffer ? 42 : 0) });
+    // Title + name + code centered
+    doc.fontSize(14).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 2, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, MARGIN, PAGE_TOP + 20, { width: CONTENT_W, align: 'center' });
+    doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, MARGIN, PAGE_TOP + 36, { width: CONTENT_W, align: 'center' });
 
     // QR Code top right
     if (qrImageBuffer) {
@@ -251,7 +252,7 @@ export class AssetsController {
       ['Proveedor', asset.supplier?.name || '—', 'Costo', asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString('es-CO')}` : '—'],
       ['Adquisición', asset.acquisitionDate ? new Date(asset.acquisitionDate).toLocaleDateString('es-CO') : '—', 'Garantía', asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString('es-CO') : '—'],
     ];
-    drawTable(['Campo', 'Valor', 'Campo', 'Valor'], generalRows, [70, CONTENT_W / 2 - 75, 70, CONTENT_W / 2 - 75]);
+    drawTable(['Campo', 'Valor', 'Campo', 'Valor'], generalRows, [90, CONTENT_W / 2 - 95, 90, CONTENT_W / 2 - 95]);
 
     // ── ESPECIFICACIONES DEL EQUIPO ──
     const hw = asset.discoveredDevice;
@@ -263,7 +264,7 @@ export class AssetsController {
         ['CPU', hw.cpuModel || '—', 'RAM', hw.ramTotalBytes ? `${(Number(hw.ramTotalBytes) / 1073741824).toFixed(1)} GB` : '—'],
         ['Disco', hw.diskTotalBytes ? `${(Number(hw.diskTotalBytes) / 1073741824).toFixed(0)} GB` : '—', 'Tipo Disco', hw.diskType || '—'],
       ];
-      drawTable(['Campo', 'Valor', 'Campo', 'Valor'], hwRows, [70, CONTENT_W / 2 - 75, 70, CONTENT_W / 2 - 75]);
+      drawTable(['Campo', 'Valor', 'Campo', 'Valor'], hwRows, [90, CONTENT_W / 2 - 95, 90, CONTENT_W / 2 - 95]);
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -377,18 +378,17 @@ export class AssetsController {
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // FOOTER (en cada página)
+    // FOOTER (solo en páginas con contenido)
     // ══════════════════════════════════════════════════════════════════
-    const pageCount = doc.bufferedPageRange();
-    const usedPages = Math.max(1, Math.ceil(doc.y / PAGE_BOTTOM) || 1);
-    for (let i = 0; i < pageCount.count; i++) {
+    const totalPages = currentPageIndex + 1;
+    for (let i = 0; i < totalPages; i++) {
       doc.switchToPage(i);
       const footerY = 765;
       doc.rect(MARGIN, footerY, CONTENT_W, 0.5).fill('#e2e8f0');
       doc.fontSize(7).font('Helvetica').fillColor('#94a3b8');
       doc.text('E-GAN TECH', MARGIN, footerY + 3, { width: CONTENT_W / 2, align: 'left' });
       doc.text(`Hoja de Vida · ${asset.code} · ${new Date().toLocaleDateString('es-CO')}`, MARGIN + CONTENT_W / 2, footerY + 3, { width: CONTENT_W / 2, align: 'right' });
-      doc.text(`Página ${i + 1} de ${pageCount.count}`, MARGIN, footerY + 10, { width: CONTENT_W, align: 'center' });
+      doc.text(`Página ${i + 1} de ${totalPages}`, MARGIN, footerY + 10, { width: CONTENT_W, align: 'center' });
     }
 
     doc.end();
