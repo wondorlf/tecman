@@ -372,12 +372,28 @@ export class AssetsController {
 
       for (const m of sortedMaintenances) {
         checkBreak(55);
-        detailCard('#22c55e', [
+        const maintenanceLines: { text: string; font: string; color: string; size: number }[] = [
           { text: `${m.code || '—'}  ·  ${label(TYPE_LABELS, m.type)}  ·  ${label(STATUS_LABELS, m.status)}`, font: 'Helvetica-Bold', color: '#166534', size: 10 },
           { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 9 },
-          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 9 }] : []),
-          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 9 }] : []),
-        ]);
+        ];
+        if (m.description) maintenanceLines.push({ text: m.description, font: 'Helvetica', color: '#334155', size: 9 });
+        if (m.diagnosis) maintenanceLines.push({ text: `Diagnóstico: ${m.diagnosis}`, font: 'Helvetica', color: '#334155', size: 9 });
+        if (m.solution) maintenanceLines.push({ text: `Solución: ${m.solution}`, font: 'Helvetica', color: '#334155', size: 9 });
+        if (m.checklist) maintenanceLines.push({ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 9 });
+        // Mostrar respuestas del checklist
+        if (m.checklistData) {
+          try {
+            const responses = typeof m.checklistData === 'string' ? JSON.parse(m.checklistData) : m.checklistData;
+            const items = m.checklist?.items || [];
+            for (const item of items) {
+              const value = responses[item.id];
+              if (value !== undefined && value !== '') {
+                maintenanceLines.push({ text: `  ${item.label}: ${value}`, font: 'Helvetica', color: '#475569', size: 8 });
+              }
+            }
+          } catch {}
+        }
+        detailCard('#22c55e', maintenanceLines);
       }
     }
 

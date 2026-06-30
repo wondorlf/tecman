@@ -154,6 +154,7 @@ export interface Maintenance {
   diagnosis?: string;
   solution?: string;
   cost?: number;
+  checklistData?: string | Record<string, any>;
   createdAt: string;
   asset?: Pick<Asset, 'id' | 'code' | 'name'>;
   technician?: Pick<User, 'id' | 'name'>;

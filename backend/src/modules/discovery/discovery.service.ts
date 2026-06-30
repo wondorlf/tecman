@@ -334,6 +334,29 @@ export class DiscoveryService {
       this.logger.log(
         `Cambio de hardware detectado en ${hostname}: ${changes.map((c) => c.component).join(', ')}`,
       );
+
+      // Registrar en hoja de vida del activo
+      if (existing.assetId) {
+        const hv = await this.prisma.hojaVida.findUnique({ where: { assetId: existing.assetId } });
+        if (hv) {
+          const componentLabels: Record<string, string> = {
+            RAM: 'Memoria RAM',
+            DISK: 'Almacenamiento',
+            CPU: 'Procesador',
+          };
+          const changesDesc = changes
+            .map((c) => `${componentLabels[c.component] || c.component}: ${c.old || '?'} → ${c.new || '?'}`)
+            .join(', ');
+          await this.prisma.hojaVidaEvent.create({
+            data: {
+              hojaVidaId: hv.id,
+              type: 'STATUS_CHANGE',
+              description: `Cambio de hardware detectado: ${changesDesc}`,
+              data: JSON.stringify({ changes, hostname, detectedAt: new Date().toISOString() }),
+            },
+          });
+        }
+      }
     }
 
     return updated;

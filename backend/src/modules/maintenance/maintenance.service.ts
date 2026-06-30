@@ -117,8 +117,8 @@ export class MaintenanceService {
     if (cleanData.checklistData && typeof cleanData.checklistData === 'object') {
       cleanData.checklistData = JSON.stringify(cleanData.checklistData);
     }
-    await this.findOne(id);
-    return this.prisma.maintenance.update({
+    const existing = await this.findOne(id);
+    const result = await this.prisma.maintenance.update({
       where: { id },
       data: {
         ...cleanData,
@@ -126,6 +126,35 @@ export class MaintenanceService {
         completedAt: new Date(),
       },
     });
+
+    // Registrar en hoja de vida del activo
+    if (existing.assetId) {
+      const hv = await this.prisma.hojaVida.findUnique({ where: { assetId: existing.assetId } });
+      if (hv) {
+        const techName = existing.technician?.name || 'Sin técnico';
+        const description = `Mantenimiento ${existing.code} completado por ${techName}`;
+        const details = [
+          data.diagnosis && `Diagnóstico: ${data.diagnosis}`,
+          data.solution && `Solución: ${data.solution}`,
+          data.cost && `Costo: $${Number(data.cost).toLocaleString('es-CO')}`,
+        ].filter(Boolean).join(' | ');
+        await this.prisma.hojaVidaEvent.create({
+          data: {
+            hojaVidaId: hv.id,
+            type: 'MAINTENANCE',
+            description: details ? `${description}. ${details}` : description,
+            data: JSON.stringify({
+              maintenanceId: id,
+              code: existing.code,
+              type: existing.type,
+              checklistData: cleanData.checklistData || null,
+            }),
+          },
+        });
+      }
+    }
+
+    return result;
   }
 
   async uploadEvidence(

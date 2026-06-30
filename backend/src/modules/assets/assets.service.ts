@@ -260,6 +260,30 @@ export class AssetsService {
       }
     }
 
+    // Registrar ediciones generales en la hoja de vida
+    const editableFields = ['name', 'description', 'brand', 'model', 'serialNumber', 'categoryId', 'supplierId'];
+    const changes: string[] = [];
+    for (const field of editableFields) {
+      if (data[field] !== undefined && data[field] !== existing[field]) {
+        changes.push(`${field}: ${existing[field] || '—'} → ${data[field] || '—'}`);
+      }
+    }
+    if (changes.length > 0) {
+      const hojaVida = await this.prisma.hojaVida.findUnique({
+        where: { assetId: id },
+      });
+      if (hojaVida) {
+        await this.prisma.hojaVidaEvent.create({
+          data: {
+            hojaVidaId: hojaVida.id,
+            type: 'AUDIT',
+            description: `Activo actualizado: ${changes.join(', ')}`,
+            data: JSON.stringify({ changes, editedAt: new Date().toISOString() }),
+          },
+        });
+      }
+    }
+
     const { attributeValues, ...rest } = data;
     const cleanData = this.sanitizeDates(rest);
 
@@ -494,7 +518,13 @@ export class AssetsService {
           orderBy: { createdAt: 'desc' },
           include: {
             technician: { select: { id: true, name: true } },
-            checklist: { select: { id: true, name: true } },
+            checklist: {
+              select: {
+                id: true,
+                name: true,
+                items: { orderBy: { order: 'asc' } },
+              },
+            },
             evidence: true,
           },
         },

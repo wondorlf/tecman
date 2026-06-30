@@ -958,6 +958,60 @@ export default function MaintenancePage() {
                 className="text-sm rounded-xl"
               />
             </div>
+
+            {/* Datos del checklist completado */}
+            {editing?.status === 'COMPLETED' && editing?.checklist && (() => {
+              let responses: Record<string, any> = {};
+              try {
+                responses = editing.checklistData
+                  ? (typeof editing.checklistData === 'string' ? JSON.parse(editing.checklistData) : editing.checklistData)
+                  : {};
+              } catch { return null; }
+              const items = editing.checklist.items || [];
+              if (Object.keys(responses).length === 0) return null;
+              return (
+                <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Bookmark size={14} className="text-emerald-500" />
+                    <Label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      Checklist completado: {editing.checklist.name}
+                    </Label>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-3 space-y-2">
+                    {items.map((item: any) => {
+                      const value = responses[item.id];
+                      if (value === undefined || value === '') return null;
+                      return (
+                        <div key={item.id} className="flex justify-between text-xs">
+                          <span className="text-slate-500 font-medium">{item.label}</span>
+                          <span className="text-slate-800 font-semibold">{String(value)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {editing.diagnosis && (
+                    <div className="mt-3 bg-amber-50 rounded-xl p-3 space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-amber-600 font-medium">Diagnóstico</span>
+                        <span className="text-slate-800">{editing.diagnosis}</span>
+                      </div>
+                      {editing.solution && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-amber-600 font-medium">Solución</span>
+                          <span className="text-slate-800">{editing.solution}</span>
+                        </div>
+                      )}
+                      {editing.cost != null && editing.cost > 0 && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-amber-600 font-medium">Costo</span>
+                          <span className="text-slate-800">${Number(editing.cost).toLocaleString('es-CO')}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
           <DialogFooter className="gap-2">
             <Button
