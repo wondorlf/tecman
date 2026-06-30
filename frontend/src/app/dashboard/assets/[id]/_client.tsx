@@ -636,7 +636,8 @@ export default function AssetDetailClient() {
                               await documentsApi.update(d.id, { type: e.target.value });
                               refetch();
                             } catch (err: any) {
-                              alert('Error: ' + (err.response?.data?.message || err.message));
+                              console.error('Error cambiando categoría:', err);
+                              alert('No se pudo cambiar la categoría: ' + (err.response?.data?.message || err.message));
                             }
                           }}
                           className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 min-w-[130px]"
