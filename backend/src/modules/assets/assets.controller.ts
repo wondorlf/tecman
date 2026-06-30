@@ -81,9 +81,17 @@ export class AssetsController {
     try {
       const fs = await import('fs');
       const path = await import('path');
-      const logoPath = path.join(process.cwd(), '..', 'frontend', 'public', 'images', 'egan-logo.png');
-      if (fs.existsSync(logoPath)) {
-        eganLogoBuffer = fs.readFileSync(logoPath);
+      const cwd = process.cwd();
+      const possiblePaths = [
+        path.join(cwd, '..', 'frontend', 'public', 'images', 'egan-logo.png'),
+        path.join(cwd, 'frontend', 'public', 'images', 'egan-logo.png'),
+        path.join(cwd, 'public', 'images', 'egan-logo.png'),
+      ];
+      for (const logoPath of possiblePaths) {
+        if (fs.existsSync(logoPath)) {
+          eganLogoBuffer = fs.readFileSync(logoPath);
+          break;
+        }
       }
     } catch {}
 
