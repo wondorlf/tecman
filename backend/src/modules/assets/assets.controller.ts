@@ -117,10 +117,10 @@ export class AssetsController {
     } catch {}
 
     // ── Helpers ──
-    let totalPages = 1;
+    const pageNumbers: number[] = [0]; // Track actual page indices
     const newPage = () => {
       doc.addPage();
-      totalPages++;
+      pageNumbers.push(pageNumbers.length);
       drawPageHeader();
     };
 
@@ -416,16 +416,18 @@ export class AssetsController {
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // FOOTER
+    // FOOTER - draw on each existing page using bufferPages
     // ══════════════════════════════════════════════════════════════════
-    for (let i = 0; i < totalPages; i++) {
-      doc.switchToPage(i);
+    const pages = doc.bufferedPageRange();
+    const totalPdfPages = pages.count;
+    for (let i = 0; i < totalPdfPages; i++) {
+      doc.switchToPage(pages.start + i);
       const footerY = 765;
       doc.rect(MARGIN, footerY, CONTENT_W, 0.5).fill('#e2e8f0');
       doc.fontSize(7).font('Helvetica').fillColor('#94a3b8');
       doc.text('E-GAN TECH', MARGIN, footerY + 3, { width: CONTENT_W / 2, align: 'left' });
       doc.text(`Hoja de Vida · ${asset.code} · ${new Date().toLocaleDateString('es-CO')}`, MARGIN + CONTENT_W / 2, footerY + 3, { width: CONTENT_W / 2, align: 'right' });
-      doc.text(`Página ${i + 1} de ${totalPages}`, MARGIN, footerY + 10, { width: CONTENT_W, align: 'center' });
+      doc.text(`Página ${i + 1} de ${totalPdfPages}`, MARGIN, footerY + 10, { width: CONTENT_W, align: 'center' });
     }
 
     doc.end();

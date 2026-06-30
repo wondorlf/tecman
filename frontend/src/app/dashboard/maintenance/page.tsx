@@ -259,19 +259,51 @@ export default function MaintenancePage() {
         );
       case 'PHOTO':
         return (
-          <div className="flex items-center gap-2">
-            <Input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onChange(file.name);
-              }}
-              className="h-8 rounded-lg text-xs"
-            />
-            {value && <span className="text-xs text-emerald-600">{String(value)}</span>}
+          <div className="space-y-1">
+            {value && (
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-emerald-600 font-medium">{String(value)}</span>
+                <button
+                  type="button"
+                  onClick={() => onChange('')}
+                  className="text-[10px] text-red-400 hover:text-red-600"
+                >
+                  Quitar
+                </button>
+              </div>
+            )}
+            <label className="flex items-center justify-center gap-2 h-10 rounded-lg border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50 hover:bg-blue-50 cursor-pointer transition-all text-xs text-slate-500 hover:text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              {value ? 'Tomar otra foto' : 'Abrir cámara'}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const timestamp = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                    onChange(`${file.name} (${timestamp})`);
+                  }
+                  e.target.value = '';
+                }}
+              />
+            </label>
           </div>
+        );
+      case 'YES_NO_NA':
+        return (
+          <select
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full h-8 rounded-lg border border-slate-200 text-sm px-2 bg-white"
+          >
+            <option value="">Seleccionar...</option>
+            <option value="SI">Sí</option>
+            <option value="NO">No</option>
+            <option value="NO APLICA">No aplica</option>
+          </select>
         );
       default:
         return (

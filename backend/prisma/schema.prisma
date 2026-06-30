@@ -479,6 +479,7 @@ enum FieldType {
   SIGNATURE
   FILE
   GPS
+  YES_NO_NA
 }
 
 enum DocumentType {

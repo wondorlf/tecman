@@ -42,6 +42,7 @@ const FIELD_TYPES = [
   'PHOTO',
   'SIGNATURE',
   'FILE',
+  'YES_NO_NA',
 ];
 const FIELD_TYPE_LABELS: Record<string, string> = {
   TEXT: 'Texto',
@@ -54,6 +55,7 @@ const FIELD_TYPE_LABELS: Record<string, string> = {
   PHOTO: 'Fotografía',
   SIGNATURE: 'Firma',
   FILE: 'Archivo',
+  YES_NO_NA: 'Sí / No / No aplica',
 };
 
 const EMPTY_ITEM = { label: '', type: 'TEXT', required: false, description: '' };
