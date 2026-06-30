@@ -108,24 +108,26 @@ export class AssetsController {
     const drawPageHeader = () => {
       doc.y = PAGE_TOP;
       if (eganLogoBuffer) {
-        try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 30, height: 30 }); } catch {}
+        try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 28, height: 28 }); } catch {}
       }
-      doc.fontSize(9).font('Helvetica-Bold').fillColor('#334155').text(`Hoja de Vida — ${asset.code || ''}  ${asset.name || ''}`, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 8, { width: CONTENT_W - (eganLogoBuffer ? 35 : 0) });
-      doc.fontSize(7).font('Helvetica').fillColor('#94a3b8').text(companyName, MARGIN + (eganLogoBuffer ? 35 : 0), PAGE_TOP + 20);
-      doc.rect(MARGIN, PAGE_TOP + 30, CONTENT_W, 0.5).fill('#e2e8f0');
-      doc.y = PAGE_TOP + 37;
+      const headerTextX = MARGIN + (eganLogoBuffer ? 32 : 0);
+      doc.fontSize(10).font('Helvetica-Bold').fillColor('#334155').text(asset.code || '', headerTextX, PAGE_TOP + 4, { width: CONTENT_W / 2 - 30 });
+      doc.fontSize(8).font('Helvetica').fillColor('#64748b').text(asset.name || '', headerTextX, PAGE_TOP + 17, { width: CONTENT_W / 2 - 30 });
+      doc.fontSize(7).font('Helvetica').fillColor('#94a3b8').text(companyName, headerTextX, PAGE_TOP + 28);
+      doc.rect(MARGIN, PAGE_TOP + 35, CONTENT_W, 0.5).fill('#e2e8f0');
+      doc.y = PAGE_TOP + 42;
       doc.fillColor('#000000');
     };
 
     const sectionTitle = (title: string) => {
-      checkBreak(40);
-      doc.moveDown(0.4);
+      checkBreak(44);
+      doc.moveDown(0.5);
       const y = doc.y;
-      doc.roundedRect(MARGIN, y, CONTENT_W, 20, 3).fill('#1e293b');
-      doc.roundedRect(MARGIN, y, 5, 20, 2).fill('#3b82f6');
-      doc.fontSize(10).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 12, y + 5, { width: CONTENT_W - 20 });
+      doc.roundedRect(MARGIN, y, CONTENT_W, 22, 3).fill('#1e293b');
+      doc.roundedRect(MARGIN, y, 5, 22, 2).fill('#3b82f6');
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#ffffff').text(title, MARGIN + 12, y + 6, { width: CONTENT_W - 20 });
       doc.fillColor('#000000');
-      doc.y = y + 25;
+      doc.y = y + 28;
     };
 
     const drawTable = (headers: string[], rows: string[][], colWidths: number[], opts?: { headerBg?: string; headerColor?: string; borderColor?: string }) => {
@@ -133,34 +135,34 @@ export class AssetsController {
       const hBg = opts?.headerBg || '#1e293b';
       const hColor = opts?.headerColor || '#ffffff';
       const bColor = opts?.borderColor || '#e2e8f0';
-      checkBreak(22 + rows.length * 14);
+      checkBreak(26 + rows.length * 16);
 
       const headerY = doc.y;
-      doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 16, 3).fill(hBg);
+      doc.roundedRect(MARGIN + 2, headerY - 2, CONTENT_W - 4, 18, 3).fill(hBg);
       let x = MARGIN + 6;
-      doc.fontSize(7).font('Helvetica-Bold').fillColor(hColor);
+      doc.fontSize(8).font('Helvetica-Bold').fillColor(hColor);
       for (let i = 0; i < headers.length; i++) {
-        doc.text(headers[i], x, headerY + 1, { width: colWidths[i], continued: false });
+        doc.text(headers[i], x, headerY + 2, { width: colWidths[i], continued: false });
         x += colWidths[i];
       }
-      doc.y = headerY + 16;
+      doc.y = headerY + 18;
 
       for (let r = 0; r < rows.length; r++) {
-        checkBreak(14);
+        checkBreak(16);
         x = MARGIN + 6;
         const rowY = doc.y;
         const bgColor = r % 2 === 0 ? '#ffffff' : '#f1f5f9';
-        doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 12).fill(bgColor);
-        doc.rect(MARGIN + 2, rowY - 1, 2, 12).fill('#3b82f6');
+        doc.rect(MARGIN + 2, rowY - 1, CONTENT_W - 4, 14).fill(bgColor);
+        doc.rect(MARGIN + 2, rowY - 1, 2, 14).fill('#3b82f6');
         doc.font('Helvetica').fillColor('#334155');
         for (let i = 0; i < rows[r].length; i++) {
-          doc.fontSize(7).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
+          doc.fontSize(8).text(rows[r][i] || '—', x, rowY, { width: colWidths[i], continued: false });
           x += colWidths[i];
         }
-        doc.y = rowY + 12;
+        doc.y = rowY + 14;
       }
       doc.rect(MARGIN + 2, doc.y, CONTENT_W - 4, 1).fill(bColor);
-      doc.y += 4;
+      doc.y += 5;
       doc.fillColor('#000000');
     };
 
@@ -194,22 +196,18 @@ export class AssetsController {
       try { doc.image(eganLogoBuffer, MARGIN, PAGE_TOP, { width: 35, height: 35 }); } catch {}
     }
 
+    // Title + name + code in header (center)
+    const headerTextX = MARGIN + (eganLogoBuffer ? 42 : 0);
+    doc.fontSize(14).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', headerTextX, PAGE_TOP + 2, { width: CONTENT_W - (eganLogoBuffer ? 42 : 0) });
+    doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, headerTextX, PAGE_TOP + 20, { width: CONTENT_W - (eganLogoBuffer ? 42 : 0) });
+    doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, headerTextX, PAGE_TOP + 36, { width: CONTENT_W - (eganLogoBuffer ? 42 : 0) });
+
     // QR Code top right
     if (qrImageBuffer) {
       doc.image(qrImageBuffer, PAGE_W - MARGIN - 50, PAGE_TOP, { width: 50, height: 50 });
     }
 
-    // Company logo (if different from E-GAN)
-    if (companyLogo) {
-      try { doc.image(companyLogo, MARGIN + 40, PAGE_TOP, { width: 30, height: 30 }); } catch {}
-    }
-
-    // Centered title
-    doc.fontSize(20).font('Helvetica-Bold').fillColor('#0f172a').text('HOJA DE VIDA', MARGIN, PAGE_TOP + 55, { width: CONTENT_W, align: 'center' });
-    doc.fontSize(12).font('Helvetica').fillColor('#334155').text(`${asset.name}`, MARGIN, PAGE_TOP + 82, { width: CONTENT_W, align: 'center' });
-    doc.fontSize(10).fillColor('#64748b').text(`${asset.code}`, MARGIN, PAGE_TOP + 100, { width: CONTENT_W, align: 'center' });
-
-    doc.y = PAGE_TOP + 120;
+    doc.y = PAGE_TOP + 60;
     doc.rect(MARGIN, doc.y, CONTENT_W, 1).fill('#e2e8f0');
     doc.y += 10;
 
@@ -318,17 +316,16 @@ export class AssetsController {
     // ══════════════════════════════════════════════════════════════════
     const sortedMaintenances = [...maintenances].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     if (sortedMaintenances.length > 0) {
-      newPage();
-      drawPageHeader();
+      checkBreak(60);
       sectionTitle(`DETALLE MANTENIMIENTOS (${sortedMaintenances.length})`);
 
       for (const m of sortedMaintenances) {
-        checkBreak(60);
+        checkBreak(55);
         detailCard('#22c55e', [
           { text: `${m.code || '—'}  ·  ${m.type || '—'}  ·  ${m.status || '—'}`, font: 'Helvetica-Bold', color: '#166534', size: 10 },
-          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 8 },
-          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 8 }] : []),
-          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 8 }] : []),
+          { text: `Técnico: ${m.technician?.name || '—'}  |  Fecha: ${m.completedAt ? new Date(m.completedAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 9 },
+          ...(m.description ? [{ text: m.description, font: 'Helvetica', color: '#334155', size: 9 }] : []),
+          ...(m.checklist ? [{ text: `Checklist: ${m.checklist.name}`, font: 'Helvetica-Bold', color: '#64748b', size: 9 }] : []),
         ]);
       }
     }
@@ -338,15 +335,15 @@ export class AssetsController {
     // ══════════════════════════════════════════════════════════════════
     const sortedTickets = [...tickets].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     if (sortedTickets.length > 0) {
-      checkBreak(80);
+      checkBreak(60);
       sectionTitle(`DETALLE TICKETS DE SOPORTE (${sortedTickets.length})`);
 
       for (const t of sortedTickets) {
         checkBreak(50);
         detailCard('#3b82f6', [
           { text: `${t.code || '—'}  ·  ${t.status || '—'}`, font: 'Helvetica-Bold', color: '#1e40af', size: 10 },
-          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 8 },
-          ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 8 }] : []),
+          { text: `${t.title || '—'}  |  Categoría: ${t.category || '—'}  |  ${t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-CO') : '—'}`, font: 'Helvetica', color: '#64748b', size: 9 },
+          ...(t.description ? [{ text: t.description.substring(0, 200), font: 'Helvetica', color: '#334155', size: 9 }] : []),
         ]);
       }
     }
@@ -355,6 +352,7 @@ export class AssetsController {
     // FOOTER (en cada página)
     // ══════════════════════════════════════════════════════════════════
     const pageCount = doc.bufferedPageRange();
+    const usedPages = Math.max(1, Math.ceil(doc.y / PAGE_BOTTOM) || 1);
     for (let i = 0; i < pageCount.count; i++) {
       doc.switchToPage(i);
       const footerY = 765;
