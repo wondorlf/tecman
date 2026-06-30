@@ -141,7 +141,7 @@ export default function MaintenancePage() {
     queryKey: ['checklists'],
     queryFn: async () => {
       const r = await checklistsApi.list();
-      return r.data as any[];
+      return (r.data as any).data as any[];
     },
   });
 
