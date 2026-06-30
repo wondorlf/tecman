@@ -73,7 +73,7 @@ export class AssetsController {
   async exportHojaVidaPdf(@Param('id') id: string, @Res() res: Response) {
     const asset = await this.assetsService.getDeviceHistory(id);
     const tenant = await this.tenantsService.getPublicSettings();
-    const doc = new PDFDocument({ margin: 40, size: 'letter', bufferPages: true, autoFirstPage: false });
+    const doc = new PDFDocument({ size: 'letter', bufferPages: true });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
@@ -120,6 +120,7 @@ export class AssetsController {
     const newPage = () => {
       doc.addPage();
       doc.y = PAGE_TOP;
+      doc.x = MARGIN;
     };
 
     const checkBreak = (needed: number = 50) => {
