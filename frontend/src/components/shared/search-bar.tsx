@@ -22,7 +22,7 @@ export function SearchBar({
 }: SearchBarProps) {
   const ref = useRef<HTMLInputElement>(null);
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full sm:w-auto ${className || ''}`}>
       <Search
         size={15}
         className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"

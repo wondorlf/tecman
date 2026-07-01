@@ -90,7 +90,7 @@ const menuGroups = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -200,6 +200,7 @@ export default function Sidebar() {
                     <Link
                       href={item.href}
                       title={collapsed ? item.name : undefined}
+                      onClick={onNavigate}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all',
                         active

@@ -389,7 +389,7 @@ export default function ConsolidatedDashboardPage() {
         title="Dashboard Consolidado"
         subtitle="Visibilidad de todas las secciones del sistema en un solo lugar"
         action={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             <Button
               variant="outline"
               onClick={async () => {
@@ -534,7 +534,7 @@ export default function ConsolidatedDashboardPage() {
 
       {/* ═══════════════════════ OVERVIEW ═══════════════════════ */}
       {isVisible('overview') && (
-        <SectionWrapper className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <SectionWrapper className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
           {overviewKpis.map((kpi, i) => (
             <Link key={kpi.href} href={kpi.href} className="text-left">
               <StaggeredItem index={i} baseDelay={0}>

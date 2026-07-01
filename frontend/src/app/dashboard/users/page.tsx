@@ -136,7 +136,7 @@ export default function UsersPage() {
             value={search}
             onChange={setSearch}
             placeholder="Buscar por nombre o email..."
-            className="w-72"
+            className="w-full sm:w-72"
           />
           <span className="ml-auto text-xs text-slate-400">
             {filtered.length} usuario{filtered.length !== 1 ? 's' : ''}
@@ -153,7 +153,7 @@ export default function UsersPage() {
           subtitle="Crea el primer usuario con el botón de arriba"
         />
       ) : (
-        <Card className="border-slate-100 rounded-2xl overflow-hidden">
+        <Card className="border-slate-100 rounded-2xl overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/80">
@@ -272,7 +272,7 @@ export default function UsersPage() {
                 className="h-9 rounded-xl text-sm"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-600">Teléfono</Label>
                 <Input

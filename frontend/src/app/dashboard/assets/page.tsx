@@ -486,7 +486,7 @@ export default function AssetsPage() {
         title="Activos"
         subtitle={`${meta.total} activos registrados`}
         action={
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             <input
               type="file"
               ref={fileInputRef}
@@ -528,82 +528,86 @@ export default function AssetsPage() {
       {/* Filters bar */}
       <SectionWrapper>
         <Card className="border-slate-100 rounded-2xl mb-4">
-          <CardContent className="p-3 flex flex-wrap gap-3 items-center">
+          <CardContent className="p-3 space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-3 sm:items-center">
             <SearchBar
               id="search-assets"
               value={search}
               onChange={handleSearch}
               placeholder="Buscar por nombre, código, marca, QR..."
-              className="w-72"
+              className="w-full sm:w-72"
             />
 
-            <button
-              onClick={() => {
-                setQrSearchDialog(true);
-                setQrSearchCode('');
-                setQrSearchError(null);
-              }}
-              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all text-sm font-medium"
-              title="Buscar por código QR"
-            >
-              <ScanBarcode size={15} />
-              <span className="hidden sm:inline">QR</span>
-            </button>
-
-            <select
-              id="filter-status"
-              name="status"
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="ALL">Todos los estados</option>
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {ASSET_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
-
-            <select
-              id="filter-category"
-              name="category"
-              value={catFilter}
-              onChange={(e) => {
-                setCatFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="ALL">Todas las categorías</option>
-              {categories.map((c: any) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            <div className="ml-auto flex gap-1">
+            <div className="flex flex-wrap gap-2 items-center">
               <button
-                onClick={() => setView('table')}
-                className={`p-2 rounded-lg transition-colors ${view === 'table' ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-100'}`}
+                onClick={() => {
+                  setQrSearchDialog(true);
+                  setQrSearchCode('');
+                  setQrSearchError(null);
+                }}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all text-sm font-medium"
+                title="Buscar por código QR"
               >
-                <List size={16} />
+                <ScanBarcode size={15} />
+                <span className="hidden sm:inline">QR</span>
               </button>
-              <button
-                onClick={() => setView('grid')}
-                className={`p-2 rounded-lg transition-colors ${view === 'grid' ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-100'}`}
+
+              <select
+                id="filter-status"
+                name="status"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 flex-1 sm:flex-none min-w-[120px]"
               >
-                <LayoutGrid size={16} />
-              </button>
+                <option value="ALL">Todos los estados</option>
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {ASSET_STATUS_LABELS[s]}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                id="filter-category"
+                name="category"
+                value={catFilter}
+                onChange={(e) => {
+                  setCatFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 flex-1 sm:flex-none min-w-[120px]"
+              >
+                <option value="ALL">Todas las categorías</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <span className="text-xs text-slate-400 font-medium">
-              {meta.total} resultado{meta.total !== 1 ? 's' : ''}
-            </span>
+            <div className="flex items-center gap-2 sm:ml-auto">
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setView('table')}
+                  className={`p-2 rounded-lg transition-colors ${view === 'table' ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-100'}`}
+                >
+                  <List size={16} />
+                </button>
+                <button
+                  onClick={() => setView('grid')}
+                  className={`p-2 rounded-lg transition-colors ${view === 'grid' ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-100'}`}
+                >
+                  <LayoutGrid size={16} />
+                </button>
+              </div>
+
+              <span className="text-xs text-slate-400 font-medium">
+                {meta.total} resultado{meta.total !== 1 ? 's' : ''}
+              </span>
+            </div>
           </CardContent>
         </Card>
       </SectionWrapper>
@@ -619,7 +623,7 @@ export default function AssetsPage() {
             subtitle="Crea el primer activo con el botón de arriba"
           />
         ) : view === 'table' ? (
-          <Card className="border-slate-100 rounded-2xl overflow-hidden">
+          <Card className="border-slate-100 rounded-2xl overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/80">
@@ -786,7 +790,7 @@ export default function AssetsPage() {
             <DialogTitle>{editing ? 'Editar activo' : 'Nuevo activo'}</DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-4 py-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             {/* Row 1 */}
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-600">Nombre *</Label>
@@ -1028,7 +1032,7 @@ export default function AssetsPage() {
                     Atributos de {selectedCat?.name}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {catAttributes.map((attr: any) => (
                     <div key={attr.id} className="space-y-1.5">
                       <Label className="text-xs font-semibold text-slate-600">

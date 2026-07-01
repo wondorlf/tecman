@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
 import { Header } from '@/components/header';
@@ -11,6 +11,7 @@ import { initAuth, getUser, clearUser } from '@/lib/api';
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -35,6 +36,11 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     checkAuth();
   }, [router]);
 
+  // Close sidebar on route change (mobile)
+  const handleSidebarNavigate = useCallback(() => {
+    setSidebarOpen(false);
+  }, []);
+
   // Activate real-time ticket notifications across all dashboard pages
   useTicketNotifications();
 
@@ -51,10 +57,31 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar />
+      {/* Desktop sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 md:hidden transition-transform duration-300 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <Sidebar onNavigate={handleSidebarNavigate} />
+      </div>
+
       <div className="flex-1 flex flex-col min-w-0">
-        <Header />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">{children}</main>
+        <Header onMenuToggle={() => setSidebarOpen((p) => !p)} sidebarOpen={sidebarOpen} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
       </div>
       <FloatingHelp />
     </div>

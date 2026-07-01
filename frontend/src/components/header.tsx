@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, LogOut, User } from 'lucide-react';
+import { Bell, LogOut, User, Menu, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { authApi, alertsApi, clearUser, setAccessToken } from '@/lib/api';
 import { disconnectSocket } from '@/lib/socket';
@@ -30,7 +30,13 @@ const BREADCRUMB_MAP: Record<string, string> = {
   '/dashboard/tenant': 'Config. Sistema',
 };
 
-export function Header() {
+export function Header({
+  onMenuToggle,
+  sidebarOpen,
+}: {
+  onMenuToggle?: () => void;
+  sidebarOpen?: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [showUser, setShowUser] = useState(false);
@@ -67,9 +73,17 @@ export function Header() {
   };
 
   return (
-    <header className="h-16 border-b border-slate-100 bg-white flex items-center justify-between px-6 shrink-0">
-      <div>
-        <h1 className="text-lg font-semibold text-slate-800">{title}</h1>
+    <header className="h-14 sm:h-16 border-b border-slate-100 bg-white flex items-center justify-between px-3 sm:px-6 shrink-0">
+      <div className="flex items-center gap-2">
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="md:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors -ml-1"
+          >
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        )}
+        <h1 className="text-base sm:text-lg font-semibold text-slate-800">{title}</h1>
       </div>
 
       <div className="flex items-center gap-3">

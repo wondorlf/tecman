@@ -164,14 +164,14 @@ export default function DashboardPage() {
     })) || [];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-4 sm:space-y-6 max-w-7xl">
       {/* Welcome */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
             Hola, {user?.name?.split(' ')[0] || 'usuario'} 👋
           </h2>
-          <p className="text-slate-500 text-sm mt-0.5">
+          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             {new Date().toLocaleDateString('es-CO', {
               weekday: 'long',
               year: 'numeric',
@@ -187,21 +187,21 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((card) =>
           statsLoading ? (
             <Skeleton key={card.title} className="h-32" />
           ) : (
             <Link key={card.title} href={card.href}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer border-slate-100 rounded-2xl">
-                <CardContent className="p-5">
+                <CardContent className="p-3 sm:p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      <p className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wide">
                         {card.title}
                       </p>
-                      <p className="text-3xl font-bold text-slate-900 mt-1">{card.value}</p>
-                      <p className="text-xs text-slate-400 mt-1">{card.trend}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{card.value}</p>
+                      <p className="text-[10px] sm:text-xs text-slate-400 mt-1 hidden sm:block">{card.trend}</p>
                       {card.trendData && (
                         <p
                           className={`text-xs mt-0.5 flex items-center gap-0.5 ${

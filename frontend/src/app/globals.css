@@ -54,7 +54,17 @@
         @apply border-border;
     }
 
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
     body {
         @apply bg-background text-foreground;
+        overflow-x: hidden;
+    }
+
+    /* Prevent horizontal scroll on mobile */
+    main {
+        -webkit-overflow-scrolling: touch;
     }
 }

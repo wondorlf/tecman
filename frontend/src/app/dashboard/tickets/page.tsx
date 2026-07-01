@@ -223,7 +223,7 @@ export default function TicketsPage() {
           </Button>
         }
       />
-      <SectionWrapper className="grid grid-cols-3 gap-3 mb-4">
+      <SectionWrapper className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
         {[
           {
             label: 'Abiertos',
@@ -250,15 +250,15 @@ export default function TicketsPage() {
           <StaggeredItem key={k.label} index={i} baseDelay={0}>
             <button onClick={() => setStatusFilter(k.filter)} className="text-left w-full">
               <Card className="border-slate-100 rounded-2xl hover:shadow-md transition-all cursor-pointer">
-                <CardContent className="p-4 flex items-center gap-3">
+                <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
                   <div
-                    className={`${k.bg} ${k.color} w-9 h-9 rounded-xl flex items-center justify-center`}
+                    className={`${k.bg} ${k.color} w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0`}
                   >
                     <TicketIcon size={16} />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-slate-900">{k.value}</p>
-                    <p className="text-xs text-slate-400">{k.label}</p>
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold text-slate-900">{k.value}</p>
+                    <p className="text-[10px] sm:text-xs text-slate-400 truncate">{k.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -273,12 +273,12 @@ export default function TicketsPage() {
               value={search}
               onChange={setSearch}
               placeholder="Buscar tickets..."
-              className="w-64"
+              className="w-full sm:w-64"
             />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="h-9 rounded-xl border border-slate-200 text-sm px-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 flex-1 sm:flex-none"
             >
               <option value="ALL">Todos los estados</option>
               {STATUSES.map((s) => (
@@ -303,7 +303,7 @@ export default function TicketsPage() {
             subtitle="Crea el primero con el botón de arriba"
           />
         ) : (
-          <Card className="border-slate-100 rounded-2xl overflow-hidden">
+          <Card className="border-slate-100 rounded-2xl overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/80">
@@ -377,7 +377,7 @@ export default function TicketsPage() {
                 className="h-9 rounded-xl text-sm"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-600">Categoría</Label>
                 <select
@@ -407,7 +407,7 @@ export default function TicketsPage() {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-600">Activo relacionado</Label>
                 <select
